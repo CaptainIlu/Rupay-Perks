@@ -1380,12 +1380,26 @@
       </div>
     </div>
 
-    <div class="form-group" style="margin-bottom:10px;">
+    <div class="form-group" style="margin-bottom:8px;">
       <label class="form-label" style="font-size:11px;margin-bottom:4px;display:flex;justify-content:space-between;">
         <span>Secret Gist ID</span>
         <a href="https://gist.github.com" target="_blank" rel="noopener" style="color:var(--primary-light);font-size:10px;text-decoration:underline;">Open Gist ↗</a>
       </label>
       <input type="text" class="form-control" id="sync-github-gist-id" placeholder="e.g. 7a8b9c0d1e2f3a4b..." style="font-size:12px;padding:6px 10px;" />
+    </div>
+
+    <div class="form-group" style="margin-bottom:10px;">
+      <label class="form-label" style="font-size:11px;margin-bottom:4px;display:flex;justify-content:space-between;">
+        <span>🔐 Master Passphrase (AES-256)</span>
+        <span style="font-size:10px;color:var(--success);font-weight:600;">Zero-Knowledge</span>
+      </label>
+      <div style="display:flex;gap:4px;">
+        <input type="password" class="form-control" id="sync-crypto-passphrase" placeholder="Set private passphrase to encrypt data..." style="font-size:12px;padding:6px 10px;" />
+        <button type="button" class="btn btn-secondary btn-xs" id="btn-toggle-pass-mask" title="Show/Hide Passphrase" style="padding:6px 9px;">👁️</button>
+      </div>
+      <div style="font-size:10px;color:var(--text-secondary);margin-top:3px;line-height:1.3;">
+        Encrypts voucher codes & card data on your device with AES-GCM before uploading. GitHub only stores unreadable ciphertext.
+      </div>
     </div>
 
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
@@ -4092,14 +4106,149 @@ function esc(str) {
 const SYNC_STORAGE_KEYS = {
   TOKEN: 'rupay_github_token',
   GIST_ID: 'rupay_github_gist_id',
+  PASSPHRASE: 'rupay_github_passphrase',
   AUTO_SYNC: 'rupay_github_auto_sync',
   LAST_SYNC: 'rupay_github_last_sync'
 };
 
 function getSyncToken()       { return (localStorage.getItem(SYNC_STORAGE_KEYS.TOKEN) || '').trim(); }
 function getSyncGistId()      { return (localStorage.getItem(SYNC_STORAGE_KEYS.GIST_ID) || '').trim(); }
+function getSyncPassphrase()  { return (localStorage.getItem(SYNC_STORAGE_KEYS.PASSPHRASE) || '').trim(); }
 function isAutoSyncEnabled()  { const v = localStorage.getItem(SYNC_STORAGE_KEYS.AUTO_SYNC); return v === null ? true : v === 'true'; }
 function hasSyncCredentials() { return !!(getSyncToken() && getSyncGistId()); }
+
+/* ── Web Crypto Helpers (AES-256-GCM via PBKDF2) ── */
+function bufToHex(buffer) {
+  return Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function hexToBuf(hexString) {
+  const bytes = new Uint8Array(Math.ceil(hexString.length / 2));
+  for (let i = 0; i < bytes.length; i++) {
+    bytes[i] = parseInt(hexString.substr(i * 2, 2), 16);
+  }
+  return bytes;
+}
+
+function bufToBase64(buffer) {
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return window.btoa(binary);
+}
+
+function base64ToBuf(base64) {
+  const binary_string = window.atob(base64);
+  const len = binary_string.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binary_string.charCodeAt(i);
+  }
+  return bytes;
+}
+
+async function encryptWithPassphrase(plainText, passphrase) {
+  if (!passphrase) {
+    return plainText; // Plain JSON fallback if user prefers no encryption
+  }
+  const enc = new TextEncoder();
+  const salt = window.crypto.getRandomValues(new Uint8Array(16));
+  const iv   = window.crypto.getRandomValues(new Uint8Array(12));
+
+  const passKey = await window.crypto.subtle.importKey(
+    'raw',
+    enc.encode(passphrase),
+    { name: 'PBKDF2' },
+    false,
+    ['deriveKey']
+  );
+
+  const aesKey = await window.crypto.subtle.deriveKey(
+    {
+      name: 'PBKDF2',
+      salt,
+      iterations: 100000,
+      hash: 'SHA-256'
+    },
+    passKey,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt']
+  );
+
+  const encryptedBuffer = await window.crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv },
+    aesKey,
+    enc.encode(plainText)
+  );
+
+  return JSON.stringify({
+    version: 'aes-gcm-v1',
+    salt: bufToHex(salt),
+    iv: bufToHex(iv),
+    ciphertext: bufToBase64(encryptedBuffer)
+  }, null, 2);
+}
+
+async function decryptWithPassphrase(rawContent, passphrase) {
+  let parsed;
+  try {
+    parsed = typeof rawContent === 'string' ? JSON.parse(rawContent) : rawContent;
+  } catch (e) {
+    throw new Error('Cloud file is not valid JSON');
+  }
+
+  // If unencrypted plain DB object
+  if (!parsed || parsed.version !== 'aes-gcm-v1') {
+    return parsed;
+  }
+
+  if (!passphrase) {
+    throw new Error('Data in GitHub Gist is encrypted! Please enter your Master Passphrase in Settings.');
+  }
+
+  try {
+    const enc = new TextEncoder();
+    const salt = hexToBuf(parsed.salt);
+    const iv   = hexToBuf(parsed.iv);
+    const encryptedBytes = base64ToBuf(parsed.ciphertext);
+
+    const passKey = await window.crypto.subtle.importKey(
+      'raw',
+      enc.encode(passphrase),
+      { name: 'PBKDF2' },
+      false,
+      ['deriveKey']
+    );
+
+    const aesKey = await window.crypto.subtle.deriveKey(
+      {
+        name: 'PBKDF2',
+        salt,
+        iterations: 100000,
+        hash: 'SHA-256'
+      },
+      passKey,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt', 'decrypt']
+    );
+
+    const decryptedBuffer = await window.crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv },
+      aesKey,
+      encryptedBytes
+    );
+
+    const decryptedStr = new TextDecoder().decode(decryptedBuffer);
+    return JSON.parse(decryptedStr);
+  } catch (err) {
+    throw new Error('Decryption failed! Incorrect Passphrase or corrupted data.');
+  }
+}
 
 function updateSyncStatusUI(state, message, lastTime) {
   const dot      = document.getElementById('sync-status-dot');
@@ -4173,7 +4322,8 @@ async function pullFromGist(options = { silent: false }) {
       throw new Error('Gist does not contain rupay-perks-data.json');
     }
 
-    const cloudDB = JSON.parse(targetFile.content);
+    const passphrase = getSyncPassphrase();
+    const cloudDB = await decryptWithPassphrase(targetFile.content, passphrase);
     if (!cloudDB || typeof cloudDB !== 'object') {
       throw new Error('Invalid JSON structure in Gist');
     }
@@ -4203,11 +4353,15 @@ async function pushToGist(options = { silent: false }) {
 
   updateSyncStatusUI('syncing', 'Pushing...');
   try {
+    const passphrase = getSyncPassphrase();
+    const plainJson = JSON.stringify(DB, null, 2);
+    const finalContent = await encryptWithPassphrase(plainJson, passphrase);
+
     const payload = {
-      description: 'RuPay Perks Cloud Sync',
+      description: passphrase ? 'RuPay Perks Cloud Sync (Encrypted AES-256-GCM)' : 'RuPay Perks Cloud Sync',
       files: {
         'rupay-perks-data.json': {
-          content: JSON.stringify(DB, null, 2)
+          content: finalContent
         }
       }
     };
@@ -4276,16 +4430,27 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ── GitHub Cloud Sync UI wiring ── */
   const tokenInput   = document.getElementById('sync-github-token');
   const gistIdInput  = document.getElementById('sync-github-gist-id');
+  const passInput    = document.getElementById('sync-crypto-passphrase');
   const autoSyncCb   = document.getElementById('setting-auto-sync');
   const btnSyncNow   = document.getElementById('btn-sync-now');
   const btnSyncPull  = document.getElementById('btn-sync-pull');
   const btnSyncPush  = document.getElementById('btn-sync-push');
   const btnToggleMask= document.getElementById('btn-toggle-token-mask');
+  const btnTogglePass= document.getElementById('btn-toggle-pass-mask');
   const btnCloudNav  = document.getElementById('btn-cloud-sync');
 
   if (tokenInput)  tokenInput.value  = getSyncToken();
   if (gistIdInput) gistIdInput.value = getSyncGistId();
+  if (passInput)   passInput.value   = getSyncPassphrase();
   if (autoSyncCb)  autoSyncCb.checked = isAutoSyncEnabled();
+
+  if (btnTogglePass && passInput) {
+    btnTogglePass.addEventListener('click', () => {
+      const isPass = passInput.type === 'password';
+      passInput.type = isPass ? 'text' : 'password';
+      btnTogglePass.textContent = isPass ? '🔒' : '👁️';
+    });
+  }
 
   updateSyncStatusUI();
 
@@ -4317,19 +4482,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (btnSyncNow) {
     btnSyncNow.addEventListener('click', async () => {
-      const tok = tokenInput.value.trim();
-      const gid = gistIdInput.value.trim();
+      const tok  = tokenInput.value.trim();
+      const gid  = gistIdInput.value.trim();
+      const pass = passInput ? passInput.value.trim() : '';
       if (!tok || !gid) {
         showToast('Please enter both Token and Gist ID', 'error');
         return;
       }
       localStorage.setItem(SYNC_STORAGE_KEYS.TOKEN, tok);
       localStorage.setItem(SYNC_STORAGE_KEYS.GIST_ID, gid);
-      showToast('Connecting to GitHub Gist... ☁️', 'info');
+      localStorage.setItem(SYNC_STORAGE_KEYS.PASSPHRASE, pass);
+
+      showToast('Connecting & Encrypting... 🔐', 'info');
       const ok = await pullFromGist({ silent: false });
       if (ok) {
         await pushToGist({ silent: true });
-        updateSyncStatusUI('synced', 'Connected & Synced');
+        updateSyncStatusUI('synced', pass ? 'Encrypted & Synced 🔐' : 'Synced ☁️');
       }
     });
   }
@@ -4338,8 +4506,10 @@ document.addEventListener('DOMContentLoaded', () => {
     btnSyncPull.addEventListener('click', async () => {
       const tok = tokenInput.value.trim();
       const gid = gistIdInput.value.trim();
+      const pass = passInput ? passInput.value.trim() : '';
       if (tok) localStorage.setItem(SYNC_STORAGE_KEYS.TOKEN, tok);
       if (gid) localStorage.setItem(SYNC_STORAGE_KEYS.GIST_ID, gid);
+      if (pass !== undefined) localStorage.setItem(SYNC_STORAGE_KEYS.PASSPHRASE, pass);
       await pullFromGist({ silent: false });
     });
   }
@@ -4348,8 +4518,10 @@ document.addEventListener('DOMContentLoaded', () => {
     btnSyncPush.addEventListener('click', async () => {
       const tok = tokenInput.value.trim();
       const gid = gistIdInput.value.trim();
+      const pass = passInput ? passInput.value.trim() : '';
       if (tok) localStorage.setItem(SYNC_STORAGE_KEYS.TOKEN, tok);
       if (gid) localStorage.setItem(SYNC_STORAGE_KEYS.GIST_ID, gid);
+      if (pass !== undefined) localStorage.setItem(SYNC_STORAGE_KEYS.PASSPHRASE, pass);
       await pushToGist({ silent: false });
     });
   }
