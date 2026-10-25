@@ -570,7 +570,7 @@
       position: fixed;
       top: 60px;
       right: 0;
-      width: 280px;
+      width: 310px;
       background: var(--card-surface);
       border-left: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
@@ -1335,6 +1335,10 @@
     <button class="nav-tab" data-tab="history">History</button>
   </div>
   <div class="nav-actions">
+    <button class="btn-icon" id="btn-cloud-sync" title="GitHub Cloud Sync" style="position:relative;">
+      ☁️
+      <span id="nav-sync-indicator" style="position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:#64748b;"></span>
+    </button>
     <button class="btn-icon" id="settings-toggle" title="Settings / Import / Export">⚙</button>
   </div>
 </nav>
@@ -1351,6 +1355,54 @@
         <span class="toggle-slider"></span>
       </label>
     </div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-section-title">☁️ GitHub Cloud Sync</div>
+    <div id="sync-status-box" style="background:var(--elevated);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;margin-bottom:10px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+        <span id="sync-status-badge" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-secondary);">
+          <span id="sync-status-dot" style="width:8px;height:8px;border-radius:50%;background:#64748b;"></span>
+          <span id="sync-status-text">Local Only</span>
+        </span>
+        <span id="sync-last-time" style="font-size:10px;color:var(--text-secondary);">—</span>
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-bottom:8px;">
+      <label class="form-label" style="font-size:11px;margin-bottom:4px;display:flex;justify-content:space-between;">
+        <span>Personal Access Token (classic)</span>
+        <a href="https://github.com/settings/tokens/new?scopes=gist&description=RuPay+Perks+Sync" target="_blank" rel="noopener" style="color:var(--primary-light);font-size:10px;text-decoration:underline;">Create Token ↗</a>
+      </label>
+      <div style="display:flex;gap:4px;">
+        <input type="password" class="form-control" id="sync-github-token" placeholder="ghp_xxxxxxxxxxxx" style="font-size:12px;padding:6px 10px;" />
+        <button type="button" class="btn btn-secondary btn-xs" id="btn-toggle-token-mask" title="Show/Hide Token" style="padding:6px 9px;">👁️</button>
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-bottom:10px;">
+      <label class="form-label" style="font-size:11px;margin-bottom:4px;display:flex;justify-content:space-between;">
+        <span>Secret Gist ID</span>
+        <a href="https://gist.github.com" target="_blank" rel="noopener" style="color:var(--primary-light);font-size:10px;text-decoration:underline;">Open Gist ↗</a>
+      </label>
+      <input type="text" class="form-control" id="sync-github-gist-id" placeholder="e.g. 7a8b9c0d1e2f3a4b..." style="font-size:12px;padding:6px 10px;" />
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <span style="font-size:12px;color:var(--text-primary)">Auto-sync on changes</span>
+      <label class="toggle-switch">
+        <input type="checkbox" id="setting-auto-sync" checked />
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">
+      <button class="settings-btn" id="btn-sync-pull" style="margin-bottom:0;justify-content:center;font-size:11px;padding:7px 4px;">⬇ Pull Cloud</button>
+      <button class="settings-btn" id="btn-sync-push" style="margin-bottom:0;justify-content:center;font-size:11px;padding:7px 4px;">⬆ Push Cloud</button>
+    </div>
+    <button class="settings-btn" id="btn-sync-now" style="width:100%;justify-content:center;background:rgba(16,185,129,0.15);color:var(--success);border:1px solid rgba(16,185,129,0.3);font-size:12px;font-weight:600;padding:8px 10px;">
+      🔄 Connect & Sync Now
+    </button>
   </div>
     <div class="settings-section">
     <div class="settings-section-title">Perks & Benefits Catalog</div>
@@ -2050,9 +2102,12 @@ function loadDB() {
   }
 }
 
-function saveDB() {
+function saveDB(skipCloudSync = false) {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); }
   catch (e) { showToast('Failed to persist data (localStorage error)', 'error'); }
+  if (!skipCloudSync) {
+    triggerDebouncedCloudPush();
+  }
 }
 
 /* --- Variants --- */
@@ -4029,7 +4084,281 @@ function esc(str) {
    SECTION 10: EVENT LISTENERS & INITIALIZATION
    ============================================================== */
 
+
+/* ==============================================================
+   SECTION 2b: GITHUB GIST CLOUD SYNC ENGINE
+   ============================================================== */
+
+const SYNC_STORAGE_KEYS = {
+  TOKEN: 'rupay_github_token',
+  GIST_ID: 'rupay_github_gist_id',
+  AUTO_SYNC: 'rupay_github_auto_sync',
+  LAST_SYNC: 'rupay_github_last_sync'
+};
+
+function getSyncToken()       { return (localStorage.getItem(SYNC_STORAGE_KEYS.TOKEN) || '').trim(); }
+function getSyncGistId()      { return (localStorage.getItem(SYNC_STORAGE_KEYS.GIST_ID) || '').trim(); }
+function isAutoSyncEnabled()  { const v = localStorage.getItem(SYNC_STORAGE_KEYS.AUTO_SYNC); return v === null ? true : v === 'true'; }
+function hasSyncCredentials() { return !!(getSyncToken() && getSyncGistId()); }
+
+function updateSyncStatusUI(state, message, lastTime) {
+  const dot      = document.getElementById('sync-status-dot');
+  const text     = document.getElementById('sync-status-text');
+  const timeEl   = document.getElementById('sync-last-time');
+  const navDot   = document.getElementById('nav-sync-indicator');
+  const navBtn   = document.getElementById('btn-cloud-sync');
+
+  let color = '#64748b'; // gray
+  let label = 'Local Only';
+
+  if (state === 'synced') {
+    color = '#10b981'; // green
+    label = 'Synced';
+  } else if (state === 'syncing') {
+    color = '#f59e0b'; // amber
+    label = 'Syncing...';
+  } else if (state === 'error') {
+    color = '#ef4444'; // red
+    label = 'Sync Error';
+  } else if (hasSyncCredentials()) {
+    color = '#10b981';
+    label = 'Connected';
+  }
+
+  if (dot) dot.style.background = color;
+  if (navDot) navDot.style.background = color;
+  if (text) text.textContent = message || label;
+
+  const lt = lastTime || localStorage.getItem(SYNC_STORAGE_KEYS.LAST_SYNC);
+  if (timeEl) {
+    timeEl.textContent = lt ? fmtTimestamp(lt) : '—';
+  }
+  if (navBtn) {
+    navBtn.title = `GitHub Cloud Sync: ${message || label}` + (lt ? ` (${fmtTimestamp(lt)})` : '');
+  }
+}
+
+async function pullFromGist(options = { silent: false }) {
+  const token  = getSyncToken();
+  const gistId = getSyncGistId();
+  if (!token || !gistId) {
+    if (!options.silent) showToast('GitHub Token and Gist ID are required', 'error');
+    return false;
+  }
+
+  updateSyncStatusUI('syncing', 'Pulling...');
+  try {
+    const res = await fetch(`https://api.github.com/gists/${encodeURIComponent(gistId)}`, {
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      const msg = errData.message || `HTTP ${res.status}`;
+      throw new Error(msg);
+    }
+
+    const gistData = await res.json();
+    const files = gistData.files || {};
+    let targetFile = files['rupay-perks-data.json'];
+    if (!targetFile) {
+      const jsonKey = Object.keys(files).find(k => k.endsWith('.json'));
+      if (jsonKey) targetFile = files[jsonKey];
+    }
+
+    if (!targetFile || !targetFile.content) {
+      throw new Error('Gist does not contain rupay-perks-data.json');
+    }
+
+    const cloudDB = JSON.parse(targetFile.content);
+    if (!cloudDB || typeof cloudDB !== 'object') {
+      throw new Error('Invalid JSON structure in Gist');
+    }
+
+    applyCloudData(cloudDB);
+
+    const nowISO = new Date().toISOString();
+    localStorage.setItem(SYNC_STORAGE_KEYS.LAST_SYNC, nowISO);
+    updateSyncStatusUI('synced', 'Synced', nowISO);
+    if (!options.silent) showToast('Synced from GitHub Gist! ☁️✅', 'success');
+    return true;
+  } catch (err) {
+    console.error('GitHub pull error:', err);
+    updateSyncStatusUI('error', 'Sync Failed');
+    if (!options.silent) showToast(`Sync failed: ${err.message}`, 'error');
+    return false;
+  }
+}
+
+async function pushToGist(options = { silent: false }) {
+  const token  = getSyncToken();
+  const gistId = getSyncGistId();
+  if (!token || !gistId) {
+    if (!options.silent) showToast('GitHub Token and Gist ID are required', 'error');
+    return false;
+  }
+
+  updateSyncStatusUI('syncing', 'Pushing...');
+  try {
+    const payload = {
+      description: 'RuPay Perks Cloud Sync',
+      files: {
+        'rupay-perks-data.json': {
+          content: JSON.stringify(DB, null, 2)
+        }
+      }
+    };
+
+    const res = await fetch(`https://api.github.com/gists/${encodeURIComponent(gistId)}`, {
+      method: 'PATCH',
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      const msg = errData.message || `HTTP ${res.status}`;
+      throw new Error(msg);
+    }
+
+    const nowISO = new Date().toISOString();
+    localStorage.setItem(SYNC_STORAGE_KEYS.LAST_SYNC, nowISO);
+    updateSyncStatusUI('synced', 'Synced', nowISO);
+    if (!options.silent) showToast('Backed up to GitHub Gist! ☁️✅', 'success');
+    return true;
+  } catch (err) {
+    console.error('GitHub push error:', err);
+    updateSyncStatusUI('error', 'Push Failed');
+    if (!options.silent) showToast(`Push failed: ${err.message}`, 'error');
+    return false;
+  }
+}
+
+function applyCloudData(cloudDB) {
+  if (!cloudDB) return;
+  if (Array.isArray(cloudDB.variants)) DB.variants = cloudDB.variants;
+  if (Array.isArray(cloudDB.cards))    DB.cards    = cloudDB.cards;
+  if (Array.isArray(cloudDB.usages))   DB.usages   = cloudDB.usages;
+  if (Array.isArray(cloudDB.perks))    DB.perks    = cloudDB.perks;
+
+  // Persist to local storage without firing cloud push
+  saveDB(true);
+
+  renderDashboard();
+  const activeTab = document.querySelector('.nav-tab.active');
+  if (activeTab) {
+    const t = activeTab.dataset.tab;
+    if (t === 'vouchers')      renderVouchers();
+    else if (t === 'variants') renderVariants();
+    else if (t === 'cards')    renderCards();
+    else if (t === 'history')  renderHistory();
+  }
+}
+
+let autoSyncDebounceTimer = null;
+function triggerDebouncedCloudPush() {
+  if (!hasSyncCredentials() || !isAutoSyncEnabled()) return;
+  if (autoSyncDebounceTimer) clearTimeout(autoSyncDebounceTimer);
+  autoSyncDebounceTimer = setTimeout(() => {
+    pushToGist({ silent: true });
+  }, 2000);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+
+  /* ── GitHub Cloud Sync UI wiring ── */
+  const tokenInput   = document.getElementById('sync-github-token');
+  const gistIdInput  = document.getElementById('sync-github-gist-id');
+  const autoSyncCb   = document.getElementById('setting-auto-sync');
+  const btnSyncNow   = document.getElementById('btn-sync-now');
+  const btnSyncPull  = document.getElementById('btn-sync-pull');
+  const btnSyncPush  = document.getElementById('btn-sync-push');
+  const btnToggleMask= document.getElementById('btn-toggle-token-mask');
+  const btnCloudNav  = document.getElementById('btn-cloud-sync');
+
+  if (tokenInput)  tokenInput.value  = getSyncToken();
+  if (gistIdInput) gistIdInput.value = getSyncGistId();
+  if (autoSyncCb)  autoSyncCb.checked = isAutoSyncEnabled();
+
+  updateSyncStatusUI();
+
+  if (btnToggleMask && tokenInput) {
+    btnToggleMask.addEventListener('click', () => {
+      const isPass = tokenInput.type === 'password';
+      tokenInput.type = isPass ? 'text' : 'password';
+      btnToggleMask.textContent = isPass ? '🔒' : '👁️';
+    });
+  }
+
+  if (autoSyncCb) {
+    autoSyncCb.addEventListener('change', e => {
+      localStorage.setItem(SYNC_STORAGE_KEYS.AUTO_SYNC, e.target.checked ? 'true' : 'false');
+      showToast(e.target.checked ? 'Auto-sync enabled' : 'Auto-sync disabled', 'info');
+    });
+  }
+
+  if (btnCloudNav) {
+    btnCloudNav.addEventListener('click', () => {
+      const sp = document.getElementById('settings-panel');
+      if (sp) {
+        sp.classList.add('open');
+        const box = document.getElementById('sync-status-box');
+        if (box) box.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  }
+
+  if (btnSyncNow) {
+    btnSyncNow.addEventListener('click', async () => {
+      const tok = tokenInput.value.trim();
+      const gid = gistIdInput.value.trim();
+      if (!tok || !gid) {
+        showToast('Please enter both Token and Gist ID', 'error');
+        return;
+      }
+      localStorage.setItem(SYNC_STORAGE_KEYS.TOKEN, tok);
+      localStorage.setItem(SYNC_STORAGE_KEYS.GIST_ID, gid);
+      showToast('Connecting to GitHub Gist... ☁️', 'info');
+      const ok = await pullFromGist({ silent: false });
+      if (ok) {
+        await pushToGist({ silent: true });
+        updateSyncStatusUI('synced', 'Connected & Synced');
+      }
+    });
+  }
+
+  if (btnSyncPull) {
+    btnSyncPull.addEventListener('click', async () => {
+      const tok = tokenInput.value.trim();
+      const gid = gistIdInput.value.trim();
+      if (tok) localStorage.setItem(SYNC_STORAGE_KEYS.TOKEN, tok);
+      if (gid) localStorage.setItem(SYNC_STORAGE_KEYS.GIST_ID, gid);
+      await pullFromGist({ silent: false });
+    });
+  }
+
+  if (btnSyncPush) {
+    btnSyncPush.addEventListener('click', async () => {
+      const tok = tokenInput.value.trim();
+      const gid = gistIdInput.value.trim();
+      if (tok) localStorage.setItem(SYNC_STORAGE_KEYS.TOKEN, tok);
+      if (gid) localStorage.setItem(SYNC_STORAGE_KEYS.GIST_ID, gid);
+      await pushToGist({ silent: false });
+    });
+  }
+
+  // Auto-pull from cloud on app startup if configured
+  if (hasSyncCredentials() && isAutoSyncEnabled()) {
+    pullFromGist({ silent: true });
+  }
+
 
   /* ── Tab navigation ── */
   document.querySelectorAll('.nav-tab').forEach(tab => {
