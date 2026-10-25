@@ -1426,6 +1426,7 @@
   </div>
   <div class="settings-section">
     <div class="settings-section-title">Data Management</div>
+    <button class="settings-btn" id="btn-reload-json" style="background:rgba(6,182,212,0.12);color:var(--secondary);border:1px solid rgba(6,182,212,0.25);">🔄 Reload from rupay-perks-data.json</button>
     <button class="settings-btn export" id="btn-export">⬇ Export JSON</button>
     <button class="settings-btn import" id="btn-import">⬆ Import JSON</button>
     <input type="file" id="import-file-input" accept=".json,application/json" />
@@ -2122,6 +2123,36 @@ function saveDB(skipCloudSync = false) {
   if (!skipCloudSync) {
     triggerDebouncedCloudPush();
   }
+}
+
+/** Automatically reloads latest data from rupay-perks-data.json if present in same folder */
+async function loadExternalJSONIfAvailable(options = { silent: false }) {
+  try {
+    const res = await fetch('./rupay-perks-data.json?t=' + Date.now(), { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && (Array.isArray(data.cards) || Array.isArray(data.variants) || Array.isArray(data.usages))) {
+        console.log('Loaded fresh data from rupay-perks-data.json');
+        if (Array.isArray(data.variants)) DB.variants = data.variants;
+        if (Array.isArray(data.cards))    DB.cards    = data.cards;
+        if (Array.isArray(data.usages))   DB.usages   = data.usages;
+        if (Array.isArray(data.perks))    DB.perks    = data.perks;
+
+        saveDB(true);
+        renderAll();
+        if (!options.silent) {
+          showToast('Loaded latest data from rupay-perks-data.json! 📁✅', 'success');
+        }
+        return true;
+      }
+    }
+  } catch (err) {
+    console.warn('Could not fetch ./rupay-perks-data.json directly:', err.message);
+    if (!options.silent) {
+      showToast('Could not load rupay-perks-data.json (using cached data)', 'warning');
+    }
+  }
+  return false;
 }
 
 /* --- Variants --- */
@@ -4586,6 +4617,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  const btnReloadJson = document.getElementById('btn-reload-json');
+  if (btnReloadJson) {
+    btnReloadJson.addEventListener('click', async () => {
+      settingsPanel.classList.remove('open');
+      await loadExternalJSONIfAvailable({ silent: false });
+    });
+  }
+
   document.getElementById('btn-export').addEventListener('click', () => {
     exportData();
     settingsPanel.classList.remove('open');
@@ -4949,6 +4988,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ── Bootstrap ── */
   loadDB();
   renderAll();
+  loadExternalJSONIfAvailable({ silent: true });
 });
 </script>
 </body>
