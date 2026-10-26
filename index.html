@@ -242,10 +242,27 @@
       font-size: 11px;
       color: var(--text-secondary);
       background: var(--elevated);
-      padding: 2px 6px;
+      padding: 2px 7px;
       border-radius: 4px;
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
       margin-top: 4px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all var(--transition);
+      user-select: none;
+    }
+    .card-account-pill:hover {
+      color: var(--text-primary);
+      border-color: var(--border);
+      background: rgba(255,255,255,0.08);
+    }
+    .card-account-pill.active {
+      color: #c4b5fd;
+      border-color: var(--primary);
+      background: rgba(124, 58, 237, 0.2);
+      font-weight: 600;
     }
 
     /* ===== BENEFIT ROW IN CARD ===== */
@@ -780,6 +797,24 @@
       .stat-card-value { font-size: 20px; }
       .stat-card-label { font-size: 10px; }
 
+      /* Account Cooldown Section */
+      .accounts-cooldown-section {
+        padding: 12px 12px;
+        margin-bottom: 16px;
+        border-radius: var(--radius-sm);
+      }
+      .account-cards-grid {
+        grid-template-columns: 1fr !important;
+        gap: 8px;
+      }
+      .account-status-card {
+        padding: 8px 10px;
+      }
+      .account-email-label {
+        max-width: 150px;
+        font-size: 11px;
+      }
+
       /* Unclaimed Benefits Section */
       .unclaimed-section {
         padding: 12px 10px;
@@ -1036,6 +1071,14 @@
       justify-content: space-between;
       gap: 10px;
       transition: all var(--transition);
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+    }
+    .account-status-card:hover {
+      border-color: rgba(255,255,255,0.25);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
     .account-status-card.ready {
       border-color: rgba(16,185,129,0.3);
@@ -1044,6 +1087,11 @@
     .account-status-card.cooling {
       border-color: rgba(245,158,11,0.3);
       background: rgba(245,158,11,0.06);
+    }
+    .account-status-card.active-filter {
+      border-color: var(--primary) !important;
+      background: rgba(124, 58, 237, 0.18) !important;
+      box-shadow: 0 0 0 2px var(--primary) !important;
     }
     .account-email-label {
       font-size: 12px;
@@ -1058,6 +1106,83 @@
       font-size: 11px;
       color: var(--text-secondary);
       margin-top: 2px;
+    }
+
+    /* Active Dashboard Filter Bar */
+    .dashboard-filter-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: rgba(124, 58, 237, 0.08);
+      border: 1px solid rgba(124, 58, 237, 0.25);
+      border-radius: var(--radius-sm);
+      padding: 8px 14px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .filter-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .filter-bar-icon {
+      font-size: 14px;
+    }
+    .filter-bar-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    .filter-bar-chips {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .filter-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--elevated);
+      border: 1px solid var(--primary);
+      color: var(--text-primary);
+      padding: 3px 9px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all var(--transition);
+      user-select: none;
+    }
+    .filter-chip:hover {
+      background: rgba(124, 58, 237, 0.25);
+    }
+    .filter-chip-remove {
+      font-size: 12px;
+      opacity: 0.7;
+      margin-left: 2px;
+    }
+    .filter-chip-remove:hover {
+      opacity: 1;
+      color: var(--danger);
+    }
+
+    /* Validation Animation & Error Styles */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-4px); }
+      40%, 80% { transform: translateX(4px); }
+    }
+    .shake {
+      animation: shake 0.3s ease-in-out;
+    }
+    .form-text-error {
+      font-size: 11px;
+      color: var(--danger);
+      margin-top: 4px;
+      font-weight: 500;
     }
 
   
@@ -1475,12 +1600,17 @@
     <!-- 24-Hour Account Cooldown Section -->
     <div class="accounts-cooldown-section" id="accounts-cooldown-section">
       <div class="cooldown-header">
-        <div class="cooldown-title">
-          <span>⏱️ 24-Hour Account Redemption Status</span>
-          <span class="badge badge-success" id="accounts-ready-count">0 Ready</span>
-          <span class="badge badge-warning" id="accounts-cooling-count">0 Cooling Down</span>
+        <div>
+          <div class="cooldown-title">
+            <span>⏱️ 24-Hour Account Redemption Status</span>
+            <span class="badge badge-success" id="accounts-ready-count">0 Ready</span>
+            <span class="badge badge-warning" id="accounts-cooling-count">0 Cooling Down</span>
+          </div>
+          <div class="cooldown-subtitle">RuPay allows 1 redemption per account every 24 hours · Click any account to filter cards below</div>
         </div>
-        <div class="cooldown-subtitle">RuPay allows 1 redemption per account every 24 hours</div>
+        <div class="account-filter-actions">
+          <button class="btn btn-secondary btn-xs hidden" id="account-filter-reset-btn">✕ Show All Cards</button>
+        </div>
       </div>
       <div class="account-cards-grid" id="accounts-status-grid"></div>
     </div>
@@ -1500,6 +1630,16 @@
         </div>
       </div>
       <div class="unclaimed-grid" id="unclaimed-benefits-grid"></div>
+    </div>
+
+    <!-- Dashboard Filter Bar -->
+    <div id="dashboard-filter-bar" class="dashboard-filter-bar hidden">
+      <div class="filter-bar-left">
+        <span class="filter-bar-icon">⚡</span>
+        <span class="filter-bar-label">Filtering Cards:</span>
+        <div id="filter-bar-chips" class="filter-bar-chips"></div>
+      </div>
+      <button class="btn btn-secondary btn-xs" id="filter-bar-clear-all">✕ Clear All Filters</button>
     </div>
 
     <div id="dashboard-cards-grid" class="cards-grid"></div>
@@ -1737,6 +1877,7 @@
         <div class="form-group">
           <label class="form-label" for="log-booking-id">Booking ID</label>
           <input type="text" class="form-control" id="log-booking-id" placeholder="e.g. RUPS1019693" />
+          <div id="log-booking-id-error" class="form-text-error hidden"></div>
         </div>
         <div class="form-group">
           <label class="form-label" for="log-coupon-code">Coupon Code</label>
@@ -2175,6 +2316,18 @@ function getUsages()                          { return DB.usages; }
 function addUsage(data)                       { const u = { id: genId(), ...data }; DB.usages.push(u); saveDB(); return u; }
 function updateUsage(id, d)                  { const i = DB.usages.findIndex(u => u.id === id); if (i !== -1) { DB.usages[i] = { ...DB.usages[i], ...d }; saveDB(); return DB.usages[i]; } }
 function deleteUsage(id)                      { DB.usages = DB.usages.filter(u => u.id !== id); saveDB(); }
+
+/** Check if a bookingId already exists on another redemption (case-insensitive) */
+function findDuplicateBookingId(bookingId, excludeUsageId = null) {
+  if (!bookingId) return null;
+  const clean = bookingId.trim().toLowerCase();
+  if (!clean || clean === 'na' || clean === '-') return null;
+  return DB.usages.find(u => {
+    if (excludeUsageId && u.id === excludeUsageId) return false;
+    const existing = (u.bookingId || '').trim().toLowerCase();
+    return existing === clean;
+  }) || null;
+}
 function getUsagesForCardBenefit(cId, bId) {
   const card = getCardById(cId);
   const variant = card ? getVariantById(card.variantId) : null;
@@ -2317,6 +2470,16 @@ function renderAccountCooldowns() {
   }
   document.getElementById('accounts-cooldown-section').classList.remove('hidden');
 
+  const resetBtn = document.getElementById('account-filter-reset-btn');
+  if (resetBtn) {
+    if (activeAccountFilter) {
+      resetBtn.textContent = `✕ Reset Filter (${activeAccountFilter})`;
+      resetBtn.classList.remove('hidden');
+    } else {
+      resetBtn.classList.add('hidden');
+    }
+  }
+
   const nowMs = Date.now();
   const cooldownPeriodMs = 24 * 60 * 60 * 1000; // 24 hours
 
@@ -2350,12 +2513,15 @@ function renderAccountCooldowns() {
     if (isAvailable) readyCount++;
     else coolingCount++;
 
+    const cardCount = DB.cards.filter(c => c.active && c.account && c.account.toLowerCase() === email.toLowerCase()).length;
+
     accountCardsData.push({
       email,
       isAvailable,
       lastRedeemDate,
       lastBrand,
-      msRemaining
+      msRemaining,
+      cardCount
     });
   });
 
@@ -2371,7 +2537,9 @@ function renderAccountCooldowns() {
 
   accountCardsData.forEach(acc => {
     const card = document.createElement('div');
-    card.className = 'account-status-card ' + (acc.isAvailable ? 'ready' : 'cooling');
+    const isFiltered = Boolean(activeAccountFilter && activeAccountFilter.toLowerCase() === acc.email.toLowerCase());
+    card.className = 'account-status-card ' + (acc.isAvailable ? 'ready' : 'cooling') + (isFiltered ? ' active-filter' : '');
+    card.title = isFiltered ? `Click to clear filter for ${acc.email}` : `Click to filter cards for account ${acc.email}`;
 
     let statusContent = '';
     if (acc.isAvailable) {
@@ -2387,7 +2555,7 @@ function renderAccountCooldowns() {
       statusContent = `
         <div style="text-align:right">
           <span class="badge badge-warning" style="font-size:11px">⏳ In ${hoursRemaining}h ${minsRemaining}m</span>
-          <div class="account-time-meta">Last: ${acc.lastBrand}</div>
+          <div class="account-time-meta">Last: ${esc(acc.lastBrand)}</div>
         </div>
       `;
     }
@@ -2397,10 +2565,21 @@ function renderAccountCooldowns() {
         <div class="account-email-label" title="${esc(acc.email)}">📧 ${esc(acc.email)}</div>
         <div class="account-time-meta">
           ${acc.lastRedeemDate ? `Last: ${fmtTimestamp(acc.lastRedeemDate.toISOString())}` : 'No previous redemptions'}
+          · <span style="font-weight:600;color:var(--text-primary)">${acc.cardCount} card${acc.cardCount !== 1 ? 's' : ''}</span>
         </div>
       </div>
       ${statusContent}
     `;
+
+    card.addEventListener('click', () => {
+      if (activeAccountFilter && activeAccountFilter.toLowerCase() === acc.email.toLowerCase()) {
+        activeAccountFilter = null;
+      } else {
+        activeAccountFilter = acc.email;
+      }
+      renderAccountCooldowns();
+      renderDashboardCards();
+    });
 
     container.appendChild(card);
   });
@@ -2470,6 +2649,47 @@ function getUpcomingResets() {
 
 /* ---- 4a. Dashboard ---- */
 let activeUnclaimedFilter = null;
+let activeAccountFilter = null;
+
+function updateDashboardFilterBanner() {
+  const banner = document.getElementById('dashboard-filter-bar');
+  const chipsContainer = document.getElementById('filter-bar-chips');
+  if (!banner || !chipsContainer) return;
+
+  const hasFilter = Boolean(activeAccountFilter || activeUnclaimedFilter);
+  if (!hasFilter) {
+    banner.classList.add('hidden');
+    chipsContainer.innerHTML = '';
+    return;
+  }
+
+  banner.classList.remove('hidden');
+  chipsContainer.innerHTML = '';
+
+  if (activeAccountFilter) {
+    const chip = document.createElement('div');
+    chip.className = 'filter-chip';
+    chip.innerHTML = `<span>📧 Account: ${esc(activeAccountFilter)}</span> <span class="filter-chip-remove" title="Remove account filter">✕</span>`;
+    chip.addEventListener('click', () => {
+      activeAccountFilter = null;
+      renderAccountCooldowns();
+      renderDashboardCards();
+    });
+    chipsContainer.appendChild(chip);
+  }
+
+  if (activeUnclaimedFilter) {
+    const chip = document.createElement('div');
+    chip.className = 'filter-chip';
+    chip.innerHTML = `<span>🎁 Benefit: ${esc(activeUnclaimedFilter)}</span> <span class="filter-chip-remove" title="Remove benefit filter">✕</span>`;
+    chip.addEventListener('click', () => {
+      activeUnclaimedFilter = null;
+      renderUnclaimedBenefits();
+      renderDashboardCards();
+    });
+    chipsContainer.appendChild(chip);
+  }
+}
 
 function renderUnclaimedBenefits() {
   const container = document.getElementById('unclaimed-benefits-grid');
@@ -2592,6 +2812,8 @@ function renderDashboardCards() {
   const grid = document.getElementById('dashboard-cards-grid');
   grid.innerHTML = '';
 
+  updateDashboardFilterBanner();
+
   if (DB.cards.length === 0) {
     grid.innerHTML = `
       <div class="section-empty" style="grid-column:1/-1">
@@ -2603,6 +2825,13 @@ function renderDashboardCards() {
   }
 
   let cardsToRender = DB.cards.filter(card => card.active);
+
+  if (activeAccountFilter) {
+    const filterEmail = activeAccountFilter.toLowerCase();
+    cardsToRender = cardsToRender.filter(card => 
+      card.account && card.account.toLowerCase() === filterEmail
+    );
+  }
 
   if (activeUnclaimedFilter) {
     cardsToRender = cardsToRender.filter(card => {
@@ -2617,12 +2846,37 @@ function renderDashboardCards() {
   }
 
   if (cardsToRender.length === 0) {
+    let emptyMsg = '';
+    if (activeAccountFilter && activeUnclaimedFilter) {
+      emptyMsg = `No active cards for account <strong>${esc(activeAccountFilter)}</strong> currently have unclaimed <strong>${esc(activeUnclaimedFilter)}</strong> benefits.`;
+    } else if (activeAccountFilter) {
+      emptyMsg = `No active cards found linked to account <strong>${esc(activeAccountFilter)}</strong>.`;
+    } else if (activeUnclaimedFilter) {
+      emptyMsg = `No active cards currently have unclaimed <strong>${esc(activeUnclaimedFilter)}</strong> benefits.`;
+    } else {
+      emptyMsg = 'No active cards match your current filters.';
+    }
+
     grid.innerHTML = `
       <div class="section-empty" style="grid-column:1/-1">
         <div style="font-size:32px;margin-bottom:8px">🔍</div>
         <div style="font-size:15px;font-weight:600;margin-bottom:4px;color:var(--text-primary)">No cards found</div>
-        <div>No active cards currently have unclaimed <strong>${esc(activeUnclaimedFilter)}</strong> benefits.</div>
+        <div style="margin-bottom:12px">${emptyMsg}</div>
+        <div>
+          <button class="btn btn-secondary btn-sm" id="btn-empty-clear-filters">✕ Clear All Filters</button>
+        </div>
       </div>`;
+
+    const btnClear = document.getElementById('btn-empty-clear-filters');
+    if (btnClear) {
+      btnClear.addEventListener('click', () => {
+        activeAccountFilter = null;
+        activeUnclaimedFilter = null;
+        renderAccountCooldowns();
+        renderUnclaimedBenefits();
+        renderDashboardCards();
+      });
+    }
     return;
   }
 
@@ -2700,7 +2954,7 @@ function buildCardWidget(card, variant, now) {
       <div>
         <div class="card-widget-title">${esc(card.nickname)}</div>
         <div class="card-widget-sub">${esc(variant.bank)} · <span class="card-number">••••${esc(card.last4)}</span></div>
-        ${card.account ? `<div class="card-account-pill">📧 ${esc(card.account)}</div>` : ''}
+        ${card.account ? `<div class="card-account-pill${activeAccountFilter && activeAccountFilter.toLowerCase() === card.account.toLowerCase() ? ' active' : ''}" data-account="${esc(card.account)}" title="Click to filter cards for ${esc(card.account)}">📧 ${esc(card.account)}</div>` : ''}
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
         <span class="badge ${subtypeBadge(variant.networkSubtype)}">${esc(variant.networkSubtype)}</span>
@@ -3652,6 +3906,18 @@ function openEditUsageModal(usageId) {
   }
 
   document.getElementById('log-quota-warning').classList.add('hidden');
+
+  const bookingInput = document.getElementById('log-booking-id');
+  if (bookingInput) {
+    bookingInput.style.borderColor = '';
+    bookingInput.classList.remove('shake');
+  }
+  const errEl = document.getElementById('log-booking-id-error');
+  if (errEl) {
+    errEl.textContent = '';
+    errEl.classList.add('hidden');
+  }
+
   openModal('modal-log-usage');
 }
 
@@ -3774,6 +4040,17 @@ function openLogUsageModal(cardId, benefitId) {
   const used      = getUsedCount(cardId, benefitId, benefit.periodType);
   const remaining = benefit.quota - used;
   document.getElementById('log-quota-warning').classList.toggle('hidden', remaining > 0);
+
+  const bookingInput = document.getElementById('log-booking-id');
+  if (bookingInput) {
+    bookingInput.style.borderColor = '';
+    bookingInput.classList.remove('shake');
+  }
+  const errEl = document.getElementById('log-booking-id-error');
+  if (errEl) {
+    errEl.textContent = '';
+    errEl.classList.add('hidden');
+  }
 
   openModal('modal-log-usage');
 }
@@ -4617,6 +4894,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  const resetAccountBtn = document.getElementById('account-filter-reset-btn');
+  if (resetAccountBtn) {
+    resetAccountBtn.addEventListener('click', () => {
+      activeAccountFilter = null;
+      renderAccountCooldowns();
+      renderDashboardCards();
+    });
+  }
+
+  const clearAllFiltersBtn = document.getElementById('filter-bar-clear-all');
+  if (clearAllFiltersBtn) {
+    clearAllFiltersBtn.addEventListener('click', () => {
+      activeAccountFilter = null;
+      activeUnclaimedFilter = null;
+      renderAccountCooldowns();
+      renderUnclaimedBenefits();
+      renderDashboardCards();
+    });
+  }
+
   const btnReloadJson = document.getElementById('btn-reload-json');
   if (btnReloadJson) {
     btnReloadJson.addEventListener('click', async () => {
@@ -4795,6 +5092,34 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const editUsageId = document.getElementById('log-edit-usage-id').value;
+
+    // Check uniqueness of Booking ID
+    if (bookingId && bookingId.toUpperCase() !== 'NA' && bookingId !== '-') {
+      const dup = findDuplicateBookingId(bookingId, editUsageId);
+      if (dup) {
+        const conflictCard = getCardById(dup.cardId);
+        const cardName = conflictCard ? (conflictCard.nickname || `•••• ${conflictCard.last4}`) : 'another card';
+        const dateStr = dup.date ? ` on ${dup.date.split('T')[0]}` : '';
+        const brandStr = dup.brand ? ` (${dup.brand})` : '';
+        showToast(`⚠️ Booking ID "${bookingId}" already used on ${cardName}${brandStr}${dateStr}!`, 'error');
+
+        const bookingInput = document.getElementById('log-booking-id');
+        if (bookingInput) {
+          bookingInput.focus();
+          bookingInput.style.borderColor = 'var(--danger)';
+          bookingInput.classList.remove('shake');
+          void bookingInput.offsetWidth;
+          bookingInput.classList.add('shake');
+        }
+        const errEl = document.getElementById('log-booking-id-error');
+        if (errEl) {
+          errEl.textContent = `⚠️ Already used on ${cardName}${brandStr}${dateStr}`;
+          errEl.classList.remove('hidden');
+        }
+        return;
+      }
+    }
+
     if (editUsageId) {
       updateUsage(editUsageId, {
         benefitId, date, account, brand, redeemStatus,
@@ -4815,8 +5140,50 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('tab-vouchers').classList.contains('active')) renderVouchers();
   });
 
+  /* ── Live Booking ID Validation ── */
+  const bookingInput = document.getElementById('log-booking-id');
+  if (bookingInput) {
+    bookingInput.addEventListener('input', () => {
+      bookingInput.style.borderColor = '';
+      const errEl = document.getElementById('log-booking-id-error');
+      if (errEl) {
+        errEl.textContent = '';
+        errEl.classList.add('hidden');
+      }
+    });
+
+    bookingInput.addEventListener('blur', () => {
+      const val = bookingInput.value.trim();
+      if (!val || val.toUpperCase() === 'NA' || val === '-') return;
+      const editUsageId = document.getElementById('log-edit-usage-id').value;
+      const dup = findDuplicateBookingId(val, editUsageId);
+      if (dup) {
+        const conflictCard = getCardById(dup.cardId);
+        const cardName = conflictCard ? (conflictCard.nickname || `•••• ${conflictCard.last4}`) : 'another card';
+        const dateStr = dup.date ? ` on ${dup.date.split('T')[0]}` : '';
+        const brandStr = dup.brand ? ` (${dup.brand})` : '';
+        bookingInput.style.borderColor = 'var(--danger)';
+        const errEl = document.getElementById('log-booking-id-error');
+        if (errEl) {
+          errEl.textContent = `⚠️ Already used on ${cardName}${brandStr}${dateStr}`;
+          errEl.classList.remove('hidden');
+        }
+      }
+    });
+  }
+
   /* ── Delegated clicks ── */
   document.addEventListener('click', e => {
+    // Card account pill click
+    const accPill = e.target.closest('.card-account-pill');
+    if (accPill && accPill.dataset.account) {
+      const acc = accPill.dataset.account;
+      activeAccountFilter = (activeAccountFilter && activeAccountFilter.toLowerCase() === acc.toLowerCase()) ? null : acc;
+      renderAccountCooldowns();
+      renderDashboardCards();
+      return;
+    }
+
     const logBtn = e.target.closest('.log-use-btn');
     if (logBtn) {
       openLogUsageModal(logBtn.dataset.cardId, logBtn.dataset.benefitId);
