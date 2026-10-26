@@ -587,21 +587,72 @@
       position: fixed;
       top: 60px;
       right: 0;
-      width: 310px;
+      bottom: 0;
+      width: 375px;
+      max-width: calc(100vw - 16px);
       background: var(--card-surface);
       border-left: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      border-radius: 0 0 0 var(--radius);
-      padding: 20px;
+      display: flex;
+      flex-direction: column;
       z-index: 150;
       transform: translateX(100%);
       transition: transform var(--transition);
-      box-shadow: var(--shadow);
+      box-shadow: -8px 0 32px rgba(0,0,0,0.5);
+      padding: 0;
+      overflow: hidden;
     }
     .settings-panel.open { transform: translateX(0); }
-    .settings-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; color: var(--text-primary); }
-    .settings-section { margin-bottom: 16px; }
-    .settings-section-title { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .settings-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--card-surface);
+      flex-shrink: 0;
+    }
+    .settings-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0;
+    }
+    .settings-body {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      padding: 14px 16px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .settings-body::-webkit-scrollbar {
+      width: 6px;
+    }
+    .settings-body::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.15);
+      border-radius: 4px;
+    }
+    .settings-section {
+      background: var(--elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      margin-bottom: 0;
+    }
+    .settings-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
     .settings-btn {
       width: 100%;
       padding: 9px 14px;
@@ -925,11 +976,16 @@
       .settings-panel {
         top: 0;
         bottom: 0;
-        width: 85%;
-        max-width: 320px;
+        width: 90%;
+        max-width: 380px;
         border-radius: 0;
-        padding-top: max(24px, env(safe-area-inset-top));
-        padding-bottom: max(24px, env(safe-area-inset-bottom));
+        padding: 0;
+      }
+      .settings-header {
+        padding-top: max(16px, env(safe-area-inset-top));
+      }
+      .settings-body {
+        padding-bottom: max(32px, env(safe-area-inset-bottom));
       }
     }
   
@@ -1460,6 +1516,10 @@
     <button class="nav-tab" data-tab="history">History</button>
   </div>
   <div class="nav-actions">
+    <button class="btn-icon" id="btn-disk-sync" title="Local Disk Storage (rupay-perks-data.json)" style="position:relative;">
+      📁
+      <span id="nav-disk-indicator" style="position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:#10b981;"></span>
+    </button>
     <button class="btn-icon" id="btn-cloud-sync" title="GitHub Cloud Sync" style="position:relative;">
       ☁️
       <span id="nav-sync-indicator" style="position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:#64748b;"></span>
@@ -1470,95 +1530,200 @@
 
 <!-- ===== SETTINGS PANEL ===== -->
 <div class="settings-panel" id="settings-panel">
-  <div class="settings-title">⚙ Settings</div>
-  <div class="settings-section">
-    <div class="settings-section-title">Display Preferences</div>
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0 10px">
-      <span style="font-size:12px;color:var(--text-primary)">Show SOLD / USED tags on cards</span>
-      <label class="toggle-switch">
-        <input type="checkbox" id="setting-show-card-status" />
-        <span class="toggle-slider"></span>
-      </label>
-    </div>
+  <div class="settings-header">
+    <div class="settings-title">⚙ Settings</div>
+    <button class="modal-close" id="btn-close-settings" title="Close Settings" style="width:28px;height:28px;font-size:14px;">✕</button>
   </div>
-
-  <div class="settings-section">
-    <div class="settings-section-title">☁️ GitHub Cloud Sync</div>
-    <div id="sync-status-box" style="background:var(--elevated);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;margin-bottom:10px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-        <span id="sync-status-badge" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-secondary);">
-          <span id="sync-status-dot" style="width:8px;height:8px;border-radius:50%;background:#64748b;"></span>
-          <span id="sync-status-text">Local Only</span>
-        </span>
-        <span id="sync-last-time" style="font-size:10px;color:var(--text-secondary);">—</span>
+  <div class="settings-body">
+    <!-- Section 0: Local JSON File (rupay-perks-data.json) -->
+    <div class="settings-section" id="section-disk-storage">
+      <div class="settings-section-title">
+        <span>📁 Local JSON File</span>
+        <span class="badge badge-success" id="disk-badge-pill" style="font-size:10px;text-transform:none;">Direct File Write</span>
       </div>
-    </div>
 
-    <div class="form-group" style="margin-bottom:8px;">
-      <label class="form-label" style="font-size:11px;margin-bottom:4px;display:flex;justify-content:space-between;">
-        <span>Personal Access Token (classic)</span>
-        <a href="https://github.com/settings/tokens/new?scopes=gist&description=RuPay+Perks+Sync" target="_blank" rel="noopener" style="color:var(--primary-light);font-size:10px;text-decoration:underline;">Create Token ↗</a>
-      </label>
-      <div style="display:flex;gap:4px;">
-        <input type="password" class="form-control" id="sync-github-token" placeholder="ghp_xxxxxxxxxxxx" style="font-size:12px;padding:6px 10px;" />
-        <button type="button" class="btn btn-secondary btn-xs" id="btn-toggle-token-mask" title="Show/Hide Token" style="padding:6px 9px;">👁️</button>
+      <div id="disk-status-box" style="background:var(--card-surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <span id="disk-status-badge" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-primary);">
+            <span id="disk-status-dot" style="width:8px;height:8px;border-radius:50%;background:#10b981;"></span>
+            <span id="disk-status-text">rupay-perks-data.json</span>
+          </span>
+          <span id="disk-last-time" style="font-size:10px;color:var(--text-secondary);">—</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;" id="disk-status-subtext">
+          Target: rupay-perks-data.json (auto-saved on every change)
+        </div>
       </div>
-    </div>
 
-    <div class="form-group" style="margin-bottom:8px;">
-      <label class="form-label" style="font-size:11px;margin-bottom:4px;display:flex;justify-content:space-between;">
-        <span>Secret Gist ID</span>
-        <a href="https://gist.github.com" target="_blank" rel="noopener" style="color:var(--primary-light);font-size:10px;text-decoration:underline;">Open Gist ↗</a>
-      </label>
-      <input type="text" class="form-control" id="sync-github-gist-id" placeholder="e.g. 7a8b9c0d1e2f3a4b..." style="font-size:12px;padding:6px 10px;" />
-    </div>
-
-    <div class="form-group" style="margin-bottom:10px;">
-      <label class="form-label" style="font-size:11px;margin-bottom:4px;display:flex;justify-content:space-between;">
-        <span>🔐 Master Passphrase (AES-256)</span>
-        <span style="font-size:10px;color:var(--success);font-weight:600;">Zero-Knowledge</span>
-      </label>
-      <div style="display:flex;gap:4px;">
-        <input type="password" class="form-control" id="sync-crypto-passphrase" placeholder="Set private passphrase to encrypt data..." style="font-size:12px;padding:6px 10px;" />
-        <button type="button" class="btn btn-secondary btn-xs" id="btn-toggle-pass-mask" title="Show/Hide Passphrase" style="padding:6px 9px;">👁️</button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">
+        <button type="button" class="settings-btn" id="btn-disk-save-now" style="margin-bottom:0;justify-content:center;font-size:11px;padding:7px 4px;">💾 Save Now</button>
+        <button type="button" class="settings-btn" id="btn-disk-reload-now" style="margin-bottom:0;justify-content:center;font-size:11px;padding:7px 4px;">🔄 Reload File</button>
       </div>
-      <div style="font-size:10px;color:var(--text-secondary);margin-top:3px;line-height:1.3;">
-        Encrypts voucher codes & card data on your device with AES-GCM before uploading. GitHub only stores unreadable ciphertext.
-      </div>
+      <button type="button" class="settings-btn" id="btn-link-file-handle" style="width:100%;justify-content:center;font-size:11px;padding:6px;background:rgba(99,102,241,0.08);color:var(--primary-light);border:1px solid rgba(99,102,241,0.2);">
+        📁 Select / Change rupay-perks-data.json
+      </button>
     </div>
 
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-      <span style="font-size:12px;color:var(--text-primary)">Auto-sync on changes</span>
-      <label class="toggle-switch">
-        <input type="checkbox" id="setting-auto-sync" checked />
-        <span class="toggle-slider"></span>
-      </label>
-    </div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">
-      <button class="settings-btn" id="btn-sync-pull" style="margin-bottom:0;justify-content:center;font-size:11px;padding:7px 4px;">⬇ Pull Cloud</button>
-      <button class="settings-btn" id="btn-sync-push" style="margin-bottom:0;justify-content:center;font-size:11px;padding:7px 4px;">⬆ Push Cloud</button>
-    </div>
-    <button class="settings-btn" id="btn-sync-now" style="width:100%;justify-content:center;background:rgba(16,185,129,0.15);color:var(--success);border:1px solid rgba(16,185,129,0.3);font-size:12px;font-weight:600;padding:8px 10px;">
-      🔄 Connect & Sync Now
-    </button>
-  </div>
+    <!-- Section 1: Display Preferences -->
     <div class="settings-section">
-    <div class="settings-section-title">Perks & Benefits Catalog</div>
-    <button class="settings-btn" id="btn-open-perks-catalog" style="background:rgba(124,58,237,0.12);color:var(--primary-light);border:1px solid rgba(124,58,237,0.25);">
-      🎁 Master Perks Catalog (<span id="settings-perks-count">15</span>)
-    </button>
-  </div>
-  <div class="settings-section">
-    <div class="settings-section-title">Data Management</div>
-    <button class="settings-btn" id="btn-reload-json" style="background:rgba(6,182,212,0.12);color:var(--secondary);border:1px solid rgba(6,182,212,0.25);">🔄 Reload from rupay-perks-data.json</button>
-    <button class="settings-btn export" id="btn-export">⬇ Export JSON</button>
-    <button class="settings-btn import" id="btn-import">⬆ Import JSON</button>
-    <input type="file" id="import-file-input" accept=".json,application/json" />
-  </div>
-  <div class="settings-section">
-    <div class="settings-section-title">Danger Zone</div>
-    <button class="settings-btn clear" id="btn-clear">🗑 Clear All Data</button>
+      <div class="settings-section-title">Display Preferences</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:2px 0;">
+        <span style="font-size:12px;color:var(--text-primary)">Show SOLD / USED tags on cards</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="setting-show-card-status" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Section 2: Google Sheets Live Sync -->
+    <div class="settings-section">
+      <div class="settings-section-title">
+        <span>📊 Google Sheets Live Sync</span>
+        <span class="badge badge-success" style="font-size:10px;text-transform:none;">Two-Way</span>
+      </div>
+
+      <div id="gsheet-status-box" style="background:var(--card-surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <span id="gsheet-status-badge" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-secondary);">
+            <span id="gsheet-status-dot" style="width:8px;height:8px;border-radius:50%;background:#64748b;"></span>
+            <span id="gsheet-status-text">Disabled (Local Mode)</span>
+          </span>
+          <span id="gsheet-last-time" style="font-size:10px;color:var(--text-secondary);">—</span>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:2px 0 8px;">
+        <span style="font-size:12px;color:var(--text-primary);font-weight:600;">Enable Google Sheets Mode</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="setting-gsheet-enabled" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div id="gsheet-controls" class="hidden" style="margin-top:6px;padding-top:10px;border-top:1px solid var(--border);">
+        <div class="form-group" style="margin-bottom:8px;">
+          <label class="form-label" style="font-size:11px;margin-bottom:4px;display:flex;justify-content:space-between;">
+            <span>Apps Script Web App URL</span>
+            <button type="button" id="btn-show-gsheet-help" style="background:none;border:none;color:var(--primary-light);font-size:10px;cursor:pointer;text-decoration:underline;padding:0;">Instructions ↗</button>
+          </label>
+          <input type="url" class="form-control" id="setting-gsheet-url" placeholder="https://script.google.com/macros/s/.../exec" style="font-size:12px;padding:6px 10px;" />
+        </div>
+
+        <div class="form-group" style="margin-bottom:10px;">
+          <label class="form-label" style="font-size:11px;margin-bottom:4px;">Active Sheet Tab</label>
+          <input type="text" class="form-control" id="setting-gsheet-tab" placeholder="Q4" value="Q4" style="font-size:12px;padding:6px 10px;" />
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <span style="font-size:12px;color:var(--text-primary)">Auto-sync on save / edit</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="setting-gsheet-auto-sync" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">
+          <button class="settings-btn" id="btn-gsheet-pull" style="margin-bottom:0;justify-content:center;font-size:11px;padding:7px 4px;">📥 Pull from Sheet</button>
+          <button class="settings-btn" id="btn-gsheet-push" style="margin-bottom:0;justify-content:center;font-size:11px;padding:7px 4px;">📤 Push to Sheet</button>
+        </div>
+        <button class="settings-btn" id="btn-gsheet-test" style="width:100%;justify-content:center;background:rgba(16,185,129,0.15);color:var(--success);border:1px solid rgba(16,185,129,0.3);font-size:12px;font-weight:600;padding:8px 10px;">
+          🔗 Test Connection
+        </button>
+      </div>
+    </div>
+
+    <!-- Section 3: GitHub Cloud Sync -->
+    <div class="settings-section">
+      <div class="settings-section-title">
+        <span>☁️ GitHub Cloud Sync</span>
+        <button type="button" id="btn-toggle-github-details" style="background:none;border:none;color:var(--primary-light);font-size:11px;cursor:pointer;padding:0;font-weight:600;">Configure ▾</button>
+      </div>
+
+      <div id="sync-status-box" style="background:var(--card-surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;margin-bottom:6px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <span id="sync-status-badge" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-secondary);">
+            <span id="sync-status-dot" style="width:8px;height:8px;border-radius:50%;background:#64748b;"></span>
+            <span id="sync-status-text">Local Only</span>
+          </span>
+          <span id="sync-last-time" style="font-size:10px;color:var(--text-secondary);">—</span>
+        </div>
+      </div>
+
+      <div id="github-sync-controls" class="hidden" style="margin-top:6px;padding-top:10px;border-top:1px solid var(--border);">
+        <div class="form-group" style="margin-bottom:8px;">
+          <label class="form-label" style="font-size:11px;margin-bottom:4px;display:flex;justify-content:space-between;">
+            <span>Personal Access Token (classic)</span>
+            <a href="https://github.com/settings/tokens/new?scopes=gist&description=RuPay+Perks+Sync" target="_blank" rel="noopener" style="color:var(--primary-light);font-size:10px;text-decoration:underline;">Create Token ↗</a>
+          </label>
+          <div style="display:flex;gap:4px;">
+            <input type="password" class="form-control" id="sync-github-token" placeholder="ghp_xxxxxxxxxxxx" style="font-size:12px;padding:6px 10px;" />
+            <button type="button" class="btn btn-secondary btn-xs" id="btn-toggle-token-mask" title="Show/Hide Token" style="padding:6px 9px;">👁️</button>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:8px;">
+          <label class="form-label" style="font-size:11px;margin-bottom:4px;display:flex;justify-content:space-between;">
+            <span>Secret Gist ID</span>
+            <a href="https://gist.github.com" target="_blank" rel="noopener" style="color:var(--primary-light);font-size:10px;text-decoration:underline;">Open Gist ↗</a>
+          </label>
+          <input type="text" class="form-control" id="sync-github-gist-id" placeholder="e.g. 7a8b9c0d1e2f3a4b..." style="font-size:12px;padding:6px 10px;" />
+        </div>
+
+        <div class="form-group" style="margin-bottom:10px;">
+          <label class="form-label" style="font-size:11px;margin-bottom:4px;display:flex;justify-content:space-between;">
+            <span>🔐 Master Passphrase (AES-256)</span>
+            <span style="font-size:10px;color:var(--success);font-weight:600;">Zero-Knowledge</span>
+          </label>
+          <div style="display:flex;gap:4px;">
+            <input type="password" class="form-control" id="sync-crypto-passphrase" placeholder="Set private passphrase to encrypt data..." style="font-size:12px;padding:6px 10px;" />
+            <button type="button" class="btn btn-secondary btn-xs" id="btn-toggle-pass-mask" title="Show/Hide Passphrase" style="padding:6px 9px;">👁️</button>
+          </div>
+          <div style="font-size:10px;color:var(--text-secondary);margin-top:3px;line-height:1.3;">
+            Encrypts voucher codes & card data on your device with AES-GCM before uploading.
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <span style="font-size:12px;color:var(--text-primary)">Auto-sync on changes</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="setting-auto-sync" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">
+          <button class="settings-btn" id="btn-sync-pull" style="margin-bottom:0;justify-content:center;font-size:11px;padding:7px 4px;">⬇ Pull Cloud</button>
+          <button class="settings-btn" id="btn-sync-push" style="margin-bottom:0;justify-content:center;font-size:11px;padding:7px 4px;">⬆ Push Cloud</button>
+        </div>
+        <button class="settings-btn" id="btn-sync-now" style="width:100%;justify-content:center;background:rgba(16,185,129,0.15);color:var(--success);border:1px solid rgba(16,185,129,0.3);font-size:12px;font-weight:600;padding:8px 10px;">
+          🔄 Connect & Sync Now
+        </button>
+      </div>
+    </div>
+
+    <!-- Section 4: Master Perks Catalog -->
+    <div class="settings-section">
+      <div class="settings-section-title">Perks Catalog</div>
+      <button class="settings-btn" id="btn-open-perks-catalog" style="background:rgba(124,58,237,0.12);color:var(--primary-light);border:1px solid rgba(124,58,237,0.25);">
+        🎁 Master Perks Catalog (<span id="settings-perks-count">15</span>)
+      </button>
+    </div>
+
+    <!-- Section 5: Data Management -->
+    <div class="settings-section">
+      <div class="settings-section-title">Data Management</div>
+      <button class="settings-btn" id="btn-reload-json" style="background:rgba(6,182,212,0.12);color:var(--secondary);border:1px solid rgba(6,182,212,0.25);">🔄 Reload from rupay-perks-data.json</button>
+      <button class="settings-btn export" id="btn-export">⬇ Export JSON</button>
+      <button class="settings-btn import" id="btn-import">⬆ Import JSON</button>
+      <input type="file" id="import-file-input" accept=".json,application/json" />
+    </div>
+
+    <!-- Section 6: Danger Zone -->
+    <div class="settings-section">
+      <div class="settings-section-title" style="color:var(--danger);">Danger Zone</div>
+      <button class="settings-btn clear" id="btn-clear">🗑 Clear All Data</button>
+    </div>
   </div>
 </div>
 
@@ -2111,6 +2276,63 @@
   </div>
 </div>
 
+<!-- ===== MODAL: GOOGLE SHEETS SETUP INSTRUCTIONS ===== -->
+<div class="modal-backdrop" id="modal-gsheet-setup">
+  <div class="modal" role="dialog" aria-modal="true" style="max-width: 620px; display: flex; flex-direction: column; max-height: 85vh; overflow: hidden;">
+    <div class="modal-header" style="flex-shrink: 0;">
+      <div class="modal-title">📊 Google Sheets Two-Way Sync Setup</div>
+      <button class="modal-close" data-close="modal-gsheet-setup">✕</button>
+    </div>
+    <div class="modal-body" style="flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-right: 14px; font-size: 13px; line-height: 1.5;">
+      <div style="background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.25); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 16px;">
+        Connects your existing <strong>RuPay Benefits - 2026</strong> spreadsheet directly with this app. Columns A to M (Account, Card, Benefit, Brand, Booking ID, Coupon Code, etc.) will read & write seamlessly, while preserving your summary tables in Column O+.
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:18px;">
+        <div style="display:flex;gap:10px;">
+          <span style="background:var(--primary);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">1</span>
+          <div>
+            <strong>Open Google Apps Script</strong>: In your Google Sheet, click <code>Extensions</code> ➔ <code>Apps Script</code> in the top menu bar.
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;">
+          <span style="background:var(--primary);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">2</span>
+          <div style="width:100%;">
+            <strong>Paste Script Code</strong>: Replace any code in <code>Code.gs</code> with the script and click Save (💾).
+            <div style="margin-top:8px;">
+              <button class="btn btn-secondary btn-xs" id="btn-copy-gsheet-script" style="font-weight:600;">📋 Copy Apps Script Code to Clipboard</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;">
+          <span style="background:var(--primary);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">3</span>
+          <div>
+            <strong>Deploy as Web App</strong>:
+            Click <code>Deploy</code> ➔ <code>New deployment</code> (top-right).
+            <ul style="margin:4px 0 0 18px;font-size:12px;color:var(--text-secondary);">
+              <li>Select type: <strong>Web app</strong></li>
+              <li>Execute as: <strong>Me (your Google email)</strong></li>
+              <li>Who has access: <strong>Anyone</strong></li>
+            </ul>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;">
+          <span style="background:var(--primary);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">4</span>
+          <div>
+            <strong>Paste Web App URL</strong>: Copy the generated Web App URL (ending in <code>/exec</code>) and paste it into the URL field in Settings. Click <strong>Test Connection</strong>.
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="flex-shrink: 0;">
+      <button class="btn btn-secondary" data-close="modal-gsheet-setup">Close</button>
+    </div>
+  </div>
+</div>
+
 <div class="confirm-overlay" id="confirm-overlay">
   <div class="confirm-box">
     <div class="confirm-icon" id="confirm-icon">⚠️</div>
@@ -2258,42 +2480,382 @@ function loadDB() {
   }
 }
 
-function saveDB(skipCloudSync = false) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); }
-  catch (e) { showToast('Failed to persist data (localStorage error)', 'error'); }
-  if (!skipCloudSync) {
-    triggerDebouncedCloudPush();
+/* ==============================================================
+   SECTION 2a: NATIVE LOCAL JSON FILE PERSISTENCE (ZERO-SERVER)
+   ============================================================== */
+
+let localFileHandle = null;
+let isDiskSaving = false;
+let pendingDiskSave = false;
+
+/* --- IndexedDB File Handle Storage (Permanent across reloads) --- */
+const FILE_IDB_NAME = 'rupay_storage_db';
+const FILE_STORE_NAME = 'handles';
+const FILE_HANDLE_KEY = 'data_json_handle';
+
+function openHandleDB() {
+  return new Promise(resolve => {
+    if (!window.indexedDB) return resolve(null);
+    const req = window.indexedDB.open(FILE_IDB_NAME, 1);
+    req.onupgradeneeded = () => {
+      if (!req.result.objectStoreNames.contains(FILE_STORE_NAME)) {
+        req.result.createObjectStore(FILE_STORE_NAME);
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => resolve(null);
+  });
+}
+
+async function getStoredFileHandle() {
+  try {
+    const db = await openHandleDB();
+    if (!db) return null;
+    return new Promise(resolve => {
+      const tx = db.transaction(FILE_STORE_NAME, 'readonly');
+      const req = tx.objectStore(FILE_STORE_NAME).get(FILE_HANDLE_KEY);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => resolve(null);
+    });
+  } catch (_) { return null; }
+}
+
+async function setStoredFileHandle(handle) {
+  try {
+    const db = await openHandleDB();
+    if (!db) return;
+    return new Promise(resolve => {
+      const tx = db.transaction(FILE_STORE_NAME, 'readwrite');
+      const req = tx.objectStore(FILE_STORE_NAME).put(handle, FILE_HANDLE_KEY);
+      req.onsuccess = () => resolve();
+      req.onerror = () => resolve();
+    });
+  } catch (_) {}
+}
+
+function updateDiskStatusUI(status, label, subtext) {
+  const dot = document.getElementById('disk-status-dot');
+  const textEl = document.getElementById('disk-status-text');
+  const timeEl = document.getElementById('disk-last-time');
+  const subEl = document.getElementById('disk-status-subtext');
+  const navIndicator = document.getElementById('nav-disk-indicator');
+  const pill = document.getElementById('disk-badge-pill');
+
+  let color = '#10b981'; // green = synced
+  if (status === 'syncing') color = '#f59e0b'; // amber
+  else if (status === 'unlinked') color = '#94a3b8'; // grey (not linked yet)
+  else if (status === 'error') color = '#ef4444'; // red
+
+  if (dot) dot.style.background = color;
+  if (navIndicator) {
+    navIndicator.style.background = color;
+    navIndicator.title = label || 'Local JSON Sync';
+  }
+  if (textEl && label) textEl.textContent = label;
+  if (subEl && subtext) subEl.textContent = subtext;
+  if (timeEl) {
+    const last = localStorage.getItem('rupay_last_disk_save');
+    if (last) {
+      const d = new Date(last);
+      timeEl.textContent = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false });
+    }
+  }
+  if (pill) {
+    if (status === 'synced') {
+      pill.className = 'badge badge-success';
+      pill.textContent = 'Linked & Synced';
+    } else if (status === 'unlinked') {
+      pill.className = 'badge badge-secondary';
+      pill.textContent = 'File Not Linked';
+    } else if (status === 'syncing') {
+      pill.className = 'badge badge-primary';
+      pill.textContent = 'Writing...';
+    } else if (status === 'error') {
+      pill.className = 'badge badge-danger';
+      pill.textContent = 'Write Error';
+    }
   }
 }
 
-/** Automatically reloads latest data from rupay-perks-data.json if present in same folder */
-async function loadExternalJSONIfAvailable(options = { silent: false }) {
-  try {
-    const res = await fetch('./rupay-perks-data.json?t=' + Date.now(), { cache: 'no-store' });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && (Array.isArray(data.cards) || Array.isArray(data.variants) || Array.isArray(data.usages))) {
-        console.log('Loaded fresh data from rupay-perks-data.json');
-        if (Array.isArray(data.variants)) DB.variants = data.variants;
-        if (Array.isArray(data.cards))    DB.cards    = data.cards;
-        if (Array.isArray(data.usages))   DB.usages   = data.usages;
-        if (Array.isArray(data.perks))    DB.perks    = data.perks;
+/** Directly writes entire database to the linked rupay-perks-data.json file */
+async function persistToLocalDisk(options = { silent: true }) {
+  if (isDiskSaving) {
+    pendingDiskSave = true;
+    return true;
+  }
+  isDiskSaving = true;
+  updateDiskStatusUI('syncing', 'Writing to rupay-perks-data.json...');
 
-        saveDB(true);
-        renderAll();
-        if (!options.silent) {
-          showToast('Loaded latest data from rupay-perks-data.json! 📁✅', 'success');
+  try {
+    const payload = JSON.stringify(DB, null, 2);
+    let saved = false;
+
+    if (!localFileHandle) {
+      localFileHandle = await getStoredFileHandle();
+    }
+
+    if (localFileHandle) {
+      try {
+        let perm = await localFileHandle.queryPermission({ mode: 'readwrite' });
+        if (perm !== 'granted') {
+          perm = await localFileHandle.requestPermission({ mode: 'readwrite' });
         }
-        return true;
+        if (perm === 'granted') {
+          const writable = await localFileHandle.createWritable();
+          await writable.write(payload);
+          await writable.close();
+          saved = true;
+        }
+      } catch (e) {
+        console.warn('Native File System write error:', e);
       }
     }
+
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+
+    if (saved) {
+      localStorage.setItem('rupay_last_disk_save', now.toISOString());
+      const usagesCount = (DB && Array.isArray(DB.usages)) ? DB.usages.length : 0;
+      updateDiskStatusUI('synced', (localFileHandle && localFileHandle.name) ? localFileHandle.name : 'rupay-perks-data.json', `Saved at ${timeStr} (${usagesCount} redemptions)`);
+      if (!options.silent) {
+        showToast(`Saved to ${localFileHandle.name} directly! 📁✅ (${usagesCount} redemptions)`, 'success');
+      }
+      return true;
+    } else {
+      updateDiskStatusUI('unlinked', 'File Not Linked', 'Saved in browser memory. Click "Select rupay-perks-data.json" below to enable direct disk logging.');
+      if (!options.silent) {
+        showToast('Click "Select rupay-perks-data.json" in Settings to link your local file.', 'info');
+      }
+      return false;
+    }
   } catch (err) {
-    console.warn('Could not fetch ./rupay-perks-data.json directly:', err.message);
-    if (!options.silent) {
-      showToast('Could not load rupay-perks-data.json (using cached data)', 'warning');
+    console.error('persistToLocalDisk error:', err);
+    updateDiskStatusUI('error', 'File Save Failed', err.message);
+    return false;
+  } finally {
+    isDiskSaving = false;
+    if (pendingDiskSave) {
+      pendingDiskSave = false;
+      persistToLocalDisk({ silent: true });
     }
   }
-  return false;
+}
+
+/**
+ * Universal Database Save:
+ * 1. Synchronous localStorage backup (instant safety net)
+ * 2. Immediate direct disk write to linked rupay-perks-data.json
+ * 3. Immediate push to GitHub Gist post-save
+ */
+async function saveDB(skipCloudSync = false) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
+  } catch (e) {
+    console.warn('localStorage error:', e);
+  }
+
+  // Direct disk write to rupay-perks-data.json
+  await persistToLocalDisk({ silent: true });
+
+  // Post that, push to GitHub Gist
+  if (!skipCloudSync && typeof pushToGist === 'function' && typeof hasSyncCredentials === 'function' && hasSyncCredentials()) {
+    pushToGist({ silent: true });
+  }
+}
+
+/**
+ * Intelligently merges disk file data with current DB.
+ * NEVER deletes or wipes out newly added redemptions or local voucher details!
+ */
+function mergeDatasets(fileData, currentDB) {
+  if (!fileData) return currentDB || buildSeedData();
+
+  const result = {
+    variants: Array.isArray(fileData.variants) && fileData.variants.length > 0 ? fileData.variants : (currentDB.variants || []),
+    cards:    Array.isArray(fileData.cards)    && fileData.cards.length > 0    ? fileData.cards    : (currentDB.cards || []),
+    perks:    Array.isArray(fileData.perks)    && fileData.perks.length > 0    ? fileData.perks    : (currentDB.perks || []),
+    usages:   []
+  };
+
+  // Merge cards: preserve any local cards that might not be in fileData
+  if (currentDB && Array.isArray(currentDB.cards)) {
+    const fileCardIds = new Set(result.cards.map(c => c.id));
+    currentDB.cards.forEach(c => {
+      if (c && c.id && !fileCardIds.has(c.id)) {
+        result.cards.push(c);
+      }
+    });
+  }
+
+  // Non-destructive merge of usages
+  const fileUsages = Array.isArray(fileData.usages) ? fileData.usages : [];
+  const localUsages = (currentDB && Array.isArray(currentDB.usages)) ? currentDB.usages : [];
+
+  const mergedMap = new Map();
+  const fileByBookingId = new Map();
+
+  // 1. Populate map from fileUsages
+  fileUsages.forEach(fu => {
+    if (fu && fu.id) {
+      mergedMap.set(fu.id, { ...fu });
+      const bk = (fu.bookingId || '').trim().toLowerCase();
+      if (bk && bk !== 'na' && bk !== '-') {
+        fileByBookingId.set(bk, fu.id);
+      }
+    }
+  });
+
+  // 2. Intelligently merge localUsages
+  localUsages.forEach(lu => {
+    if (!lu) return;
+    const bk = (lu.bookingId || '').trim().toLowerCase();
+    let targetId = null;
+
+    if (lu.id && mergedMap.has(lu.id)) {
+      targetId = lu.id;
+    } else if (bk && bk !== 'na' && bk !== '-' && fileByBookingId.has(bk)) {
+      targetId = fileByBookingId.get(bk);
+    }
+
+    if (targetId && mergedMap.has(targetId)) {
+      // Exists in both: preserve populated local edits over empty file values
+      const existing = mergedMap.get(targetId);
+      const merged = { ...existing };
+
+      if (lu.couponCode && (!existing.couponCode || existing.couponCode.length < lu.couponCode.length)) {
+        merged.couponCode = lu.couponCode;
+      }
+      if (lu.couponUsed && (!existing.couponUsed || lu.couponUsed === 'SOLD' || lu.couponUsed === 'USED')) {
+        merged.couponUsed = lu.couponUsed;
+      }
+      if (lu.buyer && !existing.buyer) {
+        merged.buyer = lu.buyer;
+      }
+      if (lu.sellDate && !existing.sellDate) {
+        merged.sellDate = lu.sellDate;
+      }
+      if (lu.notes && (!existing.notes || existing.notes === 'Imported from Q4')) {
+        merged.notes = lu.notes;
+      }
+      if (lu.redeemStatus && !existing.redeemStatus) {
+        merged.redeemStatus = lu.redeemStatus;
+      }
+      if (lu.brand && !existing.brand) {
+        merged.brand = lu.brand;
+      }
+
+      mergedMap.set(targetId, merged);
+    } else {
+      // Local usage NOT present in disk file (e.g. newly added redemptions!)
+      // PRESERVE IT!
+      const newId = lu.id || genId();
+      mergedMap.set(newId, { ...lu, id: newId });
+    }
+  });
+
+  result.usages = Array.from(mergedMap.values());
+  return result;
+}
+
+/** Automatically reloads latest data from linked file on disk or local static file with smart merge */
+async function loadExternalJSONIfAvailable(options = { silent: false }) {
+  updateDiskStatusUI('syncing', 'Reading rupay-perks-data.json...');
+  let fetchedData = null;
+
+  // 1. Try reading directly from linked File System Handle
+  if (!localFileHandle) {
+    localFileHandle = await getStoredFileHandle();
+  }
+  if (localFileHandle) {
+    try {
+      let perm = await localFileHandle.queryPermission({ mode: 'read' });
+      if (perm === 'granted') {
+        const file = await localFileHandle.getFile();
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        if (parsed && (Array.isArray(parsed.usages) || Array.isArray(parsed.cards))) {
+          fetchedData = parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('Native File System read error:', e);
+    }
+  }
+
+  // 2. If not fetched from handle, fallback to static ./rupay-perks-data.json
+  if (!fetchedData) {
+    try {
+      const res = await fetch('./rupay-perks-data.json?t=' + Date.now(), { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && (Array.isArray(data.usages) || Array.isArray(data.cards))) {
+          fetchedData = data;
+        }
+      }
+    } catch (_) {}
+  }
+
+  if (fetchedData) {
+    const diskUsagesCount = (fetchedData.usages || []).length;
+    const merged = mergeDatasets(fetchedData, DB);
+    const hasLocalAdditions = (merged.usages.length > diskUsagesCount);
+
+    DB = merged;
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); } catch (_) {}
+
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    const fileName = localFileHandle ? localFileHandle.name : 'rupay-perks-data.json';
+    updateDiskStatusUI(localFileHandle ? 'synced' : 'unlinked', fileName, `Loaded at ${timeStr} (${DB.usages.length} redemptions)`);
+
+    // If local had additions or recovered voucher details not yet written to disk, persist immediately
+    if (hasLocalAdditions) {
+      await persistToLocalDisk({ silent: true });
+      if (typeof pushToGist === 'function' && typeof hasSyncCredentials === 'function' && hasSyncCredentials()) {
+        pushToGist({ silent: true });
+      }
+    }
+
+    renderAll();
+    if (!options.silent) {
+      showToast(`Loaded ${DB.usages.length} redemptions from JSON file! 📁✅`, 'success');
+    }
+    return true;
+  } else {
+    updateDiskStatusUI('unlinked', 'File Not Linked', 'Using cached data. Click "Select rupay-perks-data.json" in Settings to link your local file.');
+    if (!options.silent) {
+      showToast('No linked JSON file found. Click "Select rupay-perks-data.json" in Settings.', 'info');
+    }
+    return false;
+  }
+}
+
+/** Link rupay-perks-data.json via Web File System Access API */
+async function linkLocalFileHandle() {
+  if (!('showOpenFilePicker' in window)) {
+    showToast('File System Access API is not supported in this browser. Please use Chrome, Edge, or Brave.', 'warning');
+    return;
+  }
+  try {
+    const [handle] = await window.showOpenFilePicker({
+      types: [{
+        description: 'JSON Files',
+        accept: { 'application/json': ['.json'] }
+      }],
+      multiple: false
+    });
+    if (handle) {
+      localFileHandle = handle;
+      await setStoredFileHandle(handle);
+      showToast(`Linked ${handle.name}! Direct disk write is active. 📁✅`, 'success');
+      await persistToLocalDisk({ silent: false });
+    }
+  } catch (err) {
+    if (err.name !== 'AbortError') {
+      showToast('Could not link file: ' + err.message, 'error');
+    }
+  }
 }
 
 /* --- Variants --- */
@@ -2313,8 +2875,8 @@ function deleteCard(id)        { DB.cards = DB.cards.filter(c => c.id !== id); D
 
 /* --- Usages --- */
 function getUsages()                          { return DB.usages; }
-function addUsage(data)                       { const u = { id: genId(), ...data }; DB.usages.push(u); saveDB(); return u; }
-function updateUsage(id, d)                  { const i = DB.usages.findIndex(u => u.id === id); if (i !== -1) { DB.usages[i] = { ...DB.usages[i], ...d }; saveDB(); return DB.usages[i]; } }
+function addUsage(data)                       { const u = { id: genId(), ...data }; DB.usages.push(u); saveDB(); if (typeof syncRedemptionToGSheet === 'function') syncRedemptionToGSheet(u); return u; }
+function updateUsage(id, d)                  { const i = DB.usages.findIndex(u => u.id === id); if (i !== -1) { DB.usages[i] = { ...DB.usages[i], ...d }; saveDB(); if (typeof syncRedemptionToGSheet === 'function') syncRedemptionToGSheet(DB.usages[i]); return DB.usages[i]; } }
 function deleteUsage(id)                      { DB.usages = DB.usages.filter(u => u.id !== id); saveDB(); }
 
 /** Check if a bookingId already exists on another redemption (case-insensitive) */
@@ -2346,34 +2908,52 @@ function getUsagesForCardBenefit(cId, bId) {
    SECTION 3: DATE & CALENDAR CALCULATION HELPERS
    ============================================================== */
 
+function getISTYearMonth(date) {
+  const d = date || new Date();
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: 'numeric'
+  }).formatToParts(d);
+  let year = d.getFullYear(), month = d.getMonth();
+  parts.forEach(p => {
+    if (p.type === 'year') year = parseInt(p.value, 10);
+    if (p.type === 'month') month = parseInt(p.value, 10) - 1; // 0-based
+  });
+  return { year, month };
+}
+
+function istDate(year, month, day = 1, hour = 0, minute = 0) {
+  const utcMs = Date.UTC(year, month, day, hour, minute) - (5.5 * 60 * 60 * 1000);
+  return new Date(utcMs);
+}
+
 function getCurrentPeriodWindow(periodType, ref) {
-  const now   = ref || new Date();
-  const year  = now.getFullYear();
-  const month = now.getMonth(); // 0-based
+  const { year, month } = getISTYearMonth(ref);
   let start, end;
 
   switch (periodType) {
     case 'monthly':
-      start = new Date(year, month, 1);
-      end   = new Date(year, month + 1, 1);
+      start = istDate(year, month, 1);
+      end   = istDate(year, month + 1, 1);
       break;
     case 'quarterly': {
       const q = Math.floor(month / 3);
-      start = new Date(year, q * 3,     1);
-      end   = new Date(year, q * 3 + 3, 1);
+      start = istDate(year, q * 3,     1);
+      end   = istDate(year, q * 3 + 3, 1);
       break;
     }
     case 'half-yearly':
-      if (month < 6) { start = new Date(year, 0, 1); end = new Date(year, 6,  1); }
-      else           { start = new Date(year, 6, 1); end = new Date(year + 1, 0, 1); }
+      if (month < 6) { start = istDate(year, 0, 1); end = istDate(year, 6,  1); }
+      else           { start = istDate(year, 6, 1); end = istDate(year + 1, 0, 1); }
       break;
     case 'yearly':
-      start = new Date(year,     0, 1);
-      end   = new Date(year + 1, 0, 1);
+      start = istDate(year,     0, 1);
+      end   = istDate(year + 1, 0, 1);
       break;
     default:
-      start = new Date(year, month, 1);
-      end   = new Date(year, month + 1, 1);
+      start = istDate(year, month, 1);
+      end   = istDate(year, month + 1, 1);
   }
   return { start, end };
 }
@@ -2396,62 +2976,161 @@ function parseDate(str) {
   const s = String(str).trim();
   if (!s) return new Date(0);
 
-  // Handle ISO format YYYY-MM-DD or YYYY-MM-DDTHH:MM(:SS) or YYYY-MM-DD HH:MM
-  const [datePart, timePart] = s.split(/[T\s]/);
-  const parts = datePart.split('-').map(Number);
-  if (parts.length >= 3 && !isNaN(parts[0]) && !isNaN(parts[1]) && !isNaN(parts[2])) {
-    let hours = 0, minutes = 0, seconds = 0;
-    if (timePart) {
-      const timeParts = timePart.split(':').map(Number);
-      if (!isNaN(timeParts[0])) hours = timeParts[0];
-      if (!isNaN(timeParts[1])) minutes = timeParts[1];
-      if (!isNaN(timeParts[2])) seconds = timeParts[2];
-    }
-    return new Date(parts[0], parts[1] - 1, parts[2], hours, minutes, seconds);
+  // If already standard ISO with Z or explicit offset (+/-HH:MM or +/-HHMM or +/-HH)
+  if (/Z$/i.test(s) || /[+-]\d{2}(:?\d{2})?$/.test(s)) {
+    const d = new Date(s);
+    if (!isNaN(d.getTime())) return d;
   }
+
+  // If plain YYYY-MM-DD (e.g. historical CSV or sheet date), treat as midday IST to prevent boundary shifting
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    const d = new Date(s + 'T12:00:00+05:30');
+    if (!isNaN(d.getTime())) return d;
+  }
+
+  // If YYYY-MM-DDTHH:MM or YYYY-MM-DD HH:MM (:SS(.mmm)?) without timezone (e.g. datetime-local input), treat as IST (+05:30)
+  if (/^\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(s)) {
+    const isoStr = s.replace(' ', 'T') + '+05:30';
+    const d = new Date(isoStr);
+    if (!isNaN(d.getTime())) return d;
+  }
+
+  // If purely numeric timestamp (epoch milliseconds)
+  if (/^\d{10,13}$/.test(s)) {
+    const ms = Number(s);
+    const d = new Date(s.length === 10 ? ms * 1000 : ms);
+    if (!isNaN(d.getTime())) return d;
+  }
+
   const d = new Date(s);
   return isNaN(d.getTime()) ? new Date(0) : d;
 }
 
 function toISODate(date) {
-  if (!date || isNaN(date.getTime())) return '';
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
+  if (!date || isNaN(date.getTime()) || date.getTime() === 0) return '';
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(date);
+  const p = {};
+  parts.forEach(x => { p[x.type] = x.value; });
+  return `${p.year}-${p.month}-${p.day}`;
 }
 
 function fmtDate(date) {
-  if (!date || isNaN(date.getTime()) || date.getTime() === 0) return '—';
-  return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  if (!date) return '—';
+  const d = (date instanceof Date) ? date : parseDate(date);
+  if (isNaN(d.getTime()) || d.getTime() === 0) return '—';
+  return d.toLocaleDateString('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  });
 }
 
 function fmtISO(str) {
   if (!str) return '—';
-  const d = parseDate(str);
-  if (isNaN(d.getTime()) || d.getTime() === 0) return '—';
-  return fmtDate(d);
+  return fmtDate(str);
 }
 
-/** Returns current local timestamp in 'YYYY-MM-DDTHH:MM' for datetime-local inputs */
+/** Returns current IST timestamp in 'YYYY-MM-DDTHH:MM' for datetime-local inputs */
 function nowLocalISO() {
-  const now = new Date();
-  const offset = now.getTimezoneOffset() * 60000;
-  return new Date(now.getTime() - offset).toISOString().slice(0, 16);
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23'
+  }).formatToParts(new Date());
+  const p = {};
+  parts.forEach(x => { p[x.type] = x.value; });
+  return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}`;
 }
 
-/** Format timestamp / date to human readable with time if present */
+/** Format timestamp / date to human readable IST string with time if present */
 function fmtTimestamp(str) {
   if (!str) return '—';
+  const s = String(str).trim();
   const d = parseDate(str);
   if (isNaN(d.getTime()) || d.getTime() === 0) return '—';
-  const s = String(str);
-  const hasTime = s.includes('T') && s.length > 10;
-  return d.toLocaleDateString('en-IN', {
-    day: 'numeric', month: 'short', year: 'numeric',
-    hour: hasTime ? '2-digit' : undefined,
-    minute: hasTime ? '2-digit' : undefined
+
+  // Check if original string has an explicit time component
+  const hasTime = /[T\s]\d{2}:\d{2}/.test(s) || /Z$/i.test(s);
+  if (!hasTime) {
+    return fmtDate(d);
+  }
+
+  const datePart = d.toLocaleDateString('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
   });
+  const timePart = d.toLocaleTimeString('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+  return `${datePart}, ${timePart}`;
+}
+
+/** Calculate 24-hour cooldown status for an email account */
+function getAccountCooldownStatus(email) {
+  if (!email || !String(email).trim()) {
+    return {
+      isAvailable: true,
+      msRemaining: 0,
+      hoursRemaining: 0,
+      minsRemaining: 0,
+      lastRedeemDate: null,
+      lastBrand: '',
+      formattedTimeLeft: ''
+    };
+  }
+
+  const normalizedEmail = String(email).trim().toLowerCase();
+  const accountUsages = DB.usages.filter(u => 
+    u.account && u.account.trim().toLowerCase() === normalizedEmail && 
+    (u.redeemStatus === 'Redeemed' || u.bookingId || u.couponCode)
+  );
+
+  let lastRedeemDate = null;
+  let lastRedeemMs = 0;
+  let lastBrand = '';
+
+  accountUsages.forEach(u => {
+    if (!u.date) return;
+    const d = parseDate(u.date);
+    const ms = d.getTime();
+    if (!isNaN(ms) && ms > lastRedeemMs) {
+      lastRedeemMs = ms;
+      lastRedeemDate = u.date;
+      lastBrand = u.brand || 'Perk';
+    }
+  });
+
+  const nowMs = Date.now();
+  const cooldownPeriodMs = 24 * 60 * 60 * 1000; // 24 hours
+  const isAvailable = (!lastRedeemMs) || (nowMs - lastRedeemMs >= cooldownPeriodMs);
+  const msRemaining = isAvailable ? 0 : (cooldownPeriodMs - (nowMs - lastRedeemMs));
+  const hoursRemaining = Math.floor(msRemaining / (1000 * 60 * 60));
+  const minsRemaining = Math.floor((msRemaining % (1000 * 60 * 60)) / (1000 * 60));
+
+  return {
+    isAvailable,
+    msRemaining,
+    hoursRemaining,
+    minsRemaining,
+    lastRedeemDate,
+    lastBrand,
+    formattedTimeLeft: `${hoursRemaining}h ${minsRemaining}m`
+  };
 }
 
 /** Render Account 24-Hour Cooldown Widget on Dashboard */
@@ -2480,9 +3159,6 @@ function renderAccountCooldowns() {
     }
   }
 
-  const nowMs = Date.now();
-  const cooldownPeriodMs = 24 * 60 * 60 * 1000; // 24 hours
-
   let readyCount = 0;
   let coolingCount = 0;
   container.innerHTML = '';
@@ -2490,37 +3166,20 @@ function renderAccountCooldowns() {
   const accountCardsData = [];
 
   allAccounts.forEach(email => {
-    // Find latest redemption for this email
-    const accountUsages = DB.usages.filter(u => u.account === email && (u.redeemStatus === 'Redeemed' || u.bookingId || u.couponCode));
-    let lastRedeemDate = null;
-    let lastRedeemMs = 0;
-    let lastBrand = '';
-
-    accountUsages.forEach(u => {
-      if (!u.date) return;
-      const dStr = u.date.includes('T') ? u.date : u.date + 'T12:00:00';
-      const ms = new Date(dStr).getTime();
-      if (ms > lastRedeemMs) {
-        lastRedeemMs = ms;
-        lastRedeemDate = new Date(dStr);
-        lastBrand = u.brand || 'Perk';
-      }
-    });
-
-    const isAvailable = (!lastRedeemMs) || (nowMs - lastRedeemMs >= cooldownPeriodMs);
-    const msRemaining = isAvailable ? 0 : (cooldownPeriodMs - (nowMs - lastRedeemMs));
-
-    if (isAvailable) readyCount++;
+    const status = getAccountCooldownStatus(email);
+    if (status.isAvailable) readyCount++;
     else coolingCount++;
 
     const cardCount = DB.cards.filter(c => c.active && c.account && c.account.toLowerCase() === email.toLowerCase()).length;
 
     accountCardsData.push({
       email,
-      isAvailable,
-      lastRedeemDate,
-      lastBrand,
-      msRemaining,
+      isAvailable: status.isAvailable,
+      lastRedeemDate: status.lastRedeemDate,
+      lastBrand: status.lastBrand,
+      msRemaining: status.msRemaining,
+      hoursRemaining: status.hoursRemaining,
+      minsRemaining: status.minsRemaining,
       cardCount
     });
   });
@@ -2550,11 +3209,9 @@ function renderAccountCooldowns() {
         </div>
       `;
     } else {
-      const hoursRemaining = Math.floor(acc.msRemaining / (1000 * 60 * 60));
-      const minsRemaining = Math.floor((acc.msRemaining % (1000 * 60 * 60)) / (1000 * 60));
       statusContent = `
         <div style="text-align:right">
-          <span class="badge badge-warning" style="font-size:11px">⏳ In ${hoursRemaining}h ${minsRemaining}m</span>
+          <span class="badge badge-warning" style="font-size:11px">⏳ In ${acc.hoursRemaining}h ${acc.minsRemaining}m</span>
           <div class="account-time-meta">Last: ${esc(acc.lastBrand)}</div>
         </div>
       `;
@@ -2564,7 +3221,7 @@ function renderAccountCooldowns() {
       <div style="overflow:hidden">
         <div class="account-email-label" title="${esc(acc.email)}">📧 ${esc(acc.email)}</div>
         <div class="account-time-meta">
-          ${acc.lastRedeemDate ? `Last: ${fmtTimestamp(acc.lastRedeemDate.toISOString())}` : 'No previous redemptions'}
+          ${acc.lastRedeemDate ? `Last: ${fmtTimestamp(acc.lastRedeemDate)}` : 'No previous redemptions'}
           · <span style="font-weight:600;color:var(--text-primary)">${acc.cardCount} card${acc.cardCount !== 1 ? 's' : ''}</span>
         </div>
       </div>
@@ -2619,10 +3276,12 @@ function subtypeBadge(subtype) {
 function getCycleFromDate(dateStr) {
   if (!dateStr) return '—';
   const d = parseDate(dateStr);
-  const m = d.getMonth();
-  if (m < 3) return 'Q1';
-  if (m < 6) return 'Q2';
-  if (m < 9) return 'Q3';
+  if (isNaN(d.getTime()) || d.getTime() === 0) return '—';
+  const mStr = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Kolkata', month: 'numeric' }).format(d);
+  const m = parseInt(mStr, 10);
+  if (m <= 3) return 'Q1';
+  if (m <= 6) return 'Q2';
+  if (m <= 9) return 'Q3';
   return 'Q4';
 }
 
@@ -2946,6 +3605,9 @@ function renderDashboard() {
 }
 
 function buildCardWidget(card, variant, now) {
+  const cooldown = getAccountCooldownStatus(card.account);
+  const isCooling = !cooldown.isAvailable;
+
   const wrap = document.createElement('div');
   wrap.className = 'card-widget' + (card.active ? '' : ' inactive-card');
 
@@ -2959,6 +3621,7 @@ function buildCardWidget(card, variant, now) {
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
         <span class="badge ${subtypeBadge(variant.networkSubtype)}">${esc(variant.networkSubtype)}</span>
         ${!card.active ? '<span class="badge badge-gray">Inactive</span>' : ''}
+        ${isCooling ? `<span class="badge badge-warning" style="font-size:10px;padding:2px 6px;" title="Account in 24h cooldown · Ready in ${cooldown.formattedTimeLeft}">⏳ ${cooldown.formattedTimeLeft}</span>` : ''}
       </div>
     </div>
   `;
@@ -3341,7 +4004,7 @@ function populateHistoryFilters() {
   selMonth.innerHTML = '<option value="">All Months</option>';
   months.forEach(m => {
     const [y, mo] = m.split('-').map(Number);
-    const label   = new Date(y, mo - 1, 1).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+    const label   = new Date(y, mo - 1, 1).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', month: 'long', year: 'numeric' });
     const opt     = document.createElement('option');
     opt.value     = m;
     opt.textContent = label;
@@ -3620,6 +4283,7 @@ function confirmBulkSold() {
       u.couponUsed = 'SOLD';
       u.buyer = buyer;
       u.sellDate = sellDate;
+      if (typeof syncVoucherStatusToGSheet === 'function') syncVoucherStatusToGSheet(u.bookingId, u.couponCode, 'SOLD', buyer, sellDate);
       count++;
     }
   });
@@ -3639,6 +4303,7 @@ function bulkMarkUsed() {
     DB.usages.forEach(u => {
       if (selectedVoucherIds.has(u.id)) {
         u.couponUsed = 'USED';
+        if (typeof syncVoucherStatusToGSheet === 'function') syncVoucherStatusToGSheet(u.bookingId, u.couponCode, 'USED', u.buyer, u.sellDate);
       }
     });
     saveDB();
@@ -3658,6 +4323,7 @@ function bulkMarkUnused() {
         u.couponUsed = 'UNUSED';
         u.buyer = '';
         u.sellDate = '';
+        if (typeof syncVoucherStatusToGSheet === 'function') syncVoucherStatusToGSheet(u.bookingId, u.couponCode, '', '', '');
       }
     });
     saveDB();
@@ -4705,23 +5371,12 @@ async function pushToGist(options = { silent: false }) {
 
 function applyCloudData(cloudDB) {
   if (!cloudDB) return;
-  if (Array.isArray(cloudDB.variants)) DB.variants = cloudDB.variants;
-  if (Array.isArray(cloudDB.cards))    DB.cards    = cloudDB.cards;
-  if (Array.isArray(cloudDB.usages))   DB.usages   = cloudDB.usages;
-  if (Array.isArray(cloudDB.perks))    DB.perks    = cloudDB.perks;
+  DB = mergeDatasets(cloudDB, DB);
 
-  // Persist to local storage without firing cloud push
+  // Persist to local disk without re-firing cloud push
   saveDB(true);
 
-  renderDashboard();
-  const activeTab = document.querySelector('.nav-tab.active');
-  if (activeTab) {
-    const t = activeTab.dataset.tab;
-    if (t === 'vouchers')      renderVouchers();
-    else if (t === 'variants') renderVariants();
-    else if (t === 'cards')    renderCards();
-    else if (t === 'history')  renderHistory();
-  }
+  renderAll();
 }
 
 let autoSyncDebounceTimer = null;
@@ -4731,6 +5386,330 @@ function triggerDebouncedCloudPush() {
   autoSyncDebounceTimer = setTimeout(() => {
     pushToGist({ silent: true });
   }, 2000);
+}
+
+/* ==============================================================
+   SECTION 2c: GOOGLE SHEETS LIVE SYNC ENGINE
+   ============================================================== */
+
+const GSHEET_STORAGE_KEYS = {
+  ENABLED: 'rupay_gsheet_enabled',
+  URL: 'rupay_gsheet_url',
+  TAB: 'rupay_gsheet_tab',
+  AUTO_SYNC: 'rupay_gsheet_auto_sync',
+  LAST_SYNC: 'rupay_gsheet_last_sync'
+};
+
+function getGSheetConfig() {
+  return {
+    enabled: localStorage.getItem(GSHEET_STORAGE_KEYS.ENABLED) === 'true',
+    url: (localStorage.getItem(GSHEET_STORAGE_KEYS.URL) || '').trim(),
+    tab: (localStorage.getItem(GSHEET_STORAGE_KEYS.TAB) || 'Q4').trim(),
+    autoSync: localStorage.getItem(GSHEET_STORAGE_KEYS.AUTO_SYNC) !== 'false'
+  };
+}
+
+function updateGSheetStatusUI(status, message, lastTime) {
+  const dot = document.getElementById('gsheet-status-dot');
+  const text = document.getElementById('gsheet-status-text');
+  const timeEl = document.getElementById('gsheet-last-time');
+  const controls = document.getElementById('gsheet-controls');
+  const enableToggle = document.getElementById('setting-gsheet-enabled');
+  const urlInput = document.getElementById('setting-gsheet-url');
+  const tabInput = document.getElementById('setting-gsheet-tab');
+  const autoSyncToggle = document.getElementById('setting-gsheet-auto-sync');
+
+  const cfg = getGSheetConfig();
+  if (enableToggle) enableToggle.checked = cfg.enabled;
+  if (controls) controls.classList.toggle('hidden', !cfg.enabled);
+  if (urlInput && !urlInput.value && cfg.url) urlInput.value = cfg.url;
+  if (tabInput && !tabInput.value && cfg.tab) tabInput.value = cfg.tab;
+  if (autoSyncToggle) autoSyncToggle.checked = cfg.autoSync;
+
+  if (!cfg.enabled) {
+    if (dot) dot.style.background = '#64748b';
+    if (text) text.textContent = 'Disabled (Local Mode)';
+    if (timeEl) timeEl.textContent = '—';
+    return;
+  }
+
+  if (!cfg.url) {
+    if (dot) dot.style.background = '#f59e0b';
+    if (text) text.textContent = 'Need Web App URL';
+    if (timeEl) timeEl.textContent = '—';
+    return;
+  }
+
+  const lt = lastTime || localStorage.getItem(GSHEET_STORAGE_KEYS.LAST_SYNC);
+  if (timeEl) {
+    timeEl.textContent = lt ? fmtTimestamp(lt) : '—';
+  }
+
+  if (status === 'connected') {
+    if (dot) dot.style.background = '#10b981';
+    if (text) text.textContent = message || `Connected (${cfg.tab})`;
+  } else if (status === 'syncing') {
+    if (dot) dot.style.background = '#38bdf8';
+    if (text) text.textContent = 'Syncing...';
+  } else if (status === 'error') {
+    if (dot) dot.style.background = '#ef4444';
+    if (text) text.textContent = message || 'Connection Error';
+  } else {
+    if (dot) dot.style.background = '#10b981';
+    if (text) text.textContent = `Google Sheets (${cfg.tab})`;
+  }
+}
+
+async function testGSheetConnection(silent = false) {
+  const cfg = getGSheetConfig();
+  if (!cfg.url) {
+    if (!silent) showToast('Please enter your Apps Script Web App URL', 'error');
+    return false;
+  }
+
+  updateGSheetStatusUI('syncing');
+  try {
+    const pingUrl = cfg.url + (cfg.url.includes('?') ? '&' : '?') + 'action=ping&sheet=' + encodeURIComponent(cfg.tab);
+    const res = await fetch(pingUrl, { method: 'GET', redirect: 'follow' });
+    const json = await res.json();
+
+    if (json.status === 'success') {
+      updateGSheetStatusUI('connected', `Connected: ${json.title || 'Sheet'}`);
+      if (!silent) {
+        showToast(`Connected to "${json.title}"! Tabs: ${(json.availableSheets || []).join(', ')}`, 'success');
+      }
+      return true;
+    } else {
+      throw new Error(json.message || 'Unknown response from script');
+    }
+  } catch (err) {
+    updateGSheetStatusUI('error', 'Failed: ' + err.message);
+    if (!silent) showToast('Google Sheet connection failed: ' + err.message, 'error');
+    return false;
+  }
+}
+
+function normalizeGSheetDate(val, fallbackYear = 2026) {
+  if (!val || val === 'NA' || val === '-') return '';
+  const str = String(val).trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str;
+  const m3 = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m3) return `${m3[3]}-${m3[2].padStart(2, '0')}-${m3[1].padStart(2, '0')}`;
+  const m2 = str.match(/^(\d{1,2})\/(\d{1,2})$/);
+  if (m2) return `${fallbackYear}-${m2[2].padStart(2, '0')}-${m2[1].padStart(2, '0')}`;
+  return str;
+}
+
+async function pullFromGSheet() {
+  const cfg = getGSheetConfig();
+  if (!cfg.url) { showToast('Apps Script Web App URL is required', 'error'); return; }
+
+  updateGSheetStatusUI('syncing');
+  try {
+    const readUrl = cfg.url + (cfg.url.includes('?') ? '&' : '?') + 'action=read&sheet=' + encodeURIComponent(cfg.tab);
+    const res = await fetch(readUrl, { method: 'GET', redirect: 'follow' });
+    const json = await res.json();
+
+    if (json.status !== 'success' || !Array.isArray(json.rows)) {
+      throw new Error(json.message || 'Invalid data returned from sheet');
+    }
+
+    const rows = json.rows;
+    if (rows.length === 0) {
+      showToast(`Sheet "${cfg.tab}" has no redemption rows to import`, 'info');
+      updateGSheetStatusUI('connected');
+      return;
+    }
+
+    let updatedCount = 0;
+    let addedCount = 0;
+
+    rows.forEach(r => {
+      if (!r.card && !r.account) return;
+      // Match card in DB.cards
+      const card = DB.cards.find(c => c.nickname && r.card && c.nickname.trim().toLowerCase() === r.card.trim().toLowerCase());
+      if (!card) return;
+
+      const variant = getVariantById(card.variantId);
+      let benefitId = '';
+      if (variant && variant.benefits) {
+        const bMatch = variant.benefits.find(b => b.brand && r.brand && b.brand.toLowerCase() === r.brand.toLowerCase());
+        if (bMatch) {
+          benefitId = bMatch.id;
+        } else {
+          const rBen = (r.benefit || '').toLowerCase();
+          const typeMatch = variant.benefits.find(b => {
+            const bName = getBenefitDisplayName(b).toLowerCase();
+            const bType = (b.type || '').toLowerCase();
+            return bName === rBen || bType === rBen || bType.includes(rBen) || rBen.includes(bType);
+          });
+          if (typeMatch) benefitId = typeMatch.id;
+        }
+      }
+
+      const bookingId = (r.bookingId || '').trim();
+      const normDate = normalizeGSheetDate(r.redeemDate);
+      const normSellDate = normalizeGSheetDate(r.sellDate);
+
+      let existing = null;
+      if (bookingId && bookingId.toUpperCase() !== 'NA') {
+        existing = DB.usages.find(u => u.bookingId && u.bookingId.trim().toLowerCase() === bookingId.toLowerCase());
+      }
+      if (!existing && normDate) {
+        existing = DB.usages.find(u => u.cardId === card.id && (u.date || '').startsWith(normDate.slice(0, 10)) && (u.brand || '').toLowerCase() === (r.brand || '').toLowerCase());
+      }
+
+      if (existing) {
+        if (r.couponCode && r.couponCode !== 'NA') existing.couponCode = r.couponCode;
+        if (r.couponUsed) existing.couponUsed = r.couponUsed === 'NA' ? '' : r.couponUsed;
+        if (r.buyer) existing.buyer = r.buyer;
+        if (normSellDate) existing.sellDate = normSellDate;
+        if (r.redeemStatus && r.redeemStatus !== 'NA') existing.redeemStatus = r.redeemStatus;
+        if (r.account) existing.account = r.account;
+        updatedCount++;
+      } else if (bookingId || r.redeemStatus === 'Redeemed' || r.couponCode) {
+        DB.usages.push({
+          id: genId(),
+          cardId: card.id,
+          benefitId: benefitId,
+          account: r.account || card.account || '',
+          brand: r.brand || '',
+          redeemStatus: r.redeemStatus === 'NA' ? 'Redeemed' : (r.redeemStatus || 'Redeemed'),
+          date: normDate || nowLocalISO(),
+          bookingId: bookingId === 'NA' ? '' : bookingId,
+          couponCode: (r.couponCode === 'NA' ? '' : r.couponCode) || '',
+          couponUsed: (r.couponUsed === 'NA' ? '' : r.couponUsed) || '',
+          buyer: r.buyer || '',
+          sellDate: normSellDate || '',
+          notes: r.sellStatus || ''
+        });
+        addedCount++;
+      }
+    });
+
+    saveDB(true);
+    renderAll();
+
+    const nowISO = new Date().toISOString();
+    localStorage.setItem(GSHEET_STORAGE_KEYS.LAST_SYNC, nowISO);
+    updateGSheetStatusUI('connected', `Synced (${rows.length} rows)`, nowISO);
+
+    showToast(`Google Sheets: ${addedCount} added, ${updatedCount} updated! ✅`, 'success');
+  } catch (err) {
+    updateGSheetStatusUI('error', 'Pull failed: ' + err.message);
+    showToast('Failed to pull from Google Sheet: ' + err.message, 'error');
+  }
+}
+
+async function syncRedemptionToGSheet(usage) {
+  const cfg = getGSheetConfig();
+  if (!cfg.enabled || !cfg.autoSync || !cfg.url) return;
+
+  try {
+    const card = getCardById(usage.cardId);
+    const variant = card ? getVariantById(card.variantId) : null;
+    const benefit = variant ? (variant.benefits || []).find(b => b.id === usage.benefitId) : null;
+
+    let dateDisplay = usage.date ? usage.date.split('T')[0] : '';
+    let sellDateDisplay = usage.sellDate ? usage.sellDate.split('T')[0] : '';
+
+    const payload = {
+      action: 'logRedemption',
+      sheet: cfg.tab,
+      data: {
+        account: usage.account || (card ? card.account : ''),
+        variant: variant ? (variant.networkSubtype || variant.name) : '',
+        card: card ? card.nickname : '',
+        benefit: benefit ? getBenefitDisplayName(benefit) : 'Perk',
+        brand: usage.brand || (benefit ? benefit.brand : ''),
+        redeemStatus: usage.redeemStatus || 'Redeemed',
+        redeemDate: dateDisplay,
+        bookingId: usage.bookingId || '',
+        couponCode: usage.couponCode || '',
+        couponUsed: usage.couponUsed || '',
+        buyer: usage.buyer || '',
+        sellDate: sellDateDisplay,
+        sellStatus: usage.notes || ''
+      }
+    };
+
+    fetch(cfg.url, {
+      method: 'POST',
+      mode: 'cors',
+      redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    }).then(res => res.json()).then(data => {
+      if (data && data.status === 'success') {
+        const nowISO = new Date().toISOString();
+        localStorage.setItem(GSHEET_STORAGE_KEYS.LAST_SYNC, nowISO);
+        updateGSheetStatusUI('connected', 'Saved row', nowISO);
+      }
+    }).catch(e => console.warn('GSheet auto-sync warning:', e));
+  } catch (err) {
+    console.warn('GSheet sync error:', err);
+  }
+}
+
+async function syncVoucherStatusToGSheet(bookingId, couponCode, couponUsed, buyer, sellDate) {
+  const cfg = getGSheetConfig();
+  if (!cfg.enabled || !cfg.autoSync || !cfg.url) return;
+
+  try {
+    const payload = {
+      action: 'updateVoucher',
+      sheet: cfg.tab,
+      bookingId: bookingId || '',
+      couponCode: couponCode || '',
+      couponUsed: couponUsed || '',
+      buyer: buyer || '',
+      sellDate: sellDate ? sellDate.split('T')[0] : ''
+    };
+
+    fetch(cfg.url, {
+      method: 'POST',
+      mode: 'cors',
+      redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    }).catch(e => console.warn('GSheet voucher status update warning:', e));
+  } catch (err) {
+    console.warn('GSheet voucher status error:', err);
+  }
+}
+
+async function pushToGSheet() {
+  const cfg = getGSheetConfig();
+  if (!cfg.url) { showToast('Apps Script Web App URL is required', 'error'); return; }
+
+  const currentQ = getCycleFromDate(todayISO());
+  const usagesToPush = DB.usages.filter(u => getCycleFromDate(u.date) === currentQ);
+
+  if (usagesToPush.length === 0) {
+    showToast(`No redemptions found for current cycle (${currentQ}) to push`, 'info');
+    return;
+  }
+
+  showConfirm(
+    'Push to Google Sheet',
+    `Push ${usagesToPush.length} redemptions from cycle ${currentQ} to Google Sheet tab "${cfg.tab}"?`,
+    async () => {
+      updateGSheetStatusUI('syncing');
+      showToast(`Pushing ${usagesToPush.length} records to Google Sheet...`, 'info');
+      let successCount = 0;
+
+      for (const u of usagesToPush) {
+        await syncRedemptionToGSheet(u);
+        successCount++;
+      }
+
+      const nowISO = new Date().toISOString();
+      localStorage.setItem(GSHEET_STORAGE_KEYS.LAST_SYNC, nowISO);
+      updateGSheetStatusUI('connected', `Pushed ${successCount} rows`, nowISO);
+      showToast(`Pushed ${successCount} redemptions to Google Sheet "${cfg.tab}"! ✅`, 'success');
+    },
+    '📤'
+  );
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -4839,6 +5818,93 @@ document.addEventListener('DOMContentLoaded', () => {
     pullFromGist({ silent: true });
   }
 
+  /* ── Google Sheets Sync UI Wiring ── */
+  const gsheetEnabledToggle = document.getElementById('setting-gsheet-enabled');
+  const gsheetUrlInput = document.getElementById('setting-gsheet-url');
+  const gsheetTabInput = document.getElementById('setting-gsheet-tab');
+  const gsheetAutoSyncToggle = document.getElementById('setting-gsheet-auto-sync');
+  const btnGSheetTest = document.getElementById('btn-gsheet-test');
+  const btnGSheetPull = document.getElementById('btn-gsheet-pull');
+  const btnGSheetPush = document.getElementById('btn-gsheet-push');
+  const btnShowGSheetHelp = document.getElementById('btn-show-gsheet-help');
+  const btnCopyGSheetScript = document.getElementById('btn-copy-gsheet-script');
+
+  if (gsheetEnabledToggle) {
+    gsheetEnabledToggle.addEventListener('change', e => {
+      localStorage.setItem(GSHEET_STORAGE_KEYS.ENABLED, e.target.checked ? 'true' : 'false');
+      updateGSheetStatusUI();
+      showToast(e.target.checked ? 'Google Sheets Sync Enabled 📊' : 'Google Sheets Sync Disabled (Local Mode) 📁', 'info');
+    });
+  }
+
+  if (gsheetUrlInput) {
+    gsheetUrlInput.addEventListener('change', e => {
+      localStorage.setItem(GSHEET_STORAGE_KEYS.URL, e.target.value.trim());
+      updateGSheetStatusUI();
+    });
+  }
+
+  if (gsheetTabInput) {
+    gsheetTabInput.addEventListener('change', e => {
+      localStorage.setItem(GSHEET_STORAGE_KEYS.TAB, e.target.value.trim() || 'Q4');
+      updateGSheetStatusUI();
+    });
+  }
+
+  if (gsheetAutoSyncToggle) {
+    gsheetAutoSyncToggle.addEventListener('change', e => {
+      localStorage.setItem(GSHEET_STORAGE_KEYS.AUTO_SYNC, e.target.checked ? 'true' : 'false');
+      showToast(e.target.checked ? 'Google Sheets auto-sync enabled' : 'Google Sheets auto-sync disabled', 'info');
+    });
+  }
+
+  if (btnGSheetTest) {
+    btnGSheetTest.addEventListener('click', async () => {
+      if (gsheetUrlInput) localStorage.setItem(GSHEET_STORAGE_KEYS.URL, gsheetUrlInput.value.trim());
+      if (gsheetTabInput) localStorage.setItem(GSHEET_STORAGE_KEYS.TAB, gsheetTabInput.value.trim() || 'Q4');
+      await testGSheetConnection(false);
+    });
+  }
+
+  if (btnGSheetPull) {
+    btnGSheetPull.addEventListener('click', async () => {
+      if (gsheetUrlInput) localStorage.setItem(GSHEET_STORAGE_KEYS.URL, gsheetUrlInput.value.trim());
+      if (gsheetTabInput) localStorage.setItem(GSHEET_STORAGE_KEYS.TAB, gsheetTabInput.value.trim() || 'Q4');
+      await pullFromGSheet();
+    });
+  }
+
+  if (btnGSheetPush) {
+    btnGSheetPush.addEventListener('click', async () => {
+      if (gsheetUrlInput) localStorage.setItem(GSHEET_STORAGE_KEYS.URL, gsheetUrlInput.value.trim());
+      if (gsheetTabInput) localStorage.setItem(GSHEET_STORAGE_KEYS.TAB, gsheetTabInput.value.trim() || 'Q4');
+      await pushToGSheet();
+    });
+  }
+
+  if (btnShowGSheetHelp) {
+    btnShowGSheetHelp.addEventListener('click', () => {
+      openModal('modal-gsheet-setup');
+    });
+  }
+
+  if (btnCopyGSheetScript) {
+    btnCopyGSheetScript.addEventListener('click', async () => {
+      try {
+        const res = await fetch('./google-apps-script.js');
+        if (res.ok) {
+          const txt = await res.text();
+          await navigator.clipboard.writeText(txt);
+          showToast('Apps Script code copied to clipboard! 📋', 'success');
+          return;
+        }
+      } catch (_) {}
+      showToast('Please open google-apps-script.js to copy code', 'info');
+    });
+  }
+
+  updateGSheetStatusUI();
+
 
   /* ── Tab navigation ── */
   document.querySelectorAll('.nav-tab').forEach(tab => {
@@ -4873,15 +5939,65 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ── Settings panel ── */
   const settingsToggle = document.getElementById('settings-toggle');
   const settingsPanel  = document.getElementById('settings-panel');
+  const btnCloseSettings = document.getElementById('btn-close-settings');
+
   settingsToggle.addEventListener('click', e => {
     e.stopPropagation();
     settingsPanel.classList.toggle('open');
   });
+
+  if (btnCloseSettings) {
+    btnCloseSettings.addEventListener('click', () => {
+      settingsPanel.classList.remove('open');
+    });
+  }
+
   document.addEventListener('click', e => {
     if (!settingsPanel.contains(e.target) && e.target !== settingsToggle) {
       settingsPanel.classList.remove('open');
     }
   });
+
+  /* ── Local Disk JSON Persistence Wiring ── */
+  const btnDiskSync = document.getElementById('btn-disk-sync');
+  const btnDiskSaveNow = document.getElementById('btn-disk-save-now');
+  const btnDiskReloadNow = document.getElementById('btn-disk-reload-now');
+  const btnLinkFile = document.getElementById('btn-link-file-handle');
+
+  if (btnDiskSync) {
+    btnDiskSync.addEventListener('click', async () => {
+      await persistToLocalDisk({ silent: false });
+    });
+  }
+  if (btnDiskSaveNow) {
+    btnDiskSaveNow.addEventListener('click', async () => {
+      await persistToLocalDisk({ silent: false });
+    });
+  }
+  if (btnDiskReloadNow) {
+    btnDiskReloadNow.addEventListener('click', async () => {
+      await loadExternalJSONIfAvailable({ silent: false });
+    });
+  }
+  if (btnLinkFile) {
+    btnLinkFile.addEventListener('click', async () => {
+      await linkLocalFileHandle();
+    });
+  }
+
+  /* ── GitHub Cloud Sync Collapsible Details ── */
+  const btnToggleGithub = document.getElementById('btn-toggle-github-details');
+  const githubControls = document.getElementById('github-sync-controls');
+  if (btnToggleGithub && githubControls) {
+    const hasCreds = Boolean(getSyncToken() && getSyncGistId());
+    githubControls.classList.toggle('hidden', !hasCreds);
+    btnToggleGithub.textContent = hasCreds ? 'Collapse ▴' : 'Configure ▾';
+
+    btnToggleGithub.addEventListener('click', () => {
+      const isHidden = githubControls.classList.toggle('hidden');
+      btnToggleGithub.textContent = isHidden ? 'Configure ▾' : 'Collapse ▴';
+    });
+  }
 
   /* ── Export / Import / Clear ── */
   
@@ -5175,9 +6291,9 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ── Delegated clicks ── */
   document.addEventListener('click', e => {
     // Card account pill click
-    const accPill = e.target.closest('.card-account-pill');
-    if (accPill && accPill.dataset.account) {
-      const acc = accPill.dataset.account;
+    const accTarget = e.target.closest('.card-account-pill');
+    if (accTarget && accTarget.dataset.account) {
+      const acc = accTarget.dataset.account;
       activeAccountFilter = (activeAccountFilter && activeAccountFilter.toLowerCase() === acc.toLowerCase()) ? null : acc;
       renderAccountCooldowns();
       renderDashboardCards();
@@ -5312,6 +6428,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (u) {
         u.couponUsed = 'USED';
         saveDB();
+        if (typeof syncVoucherStatusToGSheet === 'function') syncVoucherStatusToGSheet(u.bookingId, u.couponCode, 'USED', u.buyer, u.sellDate);
         showToast('Marked as USED! ✅', 'success');
         renderVouchers();
         renderDashboard();
@@ -5327,6 +6444,7 @@ document.addEventListener('DOMContentLoaded', () => {
         u.buyer = '';
         u.sellDate = '';
         saveDB();
+        if (typeof syncVoucherStatusToGSheet === 'function') syncVoucherStatusToGSheet(u.bookingId, u.couponCode, '', '', '');
         showToast('Reverted to Unused! ⚡', 'info');
         renderVouchers();
         renderDashboard();
@@ -5356,6 +6474,16 @@ document.addEventListener('DOMContentLoaded', () => {
   loadDB();
   renderAll();
   loadExternalJSONIfAvailable({ silent: true });
+
+  // Auto-refresh cooldown countdowns every 60 seconds when Dashboard is active
+  setInterval(() => {
+    const dashTab = document.getElementById('tab-dashboard');
+    if (dashTab && dashTab.classList.contains('active')) {
+      renderAccountCooldowns();
+      renderDashboardCards();
+      renderUnclaimedBenefits();
+    }
+  }, 60000);
 });
 </script>
 </body>
