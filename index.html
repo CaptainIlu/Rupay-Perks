@@ -1942,7 +1942,6 @@
             <th>Card</th>
             <th>Benefit</th>
             <th>Brand</th>
-            <th>Status</th>
             <th>Date</th>
             <th>Booking ID</th>
             <th>Coupon Code</th>
@@ -3900,11 +3899,6 @@ function renderHistory() {
       </td>
       <td>${benefit ? `${benefitIcon(benefit.type)} ${esc(getBenefitDisplayName(benefit))}` : 'Unknown'}</td>
       <td style="color:var(--secondary);font-weight:500">${esc(u.brand || (benefit && benefit.brand) || '—')}</td>
-      <td>
-        <span class="badge ${u.redeemStatus === 'Pending' ? 'badge-warning' : 'badge-success'}">
-          ${esc(u.redeemStatus || 'Redeemed')}
-        </span>
-      </td>
       <td>${fmtTimestamp(u.date)}</td>
       <td>
         ${u.bookingId ? `
