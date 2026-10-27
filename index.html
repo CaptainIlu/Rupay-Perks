@@ -739,6 +739,88 @@
     .inactive-card { opacity: 0.55; }
     #import-file-input { display: none; }
 
+    /* ===== INSIGHTS & ANALYTICS TAB ===== */
+    .insights-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .insight-kpi-card {
+      background: var(--card-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+      transition: transform var(--transition);
+    }
+    .insight-kpi-card:hover {
+      transform: translateY(-2px);
+    }
+    .insight-kpi-card .kpi-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-secondary);
+    }
+    .insight-kpi-card .kpi-value {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text-primary);
+      font-variant-numeric: tabular-nums;
+    }
+    .insight-kpi-card .kpi-subtext {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .insights-two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .insight-prog-bar-wrap {
+      width: 100%;
+      height: 7px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 5px;
+    }
+    .insight-prog-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.4s ease;
+    }
+    .buyer-rank-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--elevated);
+      color: var(--text-secondary);
+    }
+    .buyer-rank-badge.top-1 { background: rgba(245,158,11,0.2); color: #fbbf24; border: 1px solid rgba(245,158,11,0.4); }
+    .buyer-rank-badge.top-2 { background: rgba(148,163,184,0.2); color: #cbd5e1; border: 1px solid rgba(148,163,184,0.4); }
+    .buyer-rank-badge.top-3 { background: rgba(217,119,6,0.2); color: #f59e0b; border: 1px solid rgba(217,119,6,0.4); }
+
+    @media (max-width: 1024px) {
+      .insights-stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 840px) {
+      .insights-two-col { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .insights-stats-grid { grid-template-columns: 1fr; }
+    }
+
     /* ===== RESPONSIVE & MOBILE iOS OPTIMIZATIONS ===== */
     .mobile-bottom-nav { display: none; }
 
@@ -1099,7 +1181,12 @@
     .badge-brand.bigbasket { background: rgba(16,185,129,0.15); color: #34d399; border-color: rgba(16,185,129,0.3); }
     .badge-brand.prime { background: rgba(6,182,212,0.15); color: #38bdf8; border-color: rgba(6,182,212,0.3); }
     .badge-brand.decathlon { background: rgba(14,165,233,0.15); color: #38bdf8; border-color: rgba(14,165,233,0.3); }
-    .badge-brand.cult { background: rgba(249,115,22,0.15); color: #fb923c; border-color: rgba(249,115,22,0.3); }
+    .badge-brand.cult, .badge-brand.cultfit { background: rgba(249,115,22,0.15); color: #fb923c; border-color: rgba(249,115,22,0.3); }
+    .badge-brand.lakme { background: rgba(244,63,94,0.15); color: #fb7185; border-color: rgba(244,63,94,0.3); }
+    .badge-brand.thyrocare { background: rgba(20,184,166,0.15); color: #2dd4bf; border-color: rgba(20,184,166,0.3); }
+    .badge-brand.hotstar { background: rgba(168,85,247,0.15); color: #c084fc; border-color: rgba(168,85,247,0.3); }
+    .badge-brand.reliance, .badge-brand.reliancedigital { background: rgba(99,102,241,0.15); color: #818cf8; border-color: rgba(99,102,241,0.3); }
+    .badge-brand.apollo, .badge-brand.apollopharmacy { background: rgba(16,185,129,0.15); color: #34d399; border-color: rgba(16,185,129,0.3); }
     .badge-brand.uber { background: rgba(255,255,255,0.1); color: #f1f5f9; border-color: rgba(255,255,255,0.2); }
 
   
@@ -1530,6 +1617,7 @@
   <div class="nav-tabs">
     <button class="nav-tab active" data-tab="dashboard">Dashboard</button>
     <button class="nav-tab" data-tab="vouchers">Vouchers</button>
+    <button class="nav-tab" data-tab="insights">Insights</button>
     <button class="nav-tab" data-tab="variants">Variants</button>
     <button class="nav-tab" data-tab="cards">My Cards</button>
     <button class="nav-tab" data-tab="history">History</button>
@@ -1910,6 +1998,125 @@
     </div>
   </section>
 
+  <!-- ======== TAB: INSIGHTS & ANALYTICS ======== -->
+  <section class="tab-panel" id="tab-insights">
+    <div class="page-header">
+      <div>
+        <div class="page-title">💡 Insights & Analytics</div>
+        <div class="page-subtitle">Monetization, voucher sales revenue, buyer directory, and card utilization</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <select class="filter-select" id="insights-filter-cycle" style="min-width:140px;">
+          <option value="ALL">All Time</option>
+          <option value="Q4" selected>Q4 2026 (Oct - Dec)</option>
+          <option value="Q3">Q3 2026 (Jul - Sep)</option>
+          <option value="Q2">Q2 2026 (Apr - Jun)</option>
+          <option value="Q1">Q1 2026 (Jan - Mar)</option>
+        </select>
+        <button class="btn btn-secondary btn-sm" id="btn-open-price-presets" title="Configure Default Selling Prices per Brand">
+          ⚙ Price Presets
+        </button>
+      </div>
+    </div>
+
+    <!-- Hero KPI Cards -->
+    <div class="insights-stats-grid">
+      <div class="insight-kpi-card" style="border-top: 3px solid #10b981;">
+        <div class="kpi-label">💰 Total Sales Revenue</div>
+        <div class="kpi-value" id="kpi-total-revenue">₹0</div>
+        <div class="kpi-subtext" id="kpi-sold-count">0 vouchers sold</div>
+      </div>
+      <div class="insight-kpi-card" style="border-top: 3px solid #06b6d4;">
+        <div class="kpi-label">📈 Avg. Realization</div>
+        <div class="kpi-value" id="kpi-avg-price">₹0</div>
+        <div class="kpi-subtext">per sold voucher</div>
+      </div>
+      <div class="insight-kpi-card" style="border-top: 3px solid #f59e0b;">
+        <div class="kpi-label">⚡ Unrealized Stock Value</div>
+        <div class="kpi-value" id="kpi-unrealized-value">₹0</div>
+        <div class="kpi-subtext" id="kpi-unrealized-count">0 vouchers in hand</div>
+      </div>
+      <div class="insight-kpi-card" style="border-top: 3px solid #a855f7;">
+        <div class="kpi-label">👥 Active Buyers</div>
+        <div class="kpi-value" id="kpi-unique-buyers">0</div>
+        <div class="kpi-subtext" id="kpi-top-buyer-note">—</div>
+      </div>
+    </div>
+
+    <!-- Two Columns: Brand Revenue & Quarter Trends -->
+    <div class="insights-two-col">
+      <!-- Card 1: Revenue by Brand -->
+      <div class="card" style="padding:18px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <h3 style="font-size:15px;font-weight:700;display:flex;align-items:center;gap:6px;">
+            🏷️ Revenue by Brand
+          </h3>
+          <span style="font-size:11px;color:var(--text-secondary)">Ranked by Earnings</span>
+        </div>
+        <div id="insights-brand-list" style="display:flex;flex-direction:column;gap:12px;"></div>
+      </div>
+
+      <!-- Card 2: Quarter Comparison -->
+      <div class="card" style="padding:18px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <h3 style="font-size:15px;font-weight:700;display:flex;align-items:center;gap:6px;">
+            📊 Quarter-over-Quarter Performance
+          </h3>
+          <span style="font-size:11px;color:var(--text-secondary)">Q1 - Q4 2026</span>
+        </div>
+        <div id="insights-quarter-bars" style="display:flex;flex-direction:column;gap:14px;"></div>
+      </div>
+    </div>
+
+    <!-- Top Buyers Directory (CRM) -->
+    <div class="card" style="padding:18px;margin-top:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+        <div>
+          <h3 style="font-size:15px;font-weight:700;display:flex;align-items:center;gap:6px;">
+            🤝 Top Buyers Directory
+          </h3>
+          <div style="font-size:12px;color:var(--text-secondary)">Clients, repeat buyers, total sales volume & preferences</div>
+        </div>
+        <input type="text" id="insights-buyer-search" class="filter-select" placeholder="🔍 Search phone or name..." style="max-width:240px;padding:6px 10px;" />
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:40px">#</th>
+              <th>Buyer</th>
+              <th>Vouchers Bought</th>
+              <th>Total Spend</th>
+              <th>Top Brands</th>
+              <th>Last Purchase</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="insights-buyers-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Bank & Account Utilization -->
+    <div class="insights-two-col" style="margin-top:20px;">
+      <!-- Bank Utilization -->
+      <div class="card" style="padding:18px;">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:6px;">
+          🏦 Bank Quota Utilization
+        </h3>
+        <div id="insights-bank-utilization" style="display:flex;flex-direction:column;gap:12px;"></div>
+      </div>
+
+      <!-- Family Account Activity -->
+      <div class="card" style="padding:18px;">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:6px;">
+          👤 Account-wise Redemptions
+        </h3>
+        <div id="insights-account-distribution" style="display:flex;flex-direction:column;gap:12px;"></div>
+      </div>
+    </div>
+  </section>
+
   <!-- ======== TAB: VARIANTS ======== -->
   <section class="tab-panel" id="tab-variants">
     <div class="page-header">
@@ -2008,6 +2215,13 @@
       <line x1="10" y1="4" x2="10" y2="20" stroke-dasharray="2 2"></line>
     </svg>
     <span class="tab-label">Vouchers</span>
+  </button>
+  <button class="nav-tab" data-tab="insights">
+    <svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 3v18h18"></path>
+      <path d="m19 9-5 5-4-4-3 3"></path>
+    </svg>
+    <span class="tab-label">Insights</span>
   </button>
   <button class="nav-tab" data-tab="variants">
     <svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -2111,6 +2325,10 @@
         <div class="form-group">
           <label class="form-label" for="log-sell-date">Sell Date</label>
           <input type="date" class="form-control" id="log-sell-date" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="log-sell-price">Price (₹)</label>
+          <input type="number" class="form-control" id="log-sell-price" placeholder="Auto" />
         </div>
       </div>
       <div class="form-group">
@@ -2240,14 +2458,45 @@
         <label class="form-label" for="bulk-buyer">Buyer (Phone Number / Name) *</label>
         <input type="text" class="form-control" id="bulk-buyer" placeholder="e.g. 9098133360" />
       </div>
-      <div class="form-group">
-        <label class="form-label" for="bulk-sell-date">Sell Date *</label>
-        <input type="date" class="form-control" id="bulk-sell-date" />
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="bulk-sell-date">Sell Date *</label>
+          <input type="date" class="form-control" id="bulk-sell-date" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="bulk-sell-price">Price per Voucher (₹)</label>
+          <input type="number" class="form-control" id="bulk-sell-price" placeholder="Auto" />
+        </div>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" data-close="modal-bulk-sold">Cancel</button>
       <button class="btn btn-primary" id="btn-confirm-bulk-sold">Confirm Sale</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: BRAND PRICE PRESETS ===== -->
+<div class="modal-backdrop" id="modal-price-presets">
+  <div class="modal" role="dialog" aria-modal="true" style="max-width: 520px;">
+    <div class="modal-header">
+      <div class="modal-title">⚙️ Default Selling Prices per Brand</div>
+      <button class="modal-close" data-close="modal-price-presets">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:14px;">
+        Set default market prices when selling vouchers. These default prices are automatically applied to revenue tracking and bulk sales unless manually overridden.
+      </div>
+      <div id="price-presets-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <!-- Injected dynamically by JS -->
+      </div>
+    </div>
+    <div class="modal-footer" style="justify-content:space-between">
+      <button class="btn btn-secondary btn-sm" id="btn-reset-price-presets">Reset Defaults</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-secondary btn-sm" data-close="modal-price-presets">Cancel</button>
+        <button class="btn btn-primary btn-sm" id="btn-save-price-presets">Save Presets</button>
+      </div>
     </div>
   </div>
 </div>
@@ -2435,6 +2684,74 @@ const PERIOD_TYPES = [
   { value: 'half-yearly', label: 'Half-Yearly' },
   { value: 'yearly',      label: 'Yearly' }
 ];
+
+/* ==============================================================
+   SECTION 1a: BRAND MONETIZATION & PRICING PRESETS
+   ============================================================== */
+
+const DEFAULT_BRAND_PRICES = {
+  'Lakme': 800,
+  'Thyrocare': 350,
+  'Cult': 400,
+  'Cult.fit': 400,
+  'Prime': 450,
+  'Hotstar': 300,
+  'Reliance': 450,
+  'Reliance Digital': 450,
+  'Decathlon': 400,
+  'BigBasket': 200,
+  'Myntra': 200,
+  'Apollo': 200,
+  'Apollo Pharmacy': 200,
+  'Uber': 100,
+  'Other': 200
+};
+
+function getBrandPricePresets() {
+  try {
+    const stored = localStorage.getItem('rupay_brand_price_presets');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed && typeof parsed === 'object') return { ...DEFAULT_BRAND_PRICES, ...parsed };
+    }
+  } catch (_) {}
+  if (typeof DB !== 'undefined' && DB && DB.brandPricePresets) {
+    return { ...DEFAULT_BRAND_PRICES, ...DB.brandPricePresets };
+  }
+  return { ...DEFAULT_BRAND_PRICES };
+}
+
+function saveBrandPricePresets(presets) {
+  try {
+    localStorage.setItem('rupay_brand_price_presets', JSON.stringify(presets));
+  } catch (_) {}
+  if (typeof DB !== 'undefined' && DB) {
+    DB.brandPricePresets = presets;
+    saveDB();
+  }
+}
+
+function getBrandPresetPrice(brandName) {
+  if (!brandName) return DEFAULT_BRAND_PRICES['Other'] || 200;
+  const presets = getBrandPricePresets();
+  const clean = String(brandName).trim();
+  if (presets[clean] !== undefined) return Number(presets[clean]);
+  const lower = clean.toLowerCase();
+  for (const [k, v] of Object.entries(presets)) {
+    const kLow = k.toLowerCase();
+    if (lower === kLow || lower.includes(kLow) || kLow.includes(lower)) return Number(v);
+  }
+  return Number(presets['Other'] || 200);
+}
+
+function getVoucherPrice(u) {
+  if (!u) return 0;
+  if (u.price !== undefined && u.price !== null && String(u.price).trim() !== '') {
+    const p = parseFloat(u.price);
+    if (!isNaN(p) && p >= 0) return p;
+  }
+  return getBrandPresetPrice(u.brand);
+}
 
 function genId() {
   try { return crypto.randomUUID(); } catch (_) {
@@ -2721,6 +3038,7 @@ function mergeDatasets(fileData, currentDB) {
     variants: Array.isArray(fileData.variants) && fileData.variants.length > 0 ? fileData.variants : (currentDB.variants || []),
     cards:    Array.isArray(fileData.cards)    && fileData.cards.length > 0    ? fileData.cards    : (currentDB.cards || []),
     perks:    Array.isArray(fileData.perks)    && fileData.perks.length > 0    ? fileData.perks    : (currentDB.perks || []),
+    brandPricePresets: fileData.brandPricePresets || (currentDB && currentDB.brandPricePresets) || undefined,
     usages:   []
   };
 
@@ -2789,6 +3107,9 @@ function mergeDatasets(fileData, currentDB) {
       }
       if (lu.brand && !existing.brand) {
         merged.brand = lu.brand;
+      }
+      if (lu.price !== undefined && existing.price === undefined) {
+        merged.price = lu.price;
       }
 
       mergedMap.set(targetId, merged);
@@ -4224,7 +4545,9 @@ function renderVouchersTable() {
     const isAvailable = isVoucherAvailable(u);
     let statusBadge = '<span class="badge badge-success">⚡ Available</span>';
     if (u.couponUsed === 'SOLD') {
-      statusBadge = `<span class="badge badge-sold">SOLD</span> ${u.buyer ? `<span style="font-size:11px;color:var(--text-secondary)">(${esc(u.buyer)})</span>` : ''}`;
+      const price = getVoucherPrice(u);
+      const priceTag = price ? `<span style="font-size:11px;font-weight:700;color:#10b981;margin-left:4px" title="Selling Price">₹${Math.round(price).toLocaleString('en-IN')}</span>` : '';
+      statusBadge = `<span class="badge badge-sold">SOLD</span> ${priceTag} ${u.buyer ? `<span style="font-size:11px;color:var(--text-secondary)">(${esc(u.buyer)})</span>` : ''}`;
     } else if (u.couponUsed === 'USED') {
       statusBadge = '<span class="badge badge-used">USED</span>';
     }
@@ -4303,6 +4626,14 @@ function openBulkSoldModal() {
   });
   const summaryParts = Object.entries(brandSummary).map(([b, cnt]) => `${b}: ${cnt}`).join(', ');
 
+  const uniqueBrands = Object.keys(brandSummary);
+  let defaultPrice = '';
+  if (uniqueBrands.length === 1) {
+    defaultPrice = getBrandPresetPrice(uniqueBrands[0]);
+  }
+  const priceInput = document.getElementById('bulk-sell-price');
+  if (priceInput) priceInput.value = defaultPrice;
+
   document.getElementById('bulk-sold-summary').textContent = `Marking ${selectedVoucherIds.size} vouchers as SOLD (${summaryParts})`;
   document.getElementById('bulk-buyer').value = '';
   document.getElementById('bulk-sell-date').value = todayISO();
@@ -4312,6 +4643,8 @@ function openBulkSoldModal() {
 function confirmBulkSold() {
   const buyer = document.getElementById('bulk-buyer').value.trim();
   const sellDate = document.getElementById('bulk-sell-date').value || todayISO();
+  const priceVal = (document.getElementById('bulk-sell-price').value || '').trim();
+  const overridePrice = priceVal ? parseFloat(priceVal) : null;
 
   if (!buyer) {
     showToast('Please enter buyer phone or name', 'error');
@@ -4324,6 +4657,11 @@ function confirmBulkSold() {
       u.couponUsed = 'SOLD';
       u.buyer = buyer;
       u.sellDate = sellDate;
+      if (overridePrice !== null && !isNaN(overridePrice)) {
+        u.price = overridePrice;
+      } else if (u.price === undefined) {
+        u.price = getBrandPresetPrice(u.brand);
+      }
       if (typeof syncVoucherStatusToGSheet === 'function') syncVoucherStatusToGSheet(u.bookingId, u.couponCode, 'SOLD', buyer, sellDate);
       count++;
     }
@@ -4335,6 +4673,7 @@ function confirmBulkSold() {
   showToast(`Marked ${count} vouchers as SOLD to ${buyer}! ✅`, 'success');
   renderVouchers();
   renderDashboard();
+  if (document.getElementById('tab-insights').classList.contains('active')) renderInsights();
 }
 
 function bulkMarkUsed() {
@@ -4388,6 +4727,415 @@ function bulkCopyCodes() {
   }).catch(() => {
     showToast('Failed to copy to clipboard', 'error');
   });
+}
+
+/* ==============================================================
+   SECTION 4f: INSIGHTS & ANALYTICS TAB (FINANCIALS, CRM & UTILIZATION)
+   ============================================================== */
+
+let insightsBuyerSearchTerm = '';
+let lastComputedUniqueBuyers = [];
+
+function navigateToTab(t) {
+  document.querySelectorAll('.nav-tab').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === t);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  const panel = document.getElementById('tab-' + t);
+  if (panel) panel.classList.add('active');
+  if (t === 'dashboard')      renderDashboard();
+  else if (t === 'vouchers')  renderVouchers();
+  else if (t === 'insights')  renderInsights();
+  else if (t === 'variants')  renderVariants();
+  else if (t === 'cards')     renderCards();
+  else if (t === 'history')   renderHistory();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderInsights() {
+  const cycleSelect = document.getElementById('insights-filter-cycle');
+  const cycleFilter = cycleSelect ? cycleSelect.value : 'Q4';
+
+  const allUsages = (DB && Array.isArray(DB.usages)) ? DB.usages : [];
+  const allCards  = (DB && Array.isArray(DB.cards))  ? DB.cards  : [];
+
+  // Filter sold usages by cycle
+  const soldUsages = allUsages.filter(u => {
+    if (u.couponUsed !== 'SOLD') return false;
+    if (cycleFilter === 'ALL') return true;
+    return getCycleFromDate(u.date) === cycleFilter;
+  });
+
+  // Filter available stock vouchers by cycle
+  const availableUsages = allUsages.filter(u => {
+    if (!isVoucherAvailable(u)) return false;
+    if (cycleFilter === 'ALL') return true;
+    return getCycleFromDate(u.date) === cycleFilter;
+  });
+
+  // 1. Calculate KPIs
+  const totalRevenue = soldUsages.reduce((sum, u) => sum + getVoucherPrice(u), 0);
+  const soldCount    = soldUsages.length;
+  const avgPrice     = soldCount > 0 ? (totalRevenue / soldCount) : 0;
+  const unrealizedVal = availableUsages.reduce((sum, u) => sum + getVoucherPrice(u), 0);
+  const unrealizedCount = availableUsages.length;
+
+  // Aggregate Buyers
+  const buyerMap = {};
+  soldUsages.forEach(u => {
+    const b = (u.buyer || '').trim();
+    if (!b) return;
+    if (!buyerMap[b]) {
+      buyerMap[b] = { buyer: b, count: 0, spend: 0, brands: {}, lastDate: '' };
+    }
+    buyerMap[b].count++;
+    buyerMap[b].spend += getVoucherPrice(u);
+    const brand = u.brand || 'Other';
+    buyerMap[b].brands[brand] = (buyerMap[b].brands[brand] || 0) + 1;
+    const d = u.sellDate || u.date || '';
+    if (d > buyerMap[b].lastDate) buyerMap[b].lastDate = d;
+  });
+
+  const uniqueBuyers = Object.values(buyerMap);
+  uniqueBuyers.sort((a, b) => b.spend - a.spend);
+  lastComputedUniqueBuyers = uniqueBuyers;
+
+  // Update Hero KPI DOM
+  const kpiRev = document.getElementById('kpi-total-revenue');
+  const kpiSoldCount = document.getElementById('kpi-sold-count');
+  const kpiAvg = document.getElementById('kpi-avg-price');
+  const kpiUnrealizedVal = document.getElementById('kpi-unrealized-value');
+  const kpiUnrealizedCount = document.getElementById('kpi-unrealized-count');
+  const kpiBuyers = document.getElementById('kpi-unique-buyers');
+  const kpiBuyerNote = document.getElementById('kpi-top-buyer-note');
+
+  if (kpiRev) kpiRev.textContent = '₹' + Math.round(totalRevenue).toLocaleString('en-IN');
+  if (kpiSoldCount) kpiSoldCount.textContent = `${soldCount} voucher${soldCount === 1 ? '' : 's'} sold`;
+  if (kpiAvg) kpiAvg.textContent = '₹' + Math.round(avgPrice).toLocaleString('en-IN');
+  if (kpiUnrealizedVal) kpiUnrealizedVal.textContent = '₹' + Math.round(unrealizedVal).toLocaleString('en-IN');
+  if (kpiUnrealizedCount) kpiUnrealizedCount.textContent = `${unrealizedCount} available in hand`;
+  if (kpiBuyers) kpiBuyers.textContent = uniqueBuyers.length;
+  if (kpiBuyerNote) {
+    if (uniqueBuyers.length > 0) {
+      kpiBuyerNote.textContent = `Top: ${esc(uniqueBuyers[0].buyer)} (₹${Math.round(uniqueBuyers[0].spend).toLocaleString('en-IN')})`;
+    } else {
+      kpiBuyerNote.textContent = 'No sales in this cycle';
+    }
+  }
+
+  // 2. Revenue by Brand
+  renderInsightsBrandList(soldUsages, totalRevenue);
+
+  // 3. Quarter-over-Quarter Performance
+  renderInsightsQuarterBars(cycleFilter);
+
+  // 4. Top Buyers Directory Table
+  renderInsightsBuyersTable(uniqueBuyers);
+
+  // 5. Bank Quota Utilization & Account distribution
+  renderInsightsBankAndAccounts(cycleFilter);
+}
+
+function renderInsightsBrandList(soldUsages, totalRevenue) {
+  const container = document.getElementById('insights-brand-list');
+  if (!container) return;
+
+  const brandMap = {};
+  soldUsages.forEach(u => {
+    const b = u.brand || 'Other';
+    if (!brandMap[b]) brandMap[b] = { brand: b, count: 0, revenue: 0 };
+    brandMap[b].count++;
+    brandMap[b].revenue += getVoucherPrice(u);
+  });
+
+  const list = Object.values(brandMap);
+  list.sort((a, b) => b.revenue - a.revenue);
+
+  if (list.length === 0) {
+    container.innerHTML = `<div style="text-align:center;padding:24px 0;color:var(--text-secondary);font-size:13px">No sold vouchers found for this period.</div>`;
+    return;
+  }
+
+  const brandColorMap = {
+    'lakme': '#fb7185',
+    'thyrocare': '#2dd4bf',
+    'cult': '#fb923c',
+    'cultfit': '#fb923c',
+    'prime': '#38bdf8',
+    'hotstar': '#c084fc',
+    'reliance': '#818cf8',
+    'reliancedigital': '#818cf8',
+    'decathlon': '#38bdf8',
+    'bigbasket': '#34d399',
+    'myntra': '#f472b6',
+    'apollo': '#34d399',
+    'apollopharmacy': '#34d399',
+    'uber': '#94a3b8'
+  };
+
+  container.innerHTML = list.map(item => {
+    const bLower = item.brand.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const pct = totalRevenue > 0 ? (item.revenue / totalRevenue * 100) : 0;
+    const barColor = brandColorMap[bLower] || 'var(--primary-light)';
+    return `
+      <div style="display:flex;flex-direction:column;gap:5px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;">
+          <span style="display:flex;align-items:center;gap:6px;">
+            <span class="badge badge-brand ${bLower}">${esc(item.brand)}</span>
+            <span style="font-size:12px;color:var(--text-secondary)">${item.count} sold (${pct.toFixed(1)}%)</span>
+          </span>
+          <span style="font-weight:700;font-variant-numeric:tabular-nums;color:var(--text-primary);font-size:13px">
+            ₹${Math.round(item.revenue).toLocaleString('en-IN')}
+          </span>
+        </div>
+        <div class="insight-prog-bar-wrap">
+          <div class="insight-prog-bar-fill" style="width:${Math.max(pct, 2)}%;background:${barColor}"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderInsightsQuarterBars(currentCycleFilter) {
+  const container = document.getElementById('insights-quarter-bars');
+  if (!container) return;
+
+  const quarters = [
+    { id: 'Q1', label: 'Q1 2026 (Jan - Mar)' },
+    { id: 'Q2', label: 'Q2 2026 (Apr - Jun)' },
+    { id: 'Q3', label: 'Q3 2026 (Jul - Sep)' },
+    { id: 'Q4', label: 'Q4 2026 (Oct - Dec)' }
+  ];
+
+  const qData = quarters.map(q => {
+    const sold = (DB.usages || []).filter(u => u.couponUsed === 'SOLD' && getCycleFromDate(u.date) === q.id);
+    const revenue = sold.reduce((sum, u) => sum + getVoucherPrice(u), 0);
+    return { ...q, count: sold.length, revenue };
+  });
+
+  const maxRevenue = Math.max(...qData.map(q => q.revenue), 1);
+
+  container.innerHTML = qData.map(q => {
+    const pct = (q.revenue / maxRevenue * 100);
+    const isSelected = currentCycleFilter === q.id || (currentCycleFilter === 'ALL' && q.id === 'Q4');
+    const borderStyle = isSelected ? 'border:1px solid rgba(124,58,237,0.4);background:rgba(124,58,237,0.08);padding:10px;border-radius:var(--radius-sm);' : 'padding:4px 0;';
+    const isCurrentQuarter = q.id === 'Q4';
+
+    return `
+      <div style="${borderStyle}display:flex;flex-direction:column;gap:5px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;">
+          <span style="font-weight:600;display:flex;align-items:center;gap:6px;">
+            <span>${esc(q.label)}</span>
+            ${isCurrentQuarter ? '<span class="badge badge-success" style="font-size:10px;padding:1px 5px">Active</span>' : ''}
+          </span>
+          <span style="font-weight:700;font-variant-numeric:tabular-nums;color:var(--text-primary)">
+            ₹${Math.round(q.revenue).toLocaleString('en-IN')}
+            <span style="font-size:11px;font-weight:400;color:var(--text-secondary)">(${q.count} sold)</span>
+          </span>
+        </div>
+        <div class="insight-prog-bar-wrap" style="height:8px;">
+          <div class="insight-prog-bar-fill" style="width:${Math.max(pct, 2)}%;background:${isCurrentQuarter ? 'linear-gradient(90deg, #10b981, #06b6d4)' : 'linear-gradient(90deg, var(--primary), var(--primary-light))'}"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderInsightsBuyersTable(uniqueBuyers) {
+  const tbody = document.getElementById('insights-buyers-tbody');
+  if (!tbody) return;
+
+  const list = uniqueBuyers || lastComputedUniqueBuyers || [];
+  const searchTerm = (insightsBuyerSearchTerm || '').trim().toLowerCase();
+  const filtered = list.filter(b => {
+    if (!searchTerm) return true;
+    return b.buyer.toLowerCase().includes(searchTerm);
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" style="text-align:center;padding:32px;color:var(--text-secondary)">
+          ${searchTerm ? `No buyers found matching "${esc(searchTerm)}"` : 'No voucher sales recorded yet.'}
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map((b, idx) => {
+    const rank = idx + 1;
+    let rankBadgeClass = '';
+    if (rank === 1) rankBadgeClass = 'top-1';
+    else if (rank === 2) rankBadgeClass = 'top-2';
+    else if (rank === 3) rankBadgeClass = 'top-3';
+
+    // Top 3 brands
+    const sortedBrands = Object.entries(b.brands).sort((x, y) => y[1] - x[1]).slice(0, 3);
+    const brandPills = sortedBrands.map(([brandName, count]) => {
+      const bLower = brandName.toLowerCase().replace(/[^a-z0-9]/g, '');
+      return `<span class="badge badge-brand ${bLower}" style="font-size:10px;padding:2px 6px">${esc(brandName)} (${count})</span>`;
+    }).join(' ');
+
+    const lastDateFormatted = b.lastDate ? fmtTimestamp(b.lastDate) : '—';
+
+    return `
+      <tr>
+        <td>
+          <span class="buyer-rank-badge ${rankBadgeClass}">${rank}</span>
+        </td>
+        <td>
+          <div style="font-weight:700;font-size:13px;color:var(--text-primary);letter-spacing:0.3px">${esc(b.buyer)}</div>
+        </td>
+        <td>
+          <span class="badge badge-primary" style="font-size:11px">${b.count} voucher${b.count === 1 ? '' : 's'}</span>
+        </td>
+        <td>
+          <span style="font-weight:700;font-variant-numeric:tabular-nums;color:#10b981;font-size:13px">
+            ₹${Math.round(b.spend).toLocaleString('en-IN')}
+          </span>
+        </td>
+        <td>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">${brandPills}</div>
+        </td>
+        <td style="font-size:12px;color:var(--text-secondary)">
+          ${lastDateFormatted}
+        </td>
+        <td>
+          <button class="btn btn-secondary btn-xs" onclick="viewBuyerVouchers('${esc(b.buyer)}')" title="View all vouchers purchased by ${esc(b.buyer)}">
+            View Vouchers ↗
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderInsightsBankAndAccounts(cycleFilter) {
+  const bankContainer = document.getElementById('insights-bank-utilization');
+  const accContainer  = document.getElementById('insights-account-distribution');
+  if (!bankContainer || !accContainer) return;
+
+  const cycleUsages = (cycleFilter === 'ALL')
+    ? (DB.usages || [])
+    : (DB.usages || []).filter(u => getCycleFromDate(u.date) === cycleFilter);
+
+  // 1. Bank Breakdown
+  const bankMap = {};
+  (DB.cards || []).forEach(c => {
+    const v = getVariantById(c.variantId);
+    const bname = (v && v.bank) || (c.nickname ? c.nickname.split(' - ')[0] : 'Other');
+    if (!bankMap[bname]) bankMap[bname] = { bank: bname, cards: 0, redemptions: 0 };
+    bankMap[bname].cards++;
+  });
+
+  cycleUsages.forEach(u => {
+    const c = getCardById(u.cardId);
+    const v = c ? getVariantById(c.variantId) : null;
+    const bname = (v && v.bank) || (c && c.nickname ? c.nickname.split(' - ')[0] : 'Other');
+    if (bankMap[bname]) bankMap[bname].redemptions++;
+    else bankMap[bname] = { bank: bname, cards: 0, redemptions: 1 };
+  });
+
+  const bankList = Object.values(bankMap).sort((a, b) => b.redemptions - a.redemptions);
+  const maxBankRedemptions = Math.max(...bankList.map(b => b.redemptions), 1);
+
+  bankContainer.innerHTML = bankList.map(item => {
+    const pct = (item.redemptions / maxBankRedemptions * 100);
+    return `
+      <div style="display:flex;flex-direction:column;gap:5px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;">
+          <span style="font-weight:600;">
+            ${esc(item.bank)}
+            <span style="font-size:11px;font-weight:400;color:var(--text-secondary)">(${item.cards} card${item.cards === 1 ? '' : 's'})</span>
+          </span>
+          <span style="font-weight:700;font-variant-numeric:tabular-nums;color:var(--text-primary)">
+            ${item.redemptions} claimed
+          </span>
+        </div>
+        <div class="insight-prog-bar-wrap">
+          <div class="insight-prog-bar-fill" style="width:${Math.max(pct, 2)}%;background:linear-gradient(90deg, #6366f1, #a855f7)"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // 2. Account Breakdown
+  const accMap = {};
+  cycleUsages.forEach(u => {
+    const acc = (u.account || 'Unassigned').trim();
+    accMap[acc] = (accMap[acc] || 0) + 1;
+  });
+
+  const accList = Object.entries(accMap).map(([acc, cnt]) => ({ acc, cnt })).sort((a, b) => b.cnt - a.cnt);
+  const maxAccRedemptions = Math.max(...accList.map(a => a.cnt), 1);
+
+  accContainer.innerHTML = accList.map(item => {
+    const pct = (item.cnt / maxAccRedemptions * 100);
+    return `
+      <div style="display:flex;flex-direction:column;gap:5px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;">
+          <span style="font-weight:600;font-family:monospace;font-size:12px;">
+            ${esc(item.acc)}
+          </span>
+          <span style="font-weight:700;font-variant-numeric:tabular-nums;color:var(--text-primary)">
+            ${item.cnt} claimed
+          </span>
+        </div>
+        <div class="insight-prog-bar-wrap">
+          <div class="insight-prog-bar-fill" style="width:${Math.max(pct, 2)}%;background:linear-gradient(90deg, #06b6d4, #10b981)"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function viewBuyerVouchers(buyerPhone) {
+  const statusEl = document.getElementById('voucher-filter-status');
+  if (statusEl) statusEl.value = 'ALL';
+  const cycleEl = document.getElementById('voucher-filter-cycle');
+  if (cycleEl) cycleEl.value = '';
+  const brandEl = document.getElementById('voucher-filter-brand');
+  if (brandEl) brandEl.value = '';
+  const searchEl = document.getElementById('voucher-search');
+  if (searchEl) searchEl.value = buyerPhone;
+  navigateToTab('vouchers');
+}
+
+function openPricePresetsModal() {
+  const grid = document.getElementById('price-presets-grid');
+  if (!grid) return;
+
+  const presets = getBrandPricePresets();
+  const brands = [
+    { key: 'Lakme', label: 'Lakme Salon' },
+    { key: 'Thyrocare', label: 'Thyrocare' },
+    { key: 'Cult', label: 'Cult.fit' },
+    { key: 'Prime', label: 'Amazon Prime' },
+    { key: 'Hotstar', label: 'Disney+ Hotstar' },
+    { key: 'Reliance', label: 'Reliance Digital' },
+    { key: 'Decathlon', label: 'Decathlon' },
+    { key: 'BigBasket', label: 'BigBasket' },
+    { key: 'Myntra', label: 'Myntra' },
+    { key: 'Apollo', label: 'Apollo Pharmacy' },
+    { key: 'Uber', label: 'Uber Cab' },
+    { key: 'Other', label: 'Other / Default' }
+  ];
+
+  grid.innerHTML = brands.map(b => {
+    const val = presets[b.key] !== undefined ? presets[b.key] : (DEFAULT_BRAND_PRICES[b.key] || 200);
+    return `
+      <div class="form-group" style="margin-bottom:6px;">
+        <label class="form-label" style="font-size:12px;">${esc(b.label)}</label>
+        <div style="position:relative">
+          <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-secondary);font-size:13px;pointer-events:none">₹</span>
+          <input type="number" class="form-control preset-price-input" data-brand="${esc(b.key)}" value="${val}" style="padding-left:24px;" />
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  openModal('modal-price-presets');
 }
 
 
@@ -4493,6 +5241,7 @@ function renderCurrentTab() {
   const tab = active.dataset.tab;
   if (tab === 'dashboard') renderDashboard();
   else if (tab === 'vouchers') renderVouchers();
+  else if (tab === 'insights') renderInsights();
   else if (tab === 'variants') renderVariants();
   else if (tab === 'cards') renderCards();
   else if (tab === 'history') renderHistory();
@@ -4501,6 +5250,7 @@ function renderCurrentTab() {
 function renderAll() {
   renderDashboard();
   renderVouchers();
+  renderInsights();
   renderVariants();
   renderCards();
   renderHistory();
@@ -4603,6 +5353,10 @@ function openEditUsageModal(usageId) {
   document.getElementById('log-coupon-used').value    = u.couponUsed || '';
   document.getElementById('log-buyer').value          = u.buyer || '';
   document.getElementById('log-sell-date').value      = u.sellDate || '';
+  const priceInput = document.getElementById('log-sell-price');
+  if (priceInput) {
+    priceInput.value = (u.price !== undefined && u.price !== null) ? u.price : (u.couponUsed === 'SOLD' ? getVoucherPrice(u) : '');
+  }
   document.getElementById('log-notes').value          = u.notes || '';
 
   const soldFields = document.getElementById('sold-fields');
@@ -4740,6 +5494,8 @@ function openLogUsageModal(cardId, benefitId) {
   document.getElementById('log-coupon-used').value    = '';
   document.getElementById('log-buyer').value          = '';
   document.getElementById('log-sell-date').value      = '';
+  const priceInput = document.getElementById('log-sell-price');
+  if (priceInput) priceInput.value = '';
   document.getElementById('log-notes').value          = '';
 
   document.getElementById('sold-fields').classList.add('hidden');
@@ -5950,19 +6706,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ── Tab navigation ── */
   document.querySelectorAll('.nav-tab').forEach(tab => {
     tab.addEventListener('click', () => {
-      const t = tab.dataset.tab;
-      document.querySelectorAll('.nav-tab').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.tab === t);
-      });
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-      const panel = document.getElementById('tab-' + t);
-      if (panel) panel.classList.add('active');
-      if (t === 'dashboard')      renderDashboard();
-      else if (t === 'vouchers')  renderVouchers();
-      else if (t === 'variants')  renderVariants();
-      else if (t === 'cards')     renderCards();
-      else if (t === 'history')   renderHistory();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      navigateToTab(tab.dataset.tab);
     });
   });
 
@@ -6211,6 +6955,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!document.getElementById('log-sell-date').value) {
         document.getElementById('log-sell-date').value = todayISO();
       }
+      const priceInput = document.getElementById('log-sell-price');
+      if (priceInput && !priceInput.value) {
+        let curBrand = document.getElementById('log-brand-select').value;
+        if (curBrand === '__CUSTOM__' || !curBrand) curBrand = document.getElementById('log-brand').value.trim();
+        priceInput.value = getBrandPresetPrice(curBrand);
+      }
     } else {
       soldFields.classList.add('hidden');
     }
@@ -6233,6 +6983,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const couponUsed   = document.getElementById('log-coupon-used').value;
     const buyer        = document.getElementById('log-buyer').value.trim();
     const sellDate     = document.getElementById('log-sell-date').value;
+    const sellPriceVal = (document.getElementById('log-sell-price').value || '').trim();
+    const price        = sellPriceVal ? parseFloat(sellPriceVal) : (couponUsed === 'SOLD' ? getBrandPresetPrice(brand) : undefined);
     const notes        = document.getElementById('log-notes').value.trim();
 
     if (!date)  { showToast('Please pick a redeem date', 'error'); return; }
@@ -6280,14 +7032,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (editUsageId) {
       updateUsage(editUsageId, {
         benefitId, date, account, brand, redeemStatus,
-        bookingId, couponCode, couponUsed, buyer, sellDate, notes
+        bookingId, couponCode, couponUsed, buyer, sellDate, notes,
+        price: (price !== undefined && !isNaN(price)) ? price : undefined
       });
       closeModal('modal-log-usage');
       showToast('Redemption updated! ✅', 'success');
     } else {
       addUsage({
         cardId, benefitId, date, account, brand, redeemStatus,
-        bookingId, couponCode, couponUsed, buyer, sellDate, notes
+        bookingId, couponCode, couponUsed, buyer, sellDate, notes,
+        price: (price !== undefined && !isNaN(price)) ? price : undefined
       });
       closeModal('modal-log-usage');
       showToast('Redemption saved! ✅', 'success');
@@ -6295,6 +7049,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderDashboard();
     if (document.getElementById('tab-history').classList.contains('active')) renderHistory();
     if (document.getElementById('tab-vouchers').classList.contains('active')) renderVouchers();
+    if (document.getElementById('tab-insights').classList.contains('active')) renderInsights();
   });
 
   /* ── Live Booking ID Validation ── */
@@ -6473,6 +7228,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('Marked as USED! ✅', 'success');
         renderVouchers();
         renderDashboard();
+        if (document.getElementById('tab-insights').classList.contains('active')) renderInsights();
       }
       return;
     }
@@ -6489,10 +7245,62 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('Reverted to Unused! ⚡', 'info');
         renderVouchers();
         renderDashboard();
+        if (document.getElementById('tab-insights').classList.contains('active')) renderInsights();
       }
       return;
     }
   });
+
+  /* ── Insights & Analytics Event Listeners ── */
+  const insightsCycleSelect = document.getElementById('insights-filter-cycle');
+  if (insightsCycleSelect) {
+    insightsCycleSelect.addEventListener('change', renderInsights);
+  }
+
+  const insightsBuyerSearch = document.getElementById('insights-buyer-search');
+  if (insightsBuyerSearch) {
+    insightsBuyerSearch.addEventListener('input', e => {
+      insightsBuyerSearchTerm = e.target.value;
+      renderInsightsBuyersTable();
+    });
+  }
+
+  const btnOpenPricePresets = document.getElementById('btn-open-price-presets');
+  if (btnOpenPricePresets) {
+    btnOpenPricePresets.addEventListener('click', openPricePresetsModal);
+  }
+
+  const btnSavePricePresets = document.getElementById('btn-save-price-presets');
+  if (btnSavePricePresets) {
+    btnSavePricePresets.addEventListener('click', () => {
+      const inputs = document.querySelectorAll('.preset-price-input');
+      const presets = getBrandPricePresets();
+      inputs.forEach(inp => {
+        const b = inp.dataset.brand;
+        const v = parseFloat(inp.value);
+        if (!isNaN(v) && v >= 0) presets[b] = v;
+      });
+      saveBrandPricePresets(presets);
+      closeModal('modal-price-presets');
+      showToast('Default brand prices saved! 💰', 'success');
+      renderInsights();
+      renderVouchers();
+    });
+  }
+
+  const btnResetPricePresets = document.getElementById('btn-reset-price-presets');
+  if (btnResetPricePresets) {
+    btnResetPricePresets.addEventListener('click', () => {
+      const inputs = document.querySelectorAll('.preset-price-input');
+      inputs.forEach(inp => {
+        const b = inp.dataset.brand;
+        if (DEFAULT_BRAND_PRICES[b] !== undefined) {
+          inp.value = DEFAULT_BRAND_PRICES[b];
+        }
+      });
+      showToast('Prices reset to standard defaults', 'info');
+    });
+  }
 
   /* ── History filters ── */
   document.getElementById('filter-card').addEventListener('change', renderHistory);
