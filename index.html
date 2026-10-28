@@ -2309,6 +2309,16 @@
           <input type="text" class="form-control" id="log-coupon-code" placeholder="e.g. PV89-DX75J2-MAA or Code/PIN" />
         </div>
       </div>
+      <!-- Direct Buyer Redemption / Cooldown Exemption Toggle -->
+      <div class="form-group" style="background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.25);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:12px;">
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text-primary);cursor:pointer;margin:0;">
+          <input type="checkbox" id="log-buyer-account" style="width:16px;height:16px;accent-color:#f97316;" />
+          <span>⚡ Redeemed on Buyer's Account (Direct Activation)</span>
+        </label>
+        <div id="log-buyer-account-hint" style="font-size:11px;color:var(--text-secondary);margin-top:4px;padding-left:24px;">
+          Check if redeemed directly on buyer's RuPay/Cult account. <strong>Your card's account will NOT enter 24h cooldown</strong> and no voucher code is required.
+        </div>
+      </div>
       <div class="form-group">
         <label class="form-label" for="log-coupon-used">Coupon Used Disposition</label>
         <select class="form-control" id="log-coupon-used">
@@ -2821,6 +2831,9 @@ function loadDB() {
             u.benefitId = matchByBrand.id;
           }
         }
+        if ((u.brand || '').toLowerCase().includes('cult') && u.buyer) {
+          u.redeemedOnBuyerAccount = true;
+        }
       });
 
       DB = {
@@ -3110,6 +3123,9 @@ function mergeDatasets(fileData, currentDB) {
       }
       if (lu.price !== undefined && existing.price === undefined) {
         merged.price = lu.price;
+      }
+      if (lu.redeemedOnBuyerAccount !== undefined) {
+        merged.redeemedOnBuyerAccount = lu.redeemedOnBuyerAccount;
       }
 
       mergedMap.set(targetId, merged);
@@ -3462,10 +3478,17 @@ function getAccountCooldownStatus(email) {
   }
 
   const normalizedEmail = String(email).trim().toLowerCase();
-  const accountUsages = DB.usages.filter(u => 
-    u.account && u.account.trim().toLowerCase() === normalizedEmail && 
-    (u.redeemStatus === 'Redeemed' || u.bookingId || u.couponCode)
-  );
+  const accountUsages = DB.usages.filter(u => {
+    // If explicitly marked as redeemed on buyer's account, it did NOT use the card owner's RuPay account!
+    if (u.redeemedOnBuyerAccount === true) return false;
+
+    // Automatic Cult check: Cult redeemed with a buyer is directly activated on the buyer's account
+    const isCult = (u.brand || '').toLowerCase().includes('cult');
+    if (isCult && u.buyer) return false;
+
+    return u.account && u.account.trim().toLowerCase() === normalizedEmail && 
+      (u.redeemStatus === 'Redeemed' || u.bookingId || u.couponCode);
+  });
 
   let lastRedeemDate = null;
   let lastRedeemMs = 0;
@@ -4259,7 +4282,10 @@ function renderHistory() {
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td style="color:var(--text-secondary);font-size:11px">${esc(u.account || (card && card.account) || '—')}</td>
+      <td style="color:var(--text-secondary);font-size:11px">
+        ${esc(u.account || (card && card.account) || '—')}
+        ${(u.redeemedOnBuyerAccount || ((u.brand||'').toLowerCase().includes('cult') && u.buyer)) ? `<div style="font-size:10px;color:#10b981;font-weight:600;margin-top:2px;">⚡ Buyer's Account</div>` : ''}
+      </td>
       <td><span class="badge badge-primary">${cycle}</span></td>
       <td>
         <div style="font-weight:600">${card ? esc(card.nickname) : 'Deleted'}</div>
@@ -4277,11 +4303,13 @@ function renderHistory() {
         ` : '—'}
       </td>
       <td>
-        ${u.couponCode ? `
+        ${(u.couponCode && u.couponCode !== 'NA' && u.couponCode !== 'Direct Activation') ? `
           <span class="code-pill">
             <span>${esc(u.couponCode)}</span>
             <button class="btn-copy" onclick="copyCode('${esc(u.couponCode)}')" title="Copy Coupon Code">📋</button>
           </span>
+        ` : (u.redeemedOnBuyerAccount || ((u.brand||'').toLowerCase().includes('cult') && u.buyer)) ? `
+          <span class="badge" style="background:rgba(249,115,22,0.15);color:#fb923c;border:1px solid rgba(249,115,22,0.3);font-size:11px;" title="Directly activated on buyer's Cult account">⚡ Direct Activation</span>
         ` : `<button class="btn btn-secondary btn-xs edit-usage-btn" data-id="${u.id}" style="color:var(--warning);border-color:rgba(245,158,11,0.3);background:rgba(245,158,11,0.1)">+ Add Code</button>`}
       </td>
       <td>${couponUsedBadge}</td>
@@ -4384,11 +4412,16 @@ let selectedVoucherIds = new Set();
 let activeVoucherBrandFilter = '';
 
 function isVoucherAvailable(u) {
-  return u.couponUsed !== 'SOLD' && u.couponUsed !== 'USED';
+  if (!u) return false;
+  if (u.couponUsed === 'SOLD' || u.couponUsed === 'USED') return false;
+  if (u.redeemedOnBuyerAccount === true) return false;
+  const isCult = (u.brand || '').toLowerCase().includes('cult');
+  if (isCult && u.buyer) return false;
+  return true;
 }
 
 function getVouchersList() {
-  return DB.usages.filter(u => u.couponCode || u.bookingId);
+  return DB.usages.filter(u => u.couponCode || u.bookingId || u.redeemedOnBuyerAccount);
 }
 
 function renderVouchers() {
@@ -4566,10 +4599,14 @@ function renderVouchersTable() {
       </td>
       <td><span class="badge badge-primary">${cycle}</span></td>
       <td>
-        ${u.couponCode ? `
+        ${(u.couponCode && u.couponCode !== 'NA' && u.couponCode !== 'Direct Activation') ? `
           <span class="code-pill">
             <span>${esc(u.couponCode)}</span>
             <button class="btn-copy" onclick="copyCode('${esc(u.couponCode)}')" title="Copy Coupon Code">📋</button>
+          </span>
+        ` : (u.redeemedOnBuyerAccount || ((u.brand || '').toLowerCase().includes('cult') && u.buyer)) ? `
+          <span class="badge" style="background:rgba(249,115,22,0.15);color:#fb923c;border:1px solid rgba(249,115,22,0.3);font-size:11px;" title="Activated directly on buyer's account">
+            ⚡ Direct Activation
           </span>
         ` : '<span style="color:var(--text-secondary)">—</span>'}
       </td>
@@ -5324,6 +5361,47 @@ function openDuplicateCardModal(id) {
   document.getElementById('card-last4').focus();
 }
 
+function updateBuyerAccountUI(isBuyerAccount, cardAccount) {
+  const hintEl = document.getElementById('log-buyer-account-hint');
+  const codeInput = document.getElementById('log-coupon-code');
+  const usedSelect = document.getElementById('log-coupon-used');
+  const soldFields = document.getElementById('sold-fields');
+  const sellDateInput = document.getElementById('log-sell-date');
+  const priceInput = document.getElementById('log-sell-price');
+
+  if (isBuyerAccount) {
+    if (hintEl) {
+      hintEl.innerHTML = `⚡ <span style="color:#10b981;font-weight:600">Card account (${esc(cardAccount || 'this card')}) will NOT enter 24h cooldown</span> because redemption was performed on the buyer's account. No voucher code is required.`;
+    }
+    if (codeInput) {
+      codeInput.placeholder = 'Direct activation on buyer account (no code needed)';
+      if (!codeInput.value || codeInput.value === '') codeInput.value = 'NA';
+    }
+    if (usedSelect) {
+      usedSelect.value = 'SOLD';
+    }
+    if (soldFields) {
+      soldFields.classList.remove('hidden');
+    }
+    if (sellDateInput && !sellDateInput.value) {
+      sellDateInput.value = todayISO();
+    }
+    if (priceInput && !priceInput.value) {
+      let curBrand = document.getElementById('log-brand-select')?.value;
+      if (curBrand === '__CUSTOM__' || !curBrand) curBrand = document.getElementById('log-brand')?.value.trim();
+      priceInput.value = getBrandPresetPrice(curBrand || 'Cult');
+    }
+  } else {
+    if (hintEl) {
+      hintEl.innerHTML = `Check if redeemed directly on buyer's RuPay/Cult account. <strong>Your card's account will NOT enter 24h cooldown</strong> and no voucher code is required.`;
+    }
+    if (codeInput) {
+      codeInput.placeholder = 'e.g. PV89-DX75J2-MAA or Code/PIN';
+      if (codeInput.value === 'NA' || codeInput.value === 'Direct Activation') codeInput.value = '';
+    }
+  }
+}
+
 /* ---- Edit Existing Usage ---- */
 function openEditUsageModal(usageId) {
   const u = DB.usages.find(x => x.id === usageId);
@@ -5359,8 +5437,18 @@ function openEditUsageModal(usageId) {
   }
   document.getElementById('log-notes').value          = u.notes || '';
 
+  const isBuyerAccount = Boolean(
+    u.redeemedOnBuyerAccount === true ||
+    ((u.brand || '').toLowerCase().includes('cult') && u.buyer)
+  );
+  const buyerAccountCb = document.getElementById('log-buyer-account');
+  if (buyerAccountCb) {
+    buyerAccountCb.checked = isBuyerAccount;
+    updateBuyerAccountUI(isBuyerAccount, card ? card.account : '');
+  }
+
   const soldFields = document.getElementById('sold-fields');
-  if (u.couponUsed === 'SOLD') {
+  if (u.couponUsed === 'SOLD' || isBuyerAccount) {
     soldFields.classList.remove('hidden');
   } else {
     soldFields.classList.add('hidden');
@@ -5498,7 +5586,18 @@ function openLogUsageModal(cardId, benefitId) {
   if (priceInput) priceInput.value = '';
   document.getElementById('log-notes').value          = '';
 
-  document.getElementById('sold-fields').classList.add('hidden');
+  const isCult = (benefit.type === 'gym') ||
+    (benefit.brand && benefit.brand.toLowerCase().includes('cult')) ||
+    (benefit.label && benefit.label.toLowerCase().includes('cult'));
+  const buyerAccountCb = document.getElementById('log-buyer-account');
+  if (buyerAccountCb) {
+    buyerAccountCb.checked = isCult;
+    updateBuyerAccountUI(isCult, card.account || '');
+  }
+
+  if (!isCult) {
+    document.getElementById('sold-fields').classList.add('hidden');
+  }
 
   const used      = getUsedCount(cardId, benefitId, benefit.periodType);
   const remaining = benefit.quota - used;
@@ -6936,6 +7035,26 @@ document.addEventListener('DOMContentLoaded', () => {
         brandSel.classList.remove('hidden');
         if (brandSel.value === '__CUSTOM__') brandSel.value = '';
       }
+      const val = (brandSel.value || '').toLowerCase();
+      if (val.includes('cult')) {
+        const cb = document.getElementById('log-buyer-account');
+        if (cb) {
+          cb.checked = true;
+          const cardId = document.getElementById('log-card-id').value;
+          const card = getCardById(cardId);
+          updateBuyerAccountUI(true, card ? card.account : '');
+        }
+      }
+    });
+  }
+
+  /* ── Direct Buyer Account Redemption Checkbox ── */
+  const buyerAccountCb = document.getElementById('log-buyer-account');
+  if (buyerAccountCb) {
+    buyerAccountCb.addEventListener('change', e => {
+      const cardId = document.getElementById('log-card-id').value;
+      const card = getCardById(cardId);
+      updateBuyerAccountUI(e.target.checked, card ? card.account : '');
     });
   }
 
@@ -6986,6 +7105,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const sellPriceVal = (document.getElementById('log-sell-price').value || '').trim();
     const price        = sellPriceVal ? parseFloat(sellPriceVal) : (couponUsed === 'SOLD' ? getBrandPresetPrice(brand) : undefined);
     const notes        = document.getElementById('log-notes').value.trim();
+    const redeemedOnBuyerAccount = Boolean(document.getElementById('log-buyer-account')?.checked);
+
+    let finalCouponCode = couponCode;
+    let finalCouponUsed = couponUsed;
+    if (redeemedOnBuyerAccount) {
+      if (!finalCouponCode || finalCouponCode === '') finalCouponCode = 'NA';
+      if (!finalCouponUsed) finalCouponUsed = 'SOLD';
+    }
 
     if (!date)  { showToast('Please pick a redeem date', 'error'); return; }
     if (!brand) { showToast('Brand / Provider is required', 'error'); return; }
@@ -7032,21 +7159,24 @@ document.addEventListener('DOMContentLoaded', () => {
     if (editUsageId) {
       updateUsage(editUsageId, {
         benefitId, date, account, brand, redeemStatus,
-        bookingId, couponCode, couponUsed, buyer, sellDate, notes,
-        price: (price !== undefined && !isNaN(price)) ? price : undefined
+        bookingId, couponCode: finalCouponCode, couponUsed: finalCouponUsed, buyer, sellDate, notes,
+        price: (price !== undefined && !isNaN(price)) ? price : undefined,
+        redeemedOnBuyerAccount
       });
       closeModal('modal-log-usage');
       showToast('Redemption updated! ✅', 'success');
     } else {
       addUsage({
         cardId, benefitId, date, account, brand, redeemStatus,
-        bookingId, couponCode, couponUsed, buyer, sellDate, notes,
-        price: (price !== undefined && !isNaN(price)) ? price : undefined
+        bookingId, couponCode: finalCouponCode, couponUsed: finalCouponUsed, buyer, sellDate, notes,
+        price: (price !== undefined && !isNaN(price)) ? price : undefined,
+        redeemedOnBuyerAccount
       });
       closeModal('modal-log-usage');
       showToast('Redemption saved! ✅', 'success');
     }
     renderDashboard();
+    renderAccountCooldowns();
     if (document.getElementById('tab-history').classList.contains('active')) renderHistory();
     if (document.getElementById('tab-vouchers').classList.contains('active')) renderVouchers();
     if (document.getElementById('tab-insights').classList.contains('active')) renderInsights();
