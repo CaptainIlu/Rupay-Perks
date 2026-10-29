@@ -1973,6 +1973,266 @@
       background: rgba(99, 102, 241, 0.1);
     }
 
+    /* ===== CSV DIFF & RECONCILIATION STYLES ===== */
+    .csv-diff-modal {
+      max-width: 980px;
+      width: 95vw;
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-radius: var(--radius);
+    }
+    .csv-diff-body {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .csv-dropzone {
+      border: 2px dashed rgba(124, 58, 237, 0.45);
+      border-radius: var(--radius);
+      background: rgba(124, 58, 237, 0.04);
+      padding: 22px 18px;
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--transition);
+      position: relative;
+    }
+    .csv-dropzone:hover, .csv-dropzone.dragover {
+      border-color: var(--primary-light);
+      background: rgba(124, 58, 237, 0.1);
+      transform: translateY(-1px);
+    }
+    .csv-dropzone-icon {
+      font-size: 32px;
+      margin-bottom: 6px;
+    }
+    .csv-dropzone-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 3px;
+    }
+    .csv-dropzone-sub {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .csv-paste-toggle {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--primary-light);
+      cursor: pointer;
+      text-decoration: underline;
+      background: none;
+      border: none;
+    }
+    .csv-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    @media (max-width: 680px) {
+      .csv-kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    .csv-kpi-card {
+      background: var(--elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: all var(--transition);
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .csv-kpi-card:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+    }
+    .csv-kpi-card.active {
+      border-color: var(--primary-light);
+      background: rgba(124, 58, 237, 0.12);
+    }
+    .csv-kpi-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .csv-kpi-val {
+      font-size: 20px;
+      font-weight: 800;
+    }
+    .csv-kpi-val.new { color: var(--success); }
+    .csv-kpi-val.mod { color: var(--warning); }
+    .csv-kpi-val.app { color: var(--secondary); }
+    .csv-kpi-val.sync { color: #94a3b8; }
+
+    .csv-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 4px 0;
+    }
+    .csv-filter-pills {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .csv-pill-btn {
+      background: var(--card-surface);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 5px 11px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+    .csv-pill-btn:hover {
+      color: var(--text-primary);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .csv-pill-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary-light);
+    }
+
+    .csv-actions-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .csv-table-wrap {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--card-surface);
+      max-height: 400px;
+      overflow-y: auto;
+      overflow-x: auto;
+    }
+    .csv-table-wrap table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .csv-table-wrap th {
+      position: sticky;
+      top: 0;
+      background: var(--elevated);
+      padding: 9px 12px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border);
+      z-index: 2;
+      white-space: nowrap;
+    }
+    .csv-table-wrap td {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    .csv-table-wrap tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .diff-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+    }
+    .diff-badge.new {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .diff-badge.mod {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--warning);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .diff-badge.app {
+      background: rgba(6, 182, 212, 0.15);
+      color: var(--secondary);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+    }
+    .diff-badge.sync {
+      background: rgba(148, 163, 184, 0.15);
+      color: #94a3b8;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+    }
+
+    .diff-field-box {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-width: 360px;
+    }
+    .diff-field-line {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      line-height: 1.3;
+    }
+    .diff-field-name {
+      color: var(--text-secondary);
+      font-weight: 600;
+      min-width: 78px;
+    }
+    .diff-val-app {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.12);
+      padding: 1px 6px;
+      border-radius: 4px;
+      text-decoration: line-through;
+      font-family: var(--font-mono, monospace);
+      font-size: 10px;
+      max-width: 110px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .diff-val-csv {
+      color: #10b981;
+      background: rgba(16, 185, 129, 0.15);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-family: var(--font-mono, monospace);
+      font-size: 10px;
+      max-width: 140px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .diff-arrow {
+      color: var(--text-secondary);
+      font-size: 10px;
+    }
+
   </style>
 </head>
 <body>
@@ -2146,6 +2406,20 @@
       </div>
     </div>
 
+    <!-- Section 2b: Google Sheet CSV Diff & Reconciliation -->
+    <div class="settings-section">
+      <div class="settings-section-title">
+        <span>📊 Google Sheet CSV Diff</span>
+        <span class="badge badge-success" style="font-size:10px;text-transform:none;">Reconciliation</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-secondary);margin-bottom:8px;line-height:1.4;">
+        Upload your downloaded Google Sheet CSV export to detect missing redemptions, compare voucher codes & statuses, and reconcile diffs.
+      </div>
+      <button type="button" class="settings-btn" id="btn-open-csv-diff" style="width:100%;justify-content:center;background:rgba(6,182,212,0.12);color:var(--secondary);border:1px solid rgba(6,182,212,0.3);font-size:12px;font-weight:600;padding:8px 10px;">
+        📊 Open CSV Diff & Sync Tool
+      </button>
+    </div>
+
     <!-- Section 3: GitHub Cloud Sync -->
     <div class="settings-section">
       <div class="settings-section-title">
@@ -2245,11 +2519,14 @@
 
   <!-- ======== TAB: DASHBOARD ======== -->
   <section class="tab-panel active" id="tab-dashboard">
-    <div class="page-header">
+    <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
       <div>
         <div class="page-title">Dashboard</div>
         <div class="page-subtitle">Overview of all your RuPay card benefits & redemptions</div>
       </div>
+      <button type="button" class="btn btn-secondary btn-sm" id="btn-dashboard-sms-log" style="display:inline-flex;align-items:center;gap:6px;font-weight:600;background:rgba(124,58,237,0.12);color:var(--primary-light);border-color:rgba(124,58,237,0.3);">
+        <span>⚡</span> Quick Log from SMS
+      </button>
     </div>
     <div class="stats-bar">
       <div class="stat-card">
@@ -2428,7 +2705,8 @@
       <div class="bulk-actions-btns">
         <button class="btn btn-primary btn-sm" id="btn-bulk-sold">🏷️ Mark as SOLD</button>
         <button class="btn btn-secondary btn-sm" id="btn-bulk-used" style="background:rgba(6,182,212,0.15);color:var(--secondary);border-color:rgba(6,182,212,0.3)">✅ Mark as USED</button>
-        <button class="btn btn-secondary btn-sm" id="btn-bulk-copy">📋 Copy Codes</button>
+        <button class="btn btn-secondary btn-sm" id="btn-bulk-copy" title="Copy vouchers grouped by brand">📋 Copy Codes</button>
+        <button class="btn btn-secondary btn-sm" id="btn-bulk-whatsapp" style="background:rgba(37,211,102,0.12);color:#25d366;border-color:rgba(37,211,102,0.3)" title="Share grouped vouchers via WhatsApp">💬 WhatsApp</button>
         <button class="btn btn-secondary btn-sm" id="btn-bulk-unused">↩️ Mark as Unused</button>
       </div>
     </div>
@@ -2606,10 +2884,18 @@
 
   <!-- ======== TAB: HISTORY ======== -->
   <section class="tab-panel" id="tab-history">
-    <div class="page-header">
+    <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
       <div>
         <div class="page-title">Redemption & Coupon History</div>
         <div class="page-subtitle">All logged RuPay benefits, coupons, used status, and buyers</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-history-sms-log" style="display:inline-flex;align-items:center;gap:6px;font-weight:600;background:rgba(124,58,237,0.12);color:var(--primary-light);border-color:rgba(124,58,237,0.3);">
+          <span>⚡</span> Quick Log from SMS
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-history-csv-diff" style="display:inline-flex;align-items:center;gap:6px;font-weight:600;background:rgba(6,182,212,0.12);color:var(--secondary);border-color:rgba(6,182,212,0.3);">
+          <span>📊</span> Compare Sheet CSV
+        </button>
       </div>
     </div>
     <div class="history-filters">
@@ -2722,6 +3008,24 @@
       <input type="hidden" id="log-edit-usage-id" />
       <input type="hidden" id="log-card-id" />
       <input type="hidden" id="log-benefit-id" />
+
+      <!-- Quick Paste SMS / Email Auto-Fill Drawer -->
+      <div style="background:rgba(124,58,237,0.07);border:1px dashed rgba(124,58,237,0.35);border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" id="btn-toggle-log-sms">
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--primary-light);">
+            <span>⚡</span>
+            <span>Paste SMS / Email to Auto-Fill</span>
+          </div>
+          <span id="log-sms-toggle-arrow" style="font-size:11px;color:var(--text-secondary);font-weight:600;">▼ Paste</span>
+        </div>
+        <div id="log-sms-paste-drawer" class="hidden" style="margin-top:8px;">
+          <textarea id="log-sms-paste-text" class="form-control" rows="2" placeholder="Paste full redemption SMS, email, or WhatsApp message here..." style="font-family:monospace;font-size:11px;resize:vertical;"></textarea>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+            <span style="font-size:10px;color:var(--text-secondary);">Extracts Booking ID, Voucher Code, PIN, Brand & Cult details</span>
+            <button type="button" class="btn btn-primary btn-xs" id="btn-apply-log-sms">⚡ Auto-Fill Fields</button>
+          </div>
+        </div>
+      </div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Card</label>
@@ -3108,6 +3412,201 @@
   </div>
 </div>
 
+<!-- ===== MODAL: GOOGLE CSV DIFF & RECONCILIATION ===== -->
+<div class="modal-backdrop" id="modal-csv-diff">
+  <div class="modal csv-diff-modal" role="dialog" aria-modal="true">
+    <div class="modal-header" style="flex-shrink:0;">
+      <div class="modal-title" style="display:flex;align-items:center;gap:8px;">
+        <span>📊 Google Sheet CSV Diff & Reconciliation</span>
+      </div>
+      <button class="modal-close" data-close="modal-csv-diff">✕</button>
+    </div>
+
+    <div class="csv-diff-body">
+      <!-- Upload Dropzone -->
+      <div class="csv-dropzone" id="csv-diff-dropzone">
+        <div class="csv-dropzone-icon">📁</div>
+        <div class="csv-dropzone-title">Upload Google Sheet CSV Export</div>
+        <div class="csv-dropzone-sub">
+          Drag & drop your CSV file here, or <strong style="color:var(--primary-light);">browse file</strong>
+        </div>
+        <input type="file" id="csv-diff-file-input" accept=".csv,text/csv,text/plain" style="display:none;" />
+        <div style="margin-top:8px;">
+          <button type="button" class="csv-paste-toggle" id="btn-toggle-csv-paste">or paste CSV text directly ▾</button>
+        </div>
+        <div id="csv-paste-area-wrap" class="hidden" style="margin-top:12px;text-align:left;">
+          <textarea id="csv-diff-paste-input" class="form-control" rows="5" placeholder="Paste CSV rows here (including header row)..." style="font-family:monospace;font-size:11px;"></textarea>
+          <div style="display:flex;justify-content:flex-end;margin-top:8px;">
+            <button type="button" class="btn btn-primary btn-xs" id="btn-analyze-pasted-csv">🔍 Analyze Pasted CSV</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- File info pill (hidden until loaded) -->
+      <div id="csv-loaded-file-info" class="hidden" style="display:flex;align-items:center;justify-content:space-between;background:var(--card-surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;font-size:12px;gap:8px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span style="font-size:16px;">📄</span>
+          <div>
+            <strong id="csv-file-name" style="color:var(--text-primary);">sheet.csv</strong>
+            <span id="csv-file-details" style="color:var(--text-secondary);margin-left:6px;font-size:11px;">(0 rows)</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <button type="button" class="btn btn-secondary btn-xs" id="btn-toggle-skipped-rows" style="display:none;font-size:11px;background:rgba(255,255,255,0.05);color:var(--text-secondary);">👁️ View Skipped NA (0)</button>
+          <button type="button" class="btn btn-secondary btn-xs" id="btn-csv-change-file">Change File</button>
+        </div>
+      </div>
+
+      <!-- Skipped NA / Unredeemed rows drawer (collapsible) -->
+      <div id="csv-skipped-rows-wrap" class="hidden" style="background:rgba(0,0,0,0.25);border:1px dashed var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:11px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span style="color:var(--text-secondary);font-weight:700;">Skipped NA / Template Rows (<span id="skipped-rows-count">0</span>):</span>
+          <span style="font-size:10px;color:var(--text-secondary);">Excluded from diffs because they are unredeemed template slots or perks claimed in prior quarters.</span>
+        </div>
+        <div id="csv-skipped-rows-list" style="max-height:120px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;"></div>
+      </div>
+
+      <!-- Diff Summary KPI Grid & Table (hidden until analyzed) -->
+      <div id="csv-diff-summary-wrap" class="hidden" style="display:flex;flex-direction:column;gap:12px;">
+        <div class="csv-kpi-grid">
+          <div class="csv-kpi-card active" data-filter="DIFFS" id="kpi-card-diffs">
+            <div class="csv-kpi-label">
+              <span>All Differences</span>
+              <span>⚡</span>
+            </div>
+            <div class="csv-kpi-val mod" id="kpi-val-diffs">0</div>
+          </div>
+          <div class="csv-kpi-card" data-filter="NEW_IN_CSV" id="kpi-card-new">
+            <div class="csv-kpi-label">
+              <span>New in CSV</span>
+              <span>➕</span>
+            </div>
+            <div class="csv-kpi-val new" id="kpi-val-new">0</div>
+          </div>
+          <div class="csv-kpi-card" data-filter="MODIFIED" id="kpi-card-mod">
+            <div class="csv-kpi-label">
+              <span>Field Conflicts</span>
+              <span>⚠️</span>
+            </div>
+            <div class="csv-kpi-val mod" id="kpi-val-mod">0</div>
+          </div>
+          <div class="csv-kpi-card" data-filter="ONLY_IN_APP" id="kpi-card-app">
+            <div class="csv-kpi-label">
+              <span>Only in App</span>
+              <span>➖</span>
+            </div>
+            <div class="csv-kpi-val app" id="kpi-val-app">0</div>
+          </div>
+        </div>
+
+        <!-- Toolbar: Filters, Search & Bulk Actions -->
+        <div class="csv-toolbar">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <div class="csv-filter-pills">
+              <button type="button" class="csv-pill-btn active" data-filter="DIFFS">All Diffs (<span id="pill-count-diffs">0</span>)</button>
+              <button type="button" class="csv-pill-btn" data-filter="NEW_IN_CSV">➕ New (<span id="pill-count-new">0</span>)</button>
+              <button type="button" class="csv-pill-btn" data-filter="MODIFIED">⚠️ Conflicts (<span id="pill-count-mod">0</span>)</button>
+              <button type="button" class="csv-pill-btn" data-filter="ONLY_IN_APP">➖ App Only (<span id="pill-count-app">0</span>)</button>
+              <button type="button" class="csv-pill-btn" data-filter="SYNCED">✅ In Sync (<span id="pill-count-sync">0</span>)</button>
+              <button type="button" class="csv-pill-btn" data-filter="ALL">All Rows (<span id="pill-count-all">0</span>)</button>
+            </div>
+
+            <div style="display:inline-flex;align-items:center;gap:4px;background:var(--elevated);border:1px solid var(--border);border-radius:20px;padding:2px 8px;">
+              <span style="font-size:10px;color:var(--text-secondary);font-weight:700;">Scope:</span>
+              <select id="csv-diff-cycle-select" style="background:transparent;border:none;color:var(--primary-light);font-size:11px;font-weight:600;cursor:pointer;outline:none;">
+                <option value="AUTO" selected>Auto (Sheet Cycle)</option>
+                <option value="ALL">All Cycles (Full DB)</option>
+                <option value="Q4">Q4 Only</option>
+                <option value="Q3">Q3 Only</option>
+                <option value="Q2">Q2 Only</option>
+                <option value="Q1">Q1 Only</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="csv-actions-group">
+            <button type="button" class="btn btn-primary btn-sm" id="btn-import-all-csv" style="display:none;background:var(--success);border-color:var(--success);">
+              ⚡ Import All New (<span id="btn-import-new-count">0</span>)
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-update-all-csv" style="display:none;background:rgba(124,58,237,0.18);color:var(--primary-light);border-color:rgba(124,58,237,0.3);">
+              🔄 Apply All Updates (<span id="btn-update-mod-count">0</span>)
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-export-diff-report" title="Export comparison as CSV">
+              📥 Export Diff CSV
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <input type="text" class="form-control" id="csv-diff-search-input" placeholder="🔍 Search card, brand, booking ID, coupon code, buyer..." style="font-size:12px;padding:6px 10px;" />
+        </div>
+
+        <!-- Detailed Table -->
+        <div class="csv-table-wrap" id="csv-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:115px;">Status</th>
+                <th>Card</th>
+                <th>Brand / Perk</th>
+                <th>Date & Booking ID</th>
+                <th>Differences / Comparison</th>
+                <th style="width:110px;text-align:right;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="csv-diff-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer" style="flex-shrink:0;">
+      <button class="btn btn-secondary" data-close="modal-csv-diff">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: QUICK LOG FROM SMS / EMAIL TEXT ===== -->
+<div class="modal-backdrop" id="modal-quick-sms-log">
+  <div class="modal" role="dialog" aria-modal="true" style="max-width: 680px; display: flex; flex-direction: column; max-height: 88vh; overflow: hidden;">
+    <div class="modal-header" style="flex-shrink: 0;">
+      <div class="modal-title" style="display:flex;align-items:center;gap:8px;">
+        <span>⚡ Quick Log Redemptions from SMS / Text</span>
+      </div>
+      <button class="modal-close" data-close="modal-quick-sms-log">✕</button>
+    </div>
+
+    <div class="modal-body" style="flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-right: 14px; font-size: 13px; line-height: 1.5; display:flex; flex-direction:column; gap:12px;">
+      <div style="background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.25); border-radius: var(--radius-sm); padding: 10px 14px; font-size:12px; color:var(--text-secondary);">
+        Paste one or multiple RuPay confirmation SMS / emails. Booking IDs, voucher codes, PINs, brands, and cards ending in XXXX will be extracted automatically.
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="quick-sms-input" style="display:flex;justify-content:space-between;align-items:center;">
+          <span>Raw SMS / Email Text:</span>
+          <span style="font-weight:400;color:var(--text-secondary);font-size:11px;">Single or batch messages</span>
+        </label>
+        <textarea id="quick-sms-input" class="form-control" rows="4" placeholder="Paste full SMS or email text here... e.g.:&#10;RuPay Card XX7591: Your voucher code is 1001460105639722, Secret PIN: 118420 for BookMyShow. Ref: RUPS-676A9114." style="font-family:monospace;font-size:11px;"></textarea>
+      </div>
+
+      <div id="quick-sms-results-wrap" class="hidden" style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:6px;">
+          <strong style="font-size:12px;color:var(--text-primary);">Extracted Redemptions (<span id="quick-sms-count">0</span>):</strong>
+          <span style="font-size:11px;color:var(--text-secondary);">Verify card & perk assignments</span>
+        </div>
+        <div id="quick-sms-cards-container" style="display:flex;flex-direction:column;gap:10px;"></div>
+      </div>
+    </div>
+
+    <div class="modal-footer" style="flex-shrink: 0; display:flex; justify-content:space-between; align-items:center;">
+      <button class="btn btn-secondary" data-close="modal-quick-sms-log">Close</button>
+      <button class="btn btn-primary" id="btn-quick-sms-save-all" style="display:none;background:var(--success);border-color:var(--success);">
+        ⚡ Save (<span id="quick-sms-btn-count">0</span>) Redemptions
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="confirm-overlay" id="confirm-overlay">
   <div class="confirm-box">
     <div class="confirm-icon" id="confirm-icon">⚠️</div>
@@ -3378,7 +3877,8 @@ function loadDB() {
       };
       (DB.cards || []).forEach(normalizeCardObject);
       const healedCount = healUsages({ silent: true, skipSave: true });
-      if (healedCount > 0) {
+      const buyersHealed = normalizeBuyersObject(DB.buyers);
+      if (healedCount > 0 || buyersHealed) {
         saveDB();
       }
       // Do NOT call saveDB() unconditionally during initial load.
@@ -3605,6 +4105,7 @@ function mergeDatasets(fileData, currentDB) {
     });
   }
   (result.cards || []).forEach(normalizeCardObject);
+  normalizeBuyersObject(result.buyers);
 
   // Merge variants: preserve any local variants that might not be in fileData
   if (currentDB && Array.isArray(currentDB.variants)) {
@@ -4608,15 +5109,61 @@ function populateCardAccountDatalist() {
 }
 
 /** Buyer Address Book helpers */
+function normalizeBuyersObject(buyersObj) {
+  const target = buyersObj || (typeof DB === 'object' ? DB.buyers : null);
+  if (!target || typeof target !== 'object') {
+    if (!buyersObj && typeof DB === 'object') DB.buyers = {};
+    return false;
+  }
+  let changed = false;
+  for (const [phone, val] of Object.entries(target)) {
+    if (val && typeof val === 'object') {
+      const nick = (typeof val.nickname === 'string' && val.nickname.trim())
+        || (typeof val.name === 'string' && val.name.trim())
+        || '';
+      if (nick) {
+        target[phone] = nick;
+      } else {
+        delete target[phone];
+      }
+      changed = true;
+    } else if (typeof val === 'string' && !val.trim()) {
+      delete target[phone];
+      changed = true;
+    } else if (typeof val !== 'string') {
+      delete target[phone];
+      changed = true;
+    }
+  }
+  return changed;
+}
+
 function getBuyerContactName(phone) {
   if (!phone || typeof phone !== 'string') return '';
   const clean = phone.trim();
-  if (!clean) return '';
-  if (DB.buyers && DB.buyers[clean]) return DB.buyers[clean];
+  if (!clean || !DB.buyers || typeof DB.buyers !== 'object') return '';
+
+  const resolveName = (entry) => {
+    if (!entry) return '';
+    if (typeof entry === 'string') return entry.trim();
+    if (typeof entry === 'object') {
+      if (typeof entry.nickname === 'string' && entry.nickname.trim()) return entry.nickname.trim();
+      if (typeof entry.name === 'string' && entry.name.trim()) return entry.name.trim();
+    }
+    return '';
+  };
+
+  if (DB.buyers[clean]) {
+    const res = resolveName(DB.buyers[clean]);
+    if (res) return res;
+  }
   const digitsOnly = clean.replace(/\D/g, '');
   if (digitsOnly && DB.buyers) {
-    for (const [key, name] of Object.entries(DB.buyers)) {
-      if (key.replace(/\D/g, '') === digitsOnly) return name;
+    for (const [key, val] of Object.entries(DB.buyers)) {
+      if (key.replace(/\D/g, '') === digitsOnly) {
+        const res = resolveName(val);
+        if (res) return res;
+      }
     }
   }
   return '';
@@ -6014,7 +6561,9 @@ function renderVouchersTable() {
         ` : '<span style="color:var(--text-secondary)">—</span>'}
       </td>
       <td>${statusBadge}</td>
-      <td style="color:${u.buyer ? 'var(--text-primary)' : 'var(--text-secondary)'};font-size:11px">${u.buyer ? esc(u.buyer) : '—'}</td>
+      <td style="color:${u.buyer ? 'var(--text-primary)' : 'var(--text-secondary)'};font-size:11px">
+        ${u.buyer ? (getBuyerContactName(u.buyer) ? `<div style="font-weight:600;color:var(--text-primary);">${esc(getBuyerContactName(u.buyer))}</div><div style="font-size:10px;color:var(--text-secondary);font-family:var(--font-mono, monospace);">${esc(u.buyer)}</div>` : `<span style="font-family:var(--font-mono, monospace);">${esc(u.buyer)}</span>`) : '—'}
+      </td>
       <td style="font-size:11px">${fmtTimestamp(u.date)}</td>
       <td>
         <div style="display:flex;gap:4px">
@@ -6149,16 +6698,90 @@ function bulkMarkUnused() {
 
 function bulkCopyCodes() {
   if (selectedVoucherIds.size === 0) return;
-  const selectedUsages = DB.usages.filter(u => selectedVoucherIds.has(u.id) && u.couponCode);
-  if (selectedUsages.length === 0) {
+  const selectedUsages = DB.usages.filter(u => selectedVoucherIds.has(u.id));
+  if (selectedUsages.length === 0) return;
+
+  const brandGroups = new Map();
+  selectedUsages.forEach(u => {
+    const brand = (u.brand || 'Other').trim();
+    const code = (u.couponCode || '').trim() || (u.bookingId ? `Booking ID: ${u.bookingId}` : '');
+    if (!code) return;
+    if (!brandGroups.has(brand)) brandGroups.set(brand, []);
+    brandGroups.get(brand).push(code);
+  });
+
+  if (brandGroups.size === 0) {
     showToast('None of the selected vouchers have coupon codes', 'error');
     return;
   }
-  const lines = selectedUsages.map(u => `${u.brand || 'Voucher'}: ${u.couponCode}`).join('\n');
-  navigator.clipboard.writeText(lines).then(() => {
-    showToast(`Copied ${selectedUsages.length} coupon codes to clipboard! 📋`, 'success');
-  }).catch(() => {
-    showToast('Failed to copy to clipboard', 'error');
+
+  const sections = [];
+  for (const [brand, codes] of brandGroups.entries()) {
+    sections.push(`${brand}\n${codes.join('\n')}`);
+  }
+  const formattedText = sections.join('\n\n');
+
+  const onCopied = () => {
+    showToast(`Copied ${selectedUsages.length} vouchers grouped by brand! 📋`, 'success');
+  };
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(formattedText).then(onCopied).catch(() => {
+      fallbackCopy(formattedText, onCopied);
+    });
+  } else {
+    fallbackCopy(formattedText, onCopied);
+  }
+}
+
+function bulkShareWhatsApp() {
+  if (selectedVoucherIds.size === 0) return;
+  const selectedUsages = DB.usages.filter(u => selectedVoucherIds.has(u.id));
+  if (selectedUsages.length === 0) return;
+
+  const brandGroups = new Map();
+  let commonBuyer = '';
+  let sameBuyer = true;
+
+  selectedUsages.forEach(u => {
+    const brand = (u.brand || 'Other').trim();
+    const code = (u.couponCode || '').trim() || (u.bookingId ? `Booking ID: ${u.bookingId}` : '');
+    if (!code) return;
+    if (!brandGroups.has(brand)) brandGroups.set(brand, []);
+    brandGroups.get(brand).push(code);
+
+    if (u.buyer) {
+      if (!commonBuyer) commonBuyer = u.buyer;
+      else if (commonBuyer !== u.buyer) sameBuyer = false;
+    }
+  });
+
+  if (brandGroups.size === 0) {
+    showToast('None of the selected vouchers have coupon codes', 'error');
+    return;
+  }
+
+  const sections = [];
+  for (const [brand, codes] of brandGroups.entries()) {
+    sections.push(`${brand}\n${codes.join('\n')}`);
+  }
+  const formattedText = sections.join('\n\n');
+
+  let targetPhone = sameBuyer ? commonBuyer : '';
+  if (!targetPhone) {
+    const inputPhone = prompt('Enter buyer phone number for WhatsApp (leave blank to choose contact in WhatsApp):', '');
+    if (inputPhone !== null) targetPhone = inputPhone.trim();
+  }
+
+  const cleanPhone = targetPhone ? targetPhone.replace(/\D/g, '') : '';
+  const intlPhone = cleanPhone ? (cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone) : '';
+  const waUrl = intlPhone
+    ? `https://wa.me/${intlPhone}?text=${encodeURIComponent(formattedText)}`
+    : `https://wa.me/?text=${encodeURIComponent(formattedText)}`;
+
+  window.open(waUrl, '_blank');
+  fallbackCopy(formattedText, () => {
+    showToast('Copied to clipboard & opened WhatsApp! 💬', 'success');
   });
 }
 
@@ -7287,6 +7910,584 @@ function saveCard() {
 }
 
 /* ==============================================================
+   SECTION 5c: QUICK LOG VIA SMS / EMAIL CONFIRMATION PARSER
+   ============================================================== */
+
+function splitRedemptionMessages(rawFullText) {
+  if (!rawFullText || typeof rawFullText !== 'string') return [];
+  let fullText = rawFullText
+    .replace(/[\u2012\u2013\u2014\u2015\u2212]/g, '-')
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    .trim();
+
+  if (!fullText) return [];
+
+  // 1. Multiple Booking IDs (RUPS-... or RUPP-...)
+  const bkRegex = /\b(RUPS-?[A-Za-z0-9]{6,12}|RUPP-?[A-Za-z0-9]{6,12}|RUP-?[A-Za-z0-9]{6,12})\b/gi;
+  const bkMatches = [...fullText.matchAll(bkRegex)];
+
+  if (bkMatches.length > 1) {
+    const pieces = [];
+    for (let i = 0; i < bkMatches.length; i++) {
+      const match = bkMatches[i];
+      const start = match.index;
+      const lookbackLimit = Math.max(0, start - 120);
+      const prevSlice = fullText.slice(lookbackLimit, start);
+      const splitIdx = Math.max(
+        prevSlice.lastIndexOf('\n---\n'),
+        prevSlice.lastIndexOf('\n===\n'),
+        prevSlice.lastIndexOf('\n\n')
+      );
+      const chunkStart = (i === 0) ? 0 : (splitIdx !== -1 ? (lookbackLimit + splitIdx) : start);
+      const nextStart = (i + 1 < bkMatches.length) ? bkMatches[i + 1].index : fullText.length;
+      pieces.push(fullText.slice(chunkStart, nextStart).trim());
+    }
+    return pieces.filter(Boolean);
+  }
+
+  // 2. Explicit triple-dash / equal separators
+  const explicitBlocks = fullText.split(/\n\s*[-=_*~]{3,}\s*\n/).map(b => b.trim()).filter(Boolean);
+  if (explicitBlocks.length > 1) {
+    return explicitBlocks;
+  }
+
+  // 3. Multiple distinct headers
+  const headerRegex = /(?=(?:Dear Customer|Dear Member|Your RuPay Select|Your RuPay Platinum|RuPay Card XX))/gi;
+  const headerBlocks = fullText.split(headerRegex).map(b => b.trim()).filter(b => b.length > 15);
+  if (headerBlocks.length > 1) {
+    return headerBlocks;
+  }
+
+  // Single message (preserves internal blank lines)
+  return [fullText];
+}
+
+function parseSingleRedemptionText(rawText) {
+  if (!rawText || typeof rawText !== 'string') return null;
+  let text = rawText
+    .replace(/[\u2012\u2013\u2014\u2015\u2212]/g, '-')
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    .trim();
+  if (!text) return null;
+
+  const result = {
+    bookingId: '',
+    couponCode: '',
+    brand: '',
+    cardLast4: '',
+    account: '',
+    buyer: '',
+    isDirectActivation: false,
+    isExistingMatch: false,
+    existingUsageId: null,
+    cardId: null,
+    benefitId: null,
+    rawText: text
+  };
+
+  // 1. Booking ID (RUPS-XXXXXXXX, RUPP-XXXXXXXX, or Booking ID: XXXX)
+  const bkMatch = text.match(/\b(RUPS-?[A-Za-z0-9]{6,12}|RUPP-?[A-Za-z0-9]{6,12}|RUP-?[A-Za-z0-9]{6,12})\b/i) ||
+                  text.match(/(?:booking\s*(?:id|ref|no|reference)?|order\s*id|ref\s*no\.?)[\s:=#-]*([A-Za-z0-9-]{6,16})/i);
+  if (bkMatch) {
+    let bk = bkMatch[1].trim().toUpperCase().replace(/[.,;:!?]+$/, '');
+    if (!bk.includes('-') && (bk.startsWith('RUPS') || bk.startsWith('RUPP'))) {
+      bk = bk.slice(0, 4) + '-' + bk.slice(4);
+    }
+    result.bookingId = bk;
+  }
+
+  // Cross-reference DB.usages to see if booking ID already exists
+  if (result.bookingId && Array.isArray(DB.usages)) {
+    const existing = DB.usages.find(u => (u.bookingId || '').trim().toLowerCase() === result.bookingId.toLowerCase());
+    if (existing) {
+      result.isExistingMatch = true;
+      result.existingUsageId = existing.id;
+      if (existing.brand) result.brand = existing.brand;
+      if (existing.account) result.account = existing.account;
+      if (existing.cardId) {
+        result.cardId = existing.cardId;
+        const c = getCardById(existing.cardId);
+        if (c) result.cardLast4 = c.last4;
+      }
+      if (existing.benefitId) result.benefitId = existing.benefitId;
+    }
+  }
+
+  // 2. PIN extraction
+  let pin = '';
+  const pinMatch = text.match(/(?:pin|secret\s*pin|cvv|passcode)[\s:=#-]*([0-9]{4,8})\b/i);
+  if (pinMatch) {
+    pin = pinMatch[1].trim();
+  }
+
+  // 3. Voucher / Coupon Code
+  const codeMatch = text.match(/(?:voucher\s*(?:code|no)?|coupon\s*(?:code)?|promo\s*(?:code)?|gift\s*(?:card)?\s*(?:code|no)?)[\s:=#-]*([A-Za-z0-9-]{6,30})/i);
+  if (codeMatch) {
+    let c = codeMatch[1].trim().replace(/[.,;:!?]+$/, '');
+    if (c.toUpperCase() === 'PIN' || c.toUpperCase() === 'IS') {
+      const nextMatch = text.slice(codeMatch.index + codeMatch[0].length).match(/([A-Za-z0-9-]{6,30})/);
+      if (nextMatch) c = nextMatch[1].trim().replace(/[.,;:!?]+$/, '');
+    }
+    result.couponCode = pin ? (c + '/pin:' + pin) : c;
+  } else {
+    const numMatch = text.match(/\b([0-9]{16})\b/);
+    if (numMatch) {
+      result.couponCode = pin ? (numMatch[1] + '/pin:' + pin) : numMatch[1];
+    } else {
+      const standalone = text.match(/\b(?=[A-Za-z0-9-]*[0-9])([A-Za-z0-9-]{8,26})\b/);
+      if (standalone && standalone[1] !== result.bookingId && standalone[1] !== (result.bookingId ? result.bookingId.replace('-', '') : '')) {
+        result.couponCode = pin ? (standalone[1] + '/pin:' + pin) : standalone[1];
+      }
+    }
+  }
+
+  // 4. Brand resolution
+  if (!result.brand) {
+    const tLower = text.toLowerCase();
+    const knownBrands = [
+      { key: 'Amazon Prime', patterns: ['amazon prime', 'prime video', 'amazon', 'pveu-', 'pveu'] },
+      { key: 'BookMyShow', patterns: ['bookmyshow', 'book my show', 'bms-', 'bms'] },
+      { key: 'Lakme', patterns: ['lakme salon', 'lakme'] },
+      { key: 'Thyrocare', patterns: ['thyrocare', 'thyro care'] },
+      { key: 'Cult.fit', patterns: ['cult.fit', 'cult fit', 'cultpass', 'cult pass', 'cult gym', 'cult', 'curefit'] },
+      { key: 'Uber', patterns: ['uber cab', 'uber'] },
+      { key: 'Sony LIV', patterns: ['sonyliv', 'sony liv', 'sony'] },
+      { key: 'Disney+ Hotstar', patterns: ['hotstar', 'disney+'] },
+      { key: 'Swiggy', patterns: ['swiggy'] },
+      { key: 'Zomato', patterns: ['zomato'] },
+      { key: 'Croma', patterns: ['croma'] },
+      { key: 'Myntra', patterns: ['myntra'] },
+      { key: 'Flipkart', patterns: ['flipkart'] },
+      { key: 'BigBasket', patterns: ['bigbasket', 'big basket'] },
+      { key: 'MakeMyTrip', patterns: ['makemytrip', 'mmt'] }
+    ];
+
+    const codeLower = (result.couponCode || '').toLowerCase();
+    for (const b of knownBrands) {
+      if (b.patterns.some(p => tLower.includes(p) || codeLower.startsWith(p))) {
+        result.brand = b.key;
+        break;
+      }
+    }
+  }
+
+  // 5. Card identification (last 4 digits)
+  if (!result.cardLast4) {
+    const cardMatch = text.match(/(?:card|card\s*no|ending\s*(?:with|in)?)[\s:=#•\*-]*([0-9]{4})\b/i) ||
+                      text.match(/[•\*Xx]{2,}([0-9]{4})\b/);
+    if (cardMatch) {
+      result.cardLast4 = cardMatch[1];
+    }
+  }
+
+  // 6. Account email
+  if (!result.account) {
+    const emailMatch = text.match(/\b([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\b/);
+    if (emailMatch) {
+      result.account = emailMatch[1];
+    }
+  }
+
+  // 7. Cult / Direct Activation buyer phone
+  const phoneMatch = text.match(/(?:activated\s*on|mobile(?:\s*no\.?)?|phone(?:\s*no\.?)?|buyer)[\s:=#-]*([6-9][0-9]{9})\b/i);
+  if (phoneMatch) {
+    result.buyer = phoneMatch[1];
+    if (result.brand === 'Cult.fit' || text.toLowerCase().includes('cult') || text.toLowerCase().includes('activated on')) {
+      result.isDirectActivation = true;
+      if (!result.couponCode) result.couponCode = 'NA';
+    }
+  } else if (result.brand === 'Cult.fit') {
+    const anyPhone = text.match(/\b([6-9][0-9]{9})\b/);
+    if (anyPhone) {
+      result.buyer = anyPhone[1];
+      result.isDirectActivation = true;
+      if (!result.couponCode) result.couponCode = 'NA';
+    }
+  }
+
+  return result;
+}
+
+function findBestCardForBrand(brand, cardLast4) {
+  if (cardLast4 && Array.isArray(DB.cards)) {
+    const directCard = DB.cards.find(c => c.last4 === cardLast4);
+    if (directCard) return directCard;
+  }
+  if (!brand || !Array.isArray(DB.cards)) return (DB.cards && DB.cards[0]) || null;
+
+  const bLower = brand.toLowerCase();
+  for (const card of DB.cards) {
+    const variant = getVariantById(card.variantId);
+    if (!variant || !variant.benefits) continue;
+    const hasPerk = variant.benefits.some(b => {
+      if (b.brand && b.brand.toLowerCase().includes(bLower)) return true;
+      if (bLower.includes('prime') || bLower.includes('hotstar') || bLower.includes('sony')) return b.type === 'ott';
+      if (bLower.includes('lakme') || bLower.includes('spa')) return b.type === 'spa';
+      if (bLower.includes('uber') || bLower.includes('cab')) return b.type === 'cab';
+      if (bLower.includes('cult') || bLower.includes('gym')) return b.type === 'gym';
+      if (bLower.includes('thyrocare') || bLower.includes('health')) return b.type === 'health';
+      if (bLower.includes('bookmyshow') || bLower.includes('bms')) return b.type === 'movie' || (b.label && b.label.toLowerCase().includes('movie'));
+      return false;
+    });
+    if (hasPerk) {
+      const matchingBenefit = variant.benefits.find(b => {
+        if (b.brand && b.brand.toLowerCase().includes(bLower)) return true;
+        if (bLower.includes('prime') || bLower.includes('hotstar') || bLower.includes('sony')) return b.type === 'ott';
+        if (bLower.includes('lakme') || bLower.includes('spa')) return b.type === 'spa';
+        if (bLower.includes('uber') || bLower.includes('cab')) return b.type === 'cab';
+        if (bLower.includes('cult') || bLower.includes('gym')) return b.type === 'gym';
+        if (bLower.includes('thyrocare') || bLower.includes('health')) return b.type === 'health';
+        return false;
+      });
+      if (matchingBenefit) {
+        const used = getUsedCount(card.id, matchingBenefit.id, matchingBenefit.periodType);
+        if (matchingBenefit.quota - used > 0) {
+          return card;
+        }
+      }
+    }
+  }
+
+  for (const card of DB.cards) {
+    const variant = getVariantById(card.variantId);
+    if (!variant || !variant.benefits) continue;
+    if (variant.benefits.some(b => b.brand && b.brand.toLowerCase().includes(bLower))) return card;
+  }
+  return DB.cards[0] || null;
+}
+
+function findBenefitIdForCardAndBrand(card, brand) {
+  if (!card) return '';
+  const variant = getVariantById(card.variantId);
+  if (!variant || !variant.benefits || variant.benefits.length === 0) return '';
+  const bLower = (brand || '').toLowerCase();
+
+  const exactBrand = variant.benefits.find(b => b.brand && b.brand.toLowerCase() === bLower);
+  if (exactBrand) return exactBrand.id;
+
+  const typeMatch = variant.benefits.find(b => {
+    if (bLower.includes('prime') || bLower.includes('hotstar') || bLower.includes('sony') || bLower.includes('zee')) return b.type === 'ott';
+    if (bLower.includes('lakme') || bLower.includes('spa')) return b.type === 'spa';
+    if (bLower.includes('uber') || bLower.includes('cab')) return b.type === 'cab';
+    if (bLower.includes('cult') || bLower.includes('gym')) return b.type === 'gym';
+    if (bLower.includes('thyrocare') || bLower.includes('health')) return b.type === 'health';
+    if (bLower.includes('bookmyshow') || bLower.includes('bms')) return b.type === 'movie' || (b.label && b.label.toLowerCase().includes('movie'));
+    return false;
+  });
+  if (typeMatch) return typeMatch.id;
+
+  return variant.benefits[0].id;
+}
+
+function applySMSPasteToLogModal() {
+  const textEl = document.getElementById('log-sms-paste-text');
+  if (!textEl || !textEl.value.trim()) {
+    showToast('Please paste SMS / email text first', 'error');
+    return;
+  }
+  const parsed = parseSingleRedemptionText(textEl.value);
+  if (!parsed) {
+    showToast('Could not extract redemption details from pasted text', 'error');
+    return;
+  }
+
+  let fieldsFilled = 0;
+  if (parsed.bookingId) {
+    const el = document.getElementById('log-booking-id');
+    if (el) { el.value = parsed.bookingId; fieldsFilled++; }
+  }
+  if (parsed.couponCode) {
+    const el = document.getElementById('log-coupon-code');
+    if (el) { el.value = parsed.couponCode; fieldsFilled++; }
+  }
+  if (parsed.account) {
+    const el = document.getElementById('log-account');
+    if (el && !el.value) { el.value = parsed.account; fieldsFilled++; }
+  }
+  if (parsed.brand) {
+    const brandSel = document.getElementById('log-brand-select');
+    const brandInp = document.getElementById('log-brand');
+    if (brandSel && brandInp) {
+      const bLower = parsed.brand.toLowerCase();
+      let found = false;
+      for (const opt of brandSel.options) {
+        if (opt.value && opt.value.toLowerCase().includes(bLower)) {
+          brandSel.value = opt.value;
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        brandSel.value = '__CUSTOM__';
+        brandInp.value = parsed.brand;
+        brandInp.classList.remove('hidden');
+        brandSel.classList.add('hidden');
+      }
+      fieldsFilled++;
+    }
+  }
+
+  if (parsed.isDirectActivation || parsed.buyer) {
+    const cb = document.getElementById('log-buyer-account');
+    const cardId = document.getElementById('log-card-id').value;
+    const card = getCardById(cardId);
+    if (cb) {
+      cb.checked = true;
+      updateBuyerAccountUI(true, card ? card.account : '');
+    }
+    if (parsed.buyer) {
+      const buyerEl = document.getElementById('log-buyer');
+      if (buyerEl) buyerEl.value = parsed.buyer;
+      const usedEl = document.getElementById('log-coupon-used');
+      if (usedEl) usedEl.value = 'SOLD';
+    }
+    fieldsFilled++;
+  }
+
+  showToast(`Auto-filled ${fieldsFilled} fields from SMS! ⚡`, 'success');
+  const drawer = document.getElementById('log-sms-paste-drawer');
+  if (drawer) drawer.classList.add('hidden');
+  const arrow = document.getElementById('log-sms-toggle-arrow');
+  if (arrow) arrow.textContent = '▼ Paste';
+}
+
+let currentParsedSMSItems = [];
+
+function openQuickSMSModal() {
+  currentParsedSMSItems = [];
+  const inputEl = document.getElementById('quick-sms-input');
+  if (inputEl) inputEl.value = '';
+  const wrap = document.getElementById('quick-sms-results-wrap');
+  if (wrap) wrap.classList.add('hidden');
+  const btnSave = document.getElementById('btn-quick-sms-save-all');
+  if (btnSave) btnSave.style.display = 'none';
+  const container = document.getElementById('quick-sms-cards-container');
+  if (container) container.innerHTML = '';
+  openModal('modal-quick-sms-log');
+  if (inputEl) setTimeout(() => inputEl.focus(), 120);
+}
+
+function handleQuickSMSInput(e) {
+  const fullText = (e && e.target ? e.target.value : '').trim();
+  const wrap = document.getElementById('quick-sms-results-wrap');
+  const btnSave = document.getElementById('btn-quick-sms-save-all');
+  const countEl = document.getElementById('quick-sms-count');
+  const btnCountEl = document.getElementById('quick-sms-btn-count');
+  const container = document.getElementById('quick-sms-cards-container');
+
+  if (!fullText) {
+    if (wrap) wrap.classList.add('hidden');
+    if (btnSave) btnSave.style.display = 'none';
+    currentParsedSMSItems = [];
+    if (container) container.innerHTML = '';
+    return;
+  }
+
+  const rawMessages = splitRedemptionMessages(fullText);
+  const parsedItems = [];
+
+  rawMessages.forEach((msg, idx) => {
+    const item = parseSingleRedemptionText(msg);
+    if (item && (item.bookingId || item.couponCode || item.brand)) {
+      item.id = 'sms-' + idx + '-' + Date.now();
+      const matchedCard = item.cardId ? getCardById(item.cardId) : findBestCardForBrand(item.brand, item.cardLast4);
+      item.cardId = matchedCard ? matchedCard.id : (DB.cards[0] ? DB.cards[0].id : '');
+      item.benefitId = item.benefitId || (matchedCard ? findBenefitIdForCardAndBrand(matchedCard, item.brand) : '');
+      item.account = item.account || (matchedCard ? matchedCard.account : '');
+      item.date = nowLocalISO();
+      parsedItems.push(item);
+    }
+  });
+
+  currentParsedSMSItems = parsedItems;
+
+  if (parsedItems.length === 0) {
+    if (wrap) wrap.classList.add('hidden');
+    if (btnSave) btnSave.style.display = 'none';
+    if (container) container.innerHTML = '';
+    return;
+  }
+
+  if (wrap) wrap.classList.remove('hidden');
+  if (countEl) countEl.textContent = parsedItems.length;
+  if (btnCountEl) btnCountEl.textContent = parsedItems.length;
+  if (btnSave) {
+    btnSave.style.display = 'inline-flex';
+    const hasUpdates = parsedItems.some(x => x.isExistingMatch);
+    btnSave.innerHTML = `⚡ ${hasUpdates ? 'Save / Update' : 'Save'} (<span id="quick-sms-btn-count">${parsedItems.length}</span>) Redemption${parsedItems.length === 1 ? '' : 's'}`;
+  }
+
+  renderQuickSMSItemsList();
+}
+
+function renderQuickSMSItemsList() {
+  const container = document.getElementById('quick-sms-cards-container');
+  if (!container) return;
+
+  if (currentParsedSMSItems.length === 0) {
+    container.innerHTML = '<div style="color:var(--text-secondary);font-size:12px;padding:8px 0;">No redemptions detected yet. Paste SMS text above.</div>';
+    return;
+  }
+
+  container.innerHTML = currentParsedSMSItems.map((item, idx) => {
+    const cardOpts = (DB.cards || []).map(c => {
+      const isSel = c.id === item.cardId;
+      return `<option value="${c.id}" ${isSel ? 'selected' : ''}>${esc(c.nickname)} (••••${esc(c.last4)})</option>`;
+    }).join('');
+
+    const card = getCardById(item.cardId);
+    const variant = card ? getVariantById(card.variantId) : null;
+    const benefitOpts = variant && variant.benefits ? variant.benefits.map(b => {
+      const isSel = b.id === item.benefitId;
+      return `<option value="${b.id}" ${isSel ? 'selected' : ''}>${benefitIcon(b.type)} ${esc(getBenefitDisplayName(b))}${b.brand ? ' (' + esc(b.brand) + ')' : ''}</option>`;
+    }).join('') : '<option value="">Default Perk</option>';
+
+    return `
+      <div class="quick-sms-card" data-idx="${idx}" style="background:var(--card-surface);border:1px solid ${item.isExistingMatch ? 'rgba(6,182,212,0.4)' : 'var(--border)'};border-radius:var(--radius-sm);padding:10px 12px;display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:6px;">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <span class="badge badge-primary" style="font-size:10px;">#${idx + 1}</span>
+            <span class="badge badge-brand" style="font-size:10px;">${esc(item.brand || 'Perk')}</span>
+            ${item.bookingId ? `<span class="code-pill" style="font-size:10px;padding:2px 6px;">${esc(item.bookingId)}</span>` : ''}
+            ${item.isExistingMatch ? `<span class="badge" style="background:rgba(6,182,212,0.18);color:var(--secondary);font-size:10px;">🔄 Updates Existing Log</span>` : ''}
+            ${item.isDirectActivation ? `<span class="badge" style="background:rgba(249,115,22,0.15);color:#fb923c;font-size:10px;">⚡ Direct Buyer</span>` : ''}
+          </div>
+          <button type="button" class="btn btn-secondary btn-xs btn-remove-quick-sms" data-idx="${idx}" style="color:var(--danger);padding:2px 6px;font-size:11px;" title="Remove this redemption">✕</button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label" style="font-size:11px;margin-bottom:3px;">Assigned Card *</label>
+            <select class="form-control quick-sms-card-select" data-idx="${idx}" style="font-size:11px;padding:5px 8px;">
+              ${cardOpts}
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label" style="font-size:11px;margin-bottom:3px;">Benefit / Perk *</label>
+            <select class="form-control quick-sms-benefit-select" data-idx="${idx}" style="font-size:11px;padding:5px 8px;">
+              ${benefitOpts}
+            </select>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label" style="font-size:11px;margin-bottom:3px;">Booking ID</label>
+            <input type="text" class="form-control quick-sms-booking" data-idx="${idx}" value="${esc(item.bookingId || '')}" placeholder="RUPS-XXXXXXXX" style="font-size:11px;padding:5px 8px;font-family:monospace;" />
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label" style="font-size:11px;margin-bottom:3px;">Coupon / Voucher Code</label>
+            <input type="text" class="form-control quick-sms-code" data-idx="${idx}" value="${esc(item.couponCode || '')}" placeholder="Code / PIN" style="font-size:11px;padding:5px 8px;font-family:monospace;" />
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label" style="font-size:11px;margin-bottom:3px;">Account (Email)</label>
+            <input type="email" class="form-control quick-sms-account" data-idx="${idx}" value="${esc(item.account || '')}" placeholder="Account email" style="font-size:11px;padding:5px 8px;" />
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label" style="font-size:11px;margin-bottom:3px;">Buyer Phone (Optional)</label>
+            <input type="text" class="form-control quick-sms-buyer" data-idx="${idx}" value="${esc(item.buyer || '')}" placeholder="e.g. 9485799121" style="font-size:11px;padding:5px 8px;" />
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function saveQuickSMSBatch() {
+  if (!currentParsedSMSItems || currentParsedSMSItems.length === 0) {
+    showToast('No redemptions to save', 'error');
+    return;
+  }
+
+  const container = document.getElementById('quick-sms-cards-container');
+  if (container) {
+    container.querySelectorAll('.quick-sms-card').forEach(cardEl => {
+      const idx = parseInt(cardEl.dataset.idx, 10);
+      if (isNaN(idx) || !currentParsedSMSItems[idx]) return;
+      const item = currentParsedSMSItems[idx];
+
+      const selCard = cardEl.querySelector('.quick-sms-card-select');
+      if (selCard) item.cardId = selCard.value;
+      const selBen = cardEl.querySelector('.quick-sms-benefit-select');
+      if (selBen) item.benefitId = selBen.value;
+      const inBk = cardEl.querySelector('.quick-sms-booking');
+      if (inBk) item.bookingId = inBk.value.trim();
+      const inCode = cardEl.querySelector('.quick-sms-code');
+      if (inCode) item.couponCode = inCode.value.trim();
+      const inAcc = cardEl.querySelector('.quick-sms-account');
+      if (inAcc) item.account = inAcc.value.trim();
+      const inBuyer = cardEl.querySelector('.quick-sms-buyer');
+      if (inBuyer) item.buyer = inBuyer.value.trim();
+    });
+  }
+
+  let savedCount = 0;
+  for (const item of currentParsedSMSItems) {
+    if (!item.cardId) {
+      showToast('Please pick a card for all redemptions', 'error');
+      return;
+    }
+    const card = getCardById(item.cardId);
+    if (!card) continue;
+
+    // Check if updating existing log
+    if (item.existingUsageId) {
+      const existing = DB.usages.find(u => u.id === item.existingUsageId);
+      if (existing) {
+        if (item.couponCode && (!existing.couponCode || existing.couponCode === 'NA')) {
+          existing.couponCode = item.couponCode;
+        }
+        if (item.bookingId) existing.bookingId = item.bookingId;
+        if (item.buyer) {
+          existing.buyer = item.buyer;
+          existing.couponUsed = 'SOLD';
+          existing.sellDate = todayISO();
+        }
+        if (typeof syncRedemptionToGSheet === 'function') {
+          syncRedemptionToGSheet(existing);
+        }
+        savedCount++;
+        continue;
+      }
+    }
+
+    const brand = item.brand || (card ? card.nickname : 'Other');
+    const isDirect = Boolean(item.isDirectActivation || (item.brand === 'Cult.fit' && item.buyer));
+    const couponUsed = item.buyer ? 'SOLD' : '';
+    const sellDate = item.buyer ? todayISO() : '';
+    const price = item.buyer ? getBrandPresetPrice(brand) : undefined;
+
+    addUsage({
+      cardId: item.cardId,
+      benefitId: item.benefitId || '',
+      date: item.date || nowLocalISO(),
+      account: item.account || card.account || '',
+      brand: brand,
+      redeemStatus: 'Redeemed',
+      bookingId: item.bookingId || '',
+      couponCode: item.couponCode || (isDirect ? 'NA' : ''),
+      couponUsed: couponUsed,
+      buyer: item.buyer || '',
+      sellDate: sellDate,
+      price: price,
+      notes: '',
+      redeemedOnBuyerAccount: isDirect
+    });
+    savedCount++;
+  }
+
+  closeModal('modal-quick-sms-log');
+  currentParsedSMSItems = [];
+  renderAll();
+  showToast(`Successfully saved/updated ${savedCount} redemption${savedCount === 1 ? '' : 's'}! ⚡`, 'success');
+}
+
+/* ==============================================================
    SECTION 6: TOAST NOTIFICATIONS
    ============================================================== */
 
@@ -8033,6 +9234,840 @@ async function pushToGSheet() {
   );
 }
 
+/* ==============================================================
+   SECTION 2d: GOOGLE SHEETS CSV DIFF & RECONCILIATION ENGINE
+   ============================================================== */
+
+let currentCSVDiffResult = null;
+let currentCSVDiffFilter = 'DIFFS';
+let currentCSVDiffSearch = '';
+let currentCSVDiffCycleScope = 'AUTO';
+
+function isNA(val) {
+  if (val === null || val === undefined) return true;
+  const s = String(val).trim().toLowerCase();
+  return s === '' || s === 'na' || s === 'n/a' || s === '-' || s === '--' || s === 'nil' || s === 'none' || s === 'null';
+}
+
+function isRedeemedCSVRow(row) {
+  const card = (row.card || '').trim();
+  if (!card || isNA(card)) return false;
+
+  const status = (row.redeemStatus || row.status || '').trim().toLowerCase();
+  const bookingId = (row.bookingId || '').trim();
+  const couponCode = (row.couponCode || '').trim();
+  const couponUsed = (row.couponUsed || '').trim().toLowerCase();
+  const buyer = (row.buyer || '').trim();
+  const date = (row.redeemDate || row.date || '').trim();
+
+  const hasValidBookingId = bookingId && !isNA(bookingId);
+  const hasValidCode = couponCode && !isNA(couponCode);
+  const hasValidBuyer = buyer && !isNA(buyer);
+  const hasValidDate = date && !isNA(date);
+
+  const unredeemedStatuses = [
+    'na', 'n/a', 'not available', 'unused', 'yet to claim', 'pending',
+    'already claimed', 'claimed earlier', 'exhausted', '-', '--', 'no', 'nil', 'none'
+  ];
+
+  // If status explicitly indicates not available or already claimed in earlier cycle
+  const isStatusUnredeemed = unredeemedStatuses.includes(status) || status.startsWith('claimed in q') || status.startsWith('already');
+
+  if (isStatusUnredeemed && !hasValidBookingId && !hasValidCode) {
+    return false;
+  }
+
+  // If all key redemption columns are blank/NA, it is an unredeemed slot
+  if (!hasValidBookingId && !hasValidCode && !hasValidBuyer && (!hasValidDate || isNA(row.brand))) {
+    const isExplicitlyRedeemed = status === 'redeemed' || status === 'claimed' || status === 'done' || status === 'yes' || couponUsed === 'sold' || couponUsed === 'used';
+    if (!isExplicitlyRedeemed) return false;
+  }
+
+  // Definite redemption
+  if (hasValidBookingId || hasValidCode || hasValidBuyer) return true;
+
+  if ((status === 'redeemed' || status === 'claimed' || status === 'done') && !isNA(row.brand)) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Robust RFC-compliant CSV parser.
+ * Handles delimiters (comma, tab, semicolon), quoted strings, commas in quotes, escaped quotes ("").
+ */
+function parseGoogleSheetCSV(text) {
+  if (!text || !text.trim()) return { headers: [], normalizedHeaders: [], rows: [] };
+  const lines = [];
+  let row = [''];
+  let inQuotes = false;
+  let i = 0;
+
+  let delimiter = ',';
+  const firstLine = text.split(/\r?\n/).find(l => l.trim().length > 0) || '';
+  if (!firstLine.includes(',') && firstLine.includes('\t')) delimiter = '\t';
+  else if (!firstLine.includes(',') && firstLine.includes(';')) delimiter = ';';
+
+  while (i < text.length) {
+    const char = text[i];
+    const nextChar = text[i + 1];
+
+    if (inQuotes) {
+      if (char === '"') {
+        if (nextChar === '"') {
+          row[row.length - 1] += '"';
+          i += 2;
+          continue;
+        } else {
+          inQuotes = false;
+          i++;
+          continue;
+        }
+      } else {
+        row[row.length - 1] += char;
+        i++;
+        continue;
+      }
+    } else {
+      if (char === '"') {
+        inQuotes = true;
+        i++;
+        continue;
+      } else if (char === delimiter) {
+        row.push('');
+        i++;
+        continue;
+      } else if (char === '\r') {
+        if (nextChar === '\n') i++;
+        lines.push(row);
+        row = [''];
+        i++;
+        continue;
+      } else if (char === '\n') {
+        lines.push(row);
+        row = [''];
+        i++;
+        continue;
+      } else {
+        row[row.length - 1] += char;
+        i++;
+        continue;
+      }
+    }
+  }
+
+  if (row.length > 1 || (row.length === 1 && row[0].trim() !== '')) {
+    lines.push(row);
+  }
+
+  if (lines.length === 0) return { headers: [], normalizedHeaders: [], rows: [] };
+
+  // Detect header row (first row with at least 2 key terms)
+  const KEYWORDS = ['card', 'brand', 'benefit', 'booking', 'code', 'date', 'status', 'account', 'buyer'];
+  let headerRowIdx = 0;
+  for (let idx = 0; idx < Math.min(lines.length, 10); idx++) {
+    const rLower = lines[idx].map(c => String(c || '').toLowerCase().trim());
+    const matches = KEYWORDS.filter(kw => rLower.some(col => col.includes(kw)));
+    if (matches.length >= 2) {
+      headerRowIdx = idx;
+      break;
+    }
+  }
+
+  const rawHeaders = lines[headerRowIdx].map(h => String(h || '').trim());
+  const normalizedHeaders = rawHeaders.map(h => {
+    const lower = h.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (/^(account|email|acc|user)$/.test(lower)) return 'account';
+    if (/^(card|cardname|cardnickname|cardid|cardidentifier|cardno|cardnumber|last4)$/.test(lower)) return 'card';
+    if (/^(bank|bankname)$/.test(lower)) return 'bank';
+    if (/^(benefit|perk|benefittype|category)$/.test(lower)) return 'benefit';
+    if (/^(brand|merchant|partner|vendor|store)$/.test(lower)) return 'brand';
+    if (/^(redeemstatus|redemptionstatus|status|claimstatus)$/.test(lower)) return 'redeemStatus';
+    if (/^(redeemdate|redemptiondate|date|claimeddate|claimdate|txndate|timestamp)$/.test(lower)) return 'redeemDate';
+    if (/^(bookingid|bookingref|bookingreference|refno|ref|bookingno|orderid)$/.test(lower)) return 'bookingId';
+    if (/^(couponcode|vouchercode|code|voucher|coupon|pin)$/.test(lower)) return 'couponCode';
+    if (/^(couponused|used|disposition|soldstatus|usagestatus)$/.test(lower)) return 'couponUsed';
+    if (/^(buyer|buyerphone|buyername|customer|soldto|phone|contact|mobile)$/.test(lower)) return 'buyer';
+    if (/^(selldate|solddate|saledate|dispositiondate)$/.test(lower)) return 'sellDate';
+    if (/^(price|sellprice|amount|rate|cost|soldprice)$/.test(lower)) return 'price';
+    if (/^(notes|note|remarks|comment|comments|sellstatus)$/.test(lower)) return 'notes';
+    return lower || h;
+  });
+
+  const parsedRows = [];
+  for (let r = headerRowIdx + 1; r < lines.length; r++) {
+    const rawRow = lines[r];
+    if (!rawRow || rawRow.every(c => !String(c || '').trim())) continue;
+
+    const rowObj = { _rowIdx: r + 1, _raw: rawRow };
+    normalizedHeaders.forEach((colName, cIdx) => {
+      rowObj[colName] = String(rawRow[cIdx] || '').trim();
+    });
+
+    ['bookingId', 'couponCode', 'buyer', 'sellDate', 'notes'].forEach(k => {
+      if (rowObj[k] && (rowObj[k].toUpperCase() === 'NA' || rowObj[k] === '-')) {
+        rowObj[k] = '';
+      }
+    });
+
+    parsedRows.push(rowObj);
+  }
+
+  return { headers: rawHeaders, normalizedHeaders, rows: parsedRows };
+}
+
+function resolveCardFromCSV(cardStr, bankStr) {
+  if (!cardStr) return null;
+  const s = cardStr.trim().toLowerCase();
+  const cards = DB.cards || [];
+
+  // 1. Exact nickname match
+  let found = cards.find(c => c.nickname && c.nickname.trim().toLowerCase() === s);
+  if (found) return found;
+
+  // 2. Last 4 digits match
+  const last4Match = cardStr.match(/\b\d{4}\b/);
+  if (last4Match) {
+    const l4 = last4Match[0];
+    const cand = cards.filter(c => c.last4 === l4);
+    if (cand.length === 1) return cand[0];
+    if (cand.length > 1) {
+      if (bankStr) {
+        const b = bankStr.trim().toLowerCase();
+        const bMatch = cand.find(c => (c.bank || '').toLowerCase().includes(b) || (c.nickname || '').toLowerCase().includes(b));
+        if (bMatch) return bMatch;
+      }
+      return cand[0];
+    }
+  }
+
+  // 3. ID match
+  found = cards.find(c => c.id === cardStr.trim());
+  return found || null;
+}
+
+function computeCSVDiff(parsedRows, cycleScope = currentCSVDiffCycleScope) {
+  const cards = DB.cards || [];
+  const usages = DB.usages || [];
+  const matchedUsageIds = new Set();
+  const diffItems = [];
+
+  const redeemedRows = [];
+  const skippedRows = [];
+  parsedRows.forEach(row => {
+    if (isRedeemedCSVRow(row)) {
+      redeemedRows.push(row);
+    } else {
+      skippedRows.push(row);
+    }
+  });
+
+  const detectedCycles = new Set();
+  redeemedRows.forEach(row => {
+    const normDate = normalizeGSheetDate(row.redeemDate);
+    const q = getCycleFromDate(normDate);
+    if (q && q !== '—') detectedCycles.add(q);
+  });
+
+  redeemedRows.forEach((row, idx) => {
+    const card = resolveCardFromCSV(row.card, row.bank);
+    const bookingId = (row.bookingId || '').trim();
+    const rowDate = normalizeGSheetDate(row.redeemDate);
+    const rowBrandNorm = normalizeBrandKey(row.brand);
+
+    let matchedUsage = null;
+    if (bookingId && !isNA(bookingId)) {
+      matchedUsage = usages.find(u => u.bookingId && u.bookingId.trim().toLowerCase() === bookingId.toLowerCase());
+    }
+
+    if (!matchedUsage && card && rowDate) {
+      matchedUsage = usages.find(u => {
+        if (matchedUsageIds.has(u.id)) return false;
+        if (u.cardId !== card.id) return false;
+        const uDate = normalizeGSheetDate(u.date);
+        if (!uDate.startsWith(rowDate.slice(0, 10))) return false;
+        return normalizeBrandKey(u.brand) === rowBrandNorm;
+      });
+    }
+
+    if (!matchedUsage && row.couponCode && !isNA(row.couponCode)) {
+      const codeNorm = row.couponCode.trim().toLowerCase();
+      matchedUsage = usages.find(u => u.couponCode && u.couponCode.trim().toLowerCase() === codeNorm);
+    }
+
+    if (!matchedUsage) {
+      diffItems.push({
+        type: 'NEW_IN_CSV',
+        id: 'new-' + idx,
+        csvRow: row,
+        card: card,
+        cardName: card ? card.nickname : (row.card || 'Unknown Card'),
+        brand: row.brand || '',
+        benefit: row.benefit || '',
+        date: rowDate,
+        bookingId: bookingId,
+        diffs: []
+      });
+    } else {
+      matchedUsageIds.add(matchedUsage.id);
+      const fieldDiffs = [];
+
+      const appCode = (matchedUsage.couponCode || '').trim();
+      const csvCode = (row.couponCode || '').trim();
+      if (!isNA(csvCode) && csvCode !== appCode) {
+        fieldDiffs.push({ field: 'couponCode', label: 'Coupon Code', appVal: appCode || '—', csvVal: csvCode });
+      }
+
+      const appUsed = (matchedUsage.couponUsed || '').trim().toUpperCase();
+      let csvUsed = (row.couponUsed || '').trim().toUpperCase();
+      if (isNA(csvUsed)) csvUsed = '';
+      if (csvUsed && csvUsed !== appUsed) {
+        fieldDiffs.push({ field: 'couponUsed', label: 'Disposition', appVal: appUsed || 'AVAILABLE', csvVal: csvUsed });
+      }
+
+      const appBuyer = (matchedUsage.buyer || '').trim();
+      const csvBuyer = (row.buyer || '').trim();
+      if (!isNA(csvBuyer) && csvBuyer !== appBuyer) {
+        fieldDiffs.push({ field: 'buyer', label: 'Buyer', appVal: appBuyer || '—', csvVal: csvBuyer });
+      }
+
+      const appSellDate = normalizeGSheetDate(matchedUsage.sellDate);
+      const csvSellDate = normalizeGSheetDate(row.sellDate);
+      if (csvSellDate && csvSellDate !== appSellDate) {
+        fieldDiffs.push({ field: 'sellDate', label: 'Sell Date', appVal: appSellDate || '—', csvVal: csvSellDate });
+      }
+
+      const appNotes = (matchedUsage.notes || '').trim();
+      const csvNotes = (row.notes || '').trim();
+      if (!isNA(csvNotes) && csvNotes !== appNotes && !appNotes.includes(csvNotes)) {
+        fieldDiffs.push({ field: 'notes', label: 'Notes', appVal: appNotes || '—', csvVal: csvNotes });
+      }
+
+      const appBookId = (matchedUsage.bookingId || '').trim();
+      if (bookingId && !appBookId) {
+        fieldDiffs.push({ field: 'bookingId', label: 'Booking ID', appVal: '—', csvVal: bookingId });
+      }
+
+      if (fieldDiffs.length > 0) {
+        diffItems.push({
+          type: 'MODIFIED',
+          id: 'mod-' + matchedUsage.id,
+          usageId: matchedUsage.id,
+          csvRow: row,
+          usage: matchedUsage,
+          card: card,
+          cardName: card ? card.nickname : (row.card || 'Card'),
+          brand: matchedUsage.brand || row.brand || '',
+          benefit: row.benefit || '',
+          date: normalizeGSheetDate(matchedUsage.date || row.redeemDate),
+          bookingId: bookingId || matchedUsage.bookingId || '',
+          diffs: fieldDiffs
+        });
+      } else {
+        diffItems.push({
+          type: 'SYNCED',
+          id: 'sync-' + matchedUsage.id,
+          usageId: matchedUsage.id,
+          csvRow: row,
+          usage: matchedUsage,
+          card: card,
+          cardName: card ? card.nickname : (row.card || 'Card'),
+          brand: matchedUsage.brand || '',
+          benefit: row.benefit || '',
+          date: normalizeGSheetDate(matchedUsage.date),
+          bookingId: matchedUsage.bookingId || '',
+          diffs: []
+        });
+      }
+    }
+  });
+
+  // Cycle Scope for ONLY_IN_APP
+  let usagesToScope = usages;
+  if (cycleScope === 'AUTO') {
+    if (detectedCycles.size > 0) {
+      usagesToScope = usages.filter(u => detectedCycles.has(getCycleFromDate(u.date)));
+    }
+  } else if (cycleScope !== 'ALL') {
+    usagesToScope = usages.filter(u => getCycleFromDate(u.date) === cycleScope);
+  }
+
+  usagesToScope.forEach(u => {
+    if (!matchedUsageIds.has(u.id)) {
+      const card = cards.find(c => c.id === u.cardId);
+      diffItems.push({
+        type: 'ONLY_IN_APP',
+        id: 'app-' + u.id,
+        usageId: u.id,
+        usage: u,
+        card: card,
+        cardName: card ? card.nickname : 'Card',
+        brand: u.brand || '',
+        benefit: '',
+        date: normalizeGSheetDate(u.date),
+        bookingId: u.bookingId || '',
+        diffs: []
+      });
+    }
+  });
+
+  return {
+    items: diffItems,
+    skippedRows: skippedRows,
+    detectedCycles: Array.from(detectedCycles),
+    summary: {
+      totalCSVRows: parsedRows.length,
+      redeemedRows: redeemedRows.length,
+      skippedRows: skippedRows.length,
+      newInCSV: diffItems.filter(d => d.type === 'NEW_IN_CSV').length,
+      modified: diffItems.filter(d => d.type === 'MODIFIED').length,
+      onlyInApp: diffItems.filter(d => d.type === 'ONLY_IN_APP').length,
+      synced: diffItems.filter(d => d.type === 'SYNCED').length
+    }
+  };
+}
+
+function processUploadedCSV(csvText, fileName = 'uploaded.csv') {
+  try {
+    const parsed = parseGoogleSheetCSV(csvText);
+    if (!parsed || parsed.rows.length === 0) {
+      showToast('No valid redemption data rows found in CSV file', 'error');
+      return;
+    }
+
+    currentCSVDiffResult = computeCSVDiff(parsed.rows, currentCSVDiffCycleScope);
+    currentCSVDiffResult.rawParsed = parsed;
+    currentCSVDiffResult.fileName = fileName;
+    currentCSVDiffFilter = 'DIFFS';
+    currentCSVDiffSearch = '';
+
+    const dropzone = document.getElementById('csv-diff-dropzone');
+    const fileInfo = document.getElementById('csv-loaded-file-info');
+    const fileNameEl = document.getElementById('csv-file-name');
+    const summaryWrap = document.getElementById('csv-diff-summary-wrap');
+    const cycleSelect = document.getElementById('csv-diff-cycle-select');
+
+    if (dropzone) dropzone.classList.add('hidden');
+    if (fileInfo) fileInfo.classList.remove('hidden');
+    if (fileNameEl) fileNameEl.textContent = fileName;
+    if (summaryWrap) summaryWrap.classList.remove('hidden');
+
+    if (cycleSelect && currentCSVDiffResult.detectedCycles.length > 0) {
+      const optAuto = cycleSelect.querySelector('option[value="AUTO"]');
+      if (optAuto) {
+        optAuto.textContent = `Auto (${currentCSVDiffResult.detectedCycles.join(', ')})`;
+      }
+    }
+
+    renderCSVDiffSummary();
+    renderCSVDiffTable();
+    renderSkippedRowsList();
+    showToast(`Analyzed ${currentCSVDiffResult.summary.redeemedRows} redemptions (${currentCSVDiffResult.summary.skippedRows} NA rows skipped) 📊`, 'success');
+  } catch (err) {
+    showToast('Failed to parse CSV: ' + err.message, 'error');
+    console.error('CSV parse error:', err);
+  }
+}
+
+function resetCSVDiffModal() {
+  currentCSVDiffResult = null;
+  const dropzone = document.getElementById('csv-diff-dropzone');
+  const fileInfo = document.getElementById('csv-loaded-file-info');
+  const summaryWrap = document.getElementById('csv-diff-summary-wrap');
+  const fileInput = document.getElementById('csv-diff-file-input');
+  const pasteInput = document.getElementById('csv-diff-paste-input');
+  const pasteWrap = document.getElementById('csv-paste-area-wrap');
+  const skippedWrap = document.getElementById('csv-skipped-rows-wrap');
+
+  if (dropzone) dropzone.classList.remove('hidden');
+  if (fileInfo) fileInfo.classList.add('hidden');
+  if (summaryWrap) summaryWrap.classList.add('hidden');
+  if (skippedWrap) skippedWrap.classList.add('hidden');
+  if (fileInput) fileInput.value = '';
+  if (pasteInput) pasteInput.value = '';
+  if (pasteWrap) pasteWrap.classList.add('hidden');
+}
+
+function renderSkippedRowsList() {
+  if (!currentCSVDiffResult) return;
+  const listEl = document.getElementById('csv-skipped-rows-list');
+  const countEl = document.getElementById('skipped-rows-count');
+  if (!listEl) return;
+
+  const skipped = currentCSVDiffResult.skippedRows || [];
+  if (countEl) countEl.textContent = skipped.length;
+
+  if (skipped.length === 0) {
+    listEl.innerHTML = '<div style="color:var(--text-secondary);padding:4px 0;">No unredeemed or NA rows in this CSV.</div>';
+    return;
+  }
+
+  listEl.innerHTML = skipped.map(r => {
+    const card = esc(r.card || 'Card');
+    const ben = esc(r.benefit || r.brand || 'Perk');
+    const status = esc(r.redeemStatus || r.status || 'NA');
+    const notes = esc(r.notes || '');
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:3px 6px;background:rgba(255,255,255,0.03);border-radius:4px;gap:8px;">
+      <div>
+        <strong style="color:var(--text-primary);">${card}</strong>
+        <span style="color:var(--text-secondary);margin-left:4px;">· ${ben}</span>
+      </div>
+      <div style="font-size:10px;color:var(--text-secondary);">
+        <span class="badge badge-gray" style="font-size:9px;">${status}</span>
+        ${notes ? `<span style="margin-left:6px;font-style:italic;">"${notes}"</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderCSVDiffSummary() {
+  if (!currentCSVDiffResult) return;
+  const s = currentCSVDiffResult.summary;
+  const diffsTotal = s.newInCSV + s.modified + s.onlyInApp;
+
+  const elDiffs = document.getElementById('kpi-val-diffs');
+  const elNew   = document.getElementById('kpi-val-new');
+  const elMod   = document.getElementById('kpi-val-mod');
+  const elApp   = document.getElementById('kpi-val-app');
+
+  if (elDiffs) elDiffs.textContent = diffsTotal;
+  if (elNew)   elNew.textContent   = s.newInCSV;
+  if (elMod)   elMod.textContent   = s.modified;
+  if (elApp)   elApp.textContent   = s.onlyInApp;
+
+  const pDiffs = document.getElementById('pill-count-diffs');
+  const pNew   = document.getElementById('pill-count-new');
+  const pMod   = document.getElementById('pill-count-mod');
+  const pApp   = document.getElementById('pill-count-app');
+  const pSync  = document.getElementById('pill-count-sync');
+  const pAll   = document.getElementById('pill-count-all');
+
+  if (pDiffs) pDiffs.textContent = diffsTotal;
+  if (pNew)   pNew.textContent   = s.newInCSV;
+  if (pMod)   pMod.textContent   = s.modified;
+  if (pApp)   pApp.textContent   = s.onlyInApp;
+  if (pSync)  pSync.textContent  = s.synced;
+  if (pAll)   pAll.textContent   = currentCSVDiffResult.items.length;
+
+  const btnImportAll = document.getElementById('btn-import-all-csv');
+  const btnImportCount = document.getElementById('btn-import-new-count');
+  if (btnImportAll && btnImportCount) {
+    btnImportCount.textContent = s.newInCSV;
+    btnImportAll.style.display = s.newInCSV > 0 ? 'inline-flex' : 'none';
+  }
+
+  const btnUpdateAll = document.getElementById('btn-update-all-csv');
+  const btnUpdateCount = document.getElementById('btn-update-mod-count');
+  if (btnUpdateAll && btnUpdateCount) {
+    btnUpdateCount.textContent = s.modified;
+    btnUpdateAll.style.display = s.modified > 0 ? 'inline-flex' : 'none';
+  }
+
+  const btnToggleSkipped = document.getElementById('btn-toggle-skipped-rows');
+  if (btnToggleSkipped) {
+    if (s.skippedRows > 0) {
+      btnToggleSkipped.style.display = 'inline-flex';
+      btnToggleSkipped.textContent = `👁️ View Skipped NA (${s.skippedRows})`;
+    } else {
+      btnToggleSkipped.style.display = 'none';
+    }
+  }
+
+  const fileDetailsEl = document.getElementById('csv-file-details');
+  if (fileDetailsEl) {
+    const cyclesLabel = (currentCSVDiffResult.detectedCycles || []).join(', ') || 'All';
+    fileDetailsEl.textContent = `(${s.redeemedRows} redemptions · Cycle: ${cyclesLabel}${s.skippedRows > 0 ? ` · ${s.skippedRows} NA skipped` : ''})`;
+  }
+}
+
+function renderCSVDiffTable() {
+  if (!currentCSVDiffResult) return;
+  const tbody = document.getElementById('csv-diff-tbody');
+  if (!tbody) return;
+
+  const search = (currentCSVDiffSearch || '').toLowerCase().trim();
+  const filter = currentCSVDiffFilter;
+
+  const filtered = currentCSVDiffResult.items.filter(item => {
+    if (filter === 'DIFFS') {
+      if (item.type === 'SYNCED') return false;
+    } else if (filter !== 'ALL') {
+      if (item.type !== filter) return false;
+    }
+
+    if (search) {
+      const matchCard = (item.cardName || '').toLowerCase().includes(search);
+      const matchBrand = (item.brand || '').toLowerCase().includes(search);
+      const matchBooking = (item.bookingId || '').toLowerCase().includes(search);
+      const matchBenefit = (item.benefit || '').toLowerCase().includes(search);
+      const code1 = item.csvRow ? (item.csvRow.couponCode || '').toLowerCase() : '';
+      const code2 = item.usage ? (item.usage.couponCode || '').toLowerCase() : '';
+      const buyer1 = item.csvRow ? (item.csvRow.buyer || '').toLowerCase() : '';
+      const buyer2 = item.usage ? (item.usage.buyer || '').toLowerCase() : '';
+      if (!matchCard && !matchBrand && !matchBooking && !matchBenefit && !code1.includes(search) && !code2.includes(search) && !buyer1.includes(search) && !buyer2.includes(search)) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-secondary);">No records match the current filter (${filter}).</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(item => {
+    let badgeHtml = '';
+    if (item.type === 'NEW_IN_CSV') {
+      badgeHtml = `<span class="diff-badge new">➕ New in CSV</span>`;
+    } else if (item.type === 'MODIFIED') {
+      badgeHtml = `<span class="diff-badge mod">⚠️ Modified (${item.diffs.length})</span>`;
+    } else if (item.type === 'ONLY_IN_APP') {
+      badgeHtml = `<span class="diff-badge app">➖ Only in App</span>`;
+    } else {
+      badgeHtml = `<span class="diff-badge sync">✅ In Sync</span>`;
+    }
+
+    const cardHtml = `<div>
+      <strong style="color:var(--text-primary);font-size:12px;">${esc(item.cardName)}</strong>
+      ${item.card && item.card.account ? `<div style="font-size:10px;color:var(--text-secondary);">${esc(item.card.account)}</div>` : ''}
+    </div>`;
+
+    const brandHtml = `<div>
+      <span style="font-weight:600;color:var(--primary-light);">${esc(item.brand || '—')}</span>
+      ${item.benefit ? `<span style="font-size:10px;color:var(--text-secondary);margin-left:4px;">· ${esc(item.benefit)}</span>` : ''}
+    </div>`;
+
+    const dateHtml = `<div>
+      <div style="font-family:var(--font-mono,monospace);font-size:11px;">${esc(item.date || '—')}</div>
+      <div style="font-size:10px;color:var(--text-secondary);">${item.bookingId ? `Ref: <strong>${esc(item.bookingId)}</strong>` : '—'}</div>
+    </div>`;
+
+    let diffsHtml = '';
+    if (item.type === 'MODIFIED') {
+      diffsHtml = `<div class="diff-field-box">` +
+        item.diffs.map(d => `
+          <div class="diff-field-line">
+            <span class="diff-field-name">${esc(d.label)}:</span>
+            <span class="diff-val-app" title="App value">${esc(d.appVal)}</span>
+            <span class="diff-arrow">➔</span>
+            <span class="diff-val-csv" title="CSV value">${esc(d.csvVal)}</span>
+          </div>
+        `).join('') +
+      `</div>`;
+    } else if (item.type === 'NEW_IN_CSV') {
+      const code = item.csvRow ? item.csvRow.couponCode : '';
+      const used = item.csvRow ? item.csvRow.couponUsed : '';
+      const buyer = item.csvRow ? item.csvRow.buyer : '';
+      diffsHtml = `<div style="font-size:11px;color:var(--text-secondary);">
+        ${code ? `Code: <code style="color:var(--success);">${esc(code)}</code><br/>` : ''}
+        ${used ? `Status: <span class="badge badge-sm badge-warning" style="font-size:9px;">${esc(used)}</span> ` : ''}
+        ${buyer ? `Buyer: <strong>${esc(buyer)}</strong>` : ''}
+      </div>`;
+    } else if (item.type === 'ONLY_IN_APP') {
+      const code = item.usage ? item.usage.couponCode : '';
+      const used = item.usage ? item.usage.couponUsed : '';
+      const buyer = item.usage ? item.usage.buyer : '';
+      diffsHtml = `<div style="font-size:11px;color:var(--text-secondary);">
+        ${code ? `Code: <code>${esc(code)}</code><br/>` : ''}
+        ${used ? `Status: <span class="badge badge-sm badge-secondary" style="font-size:9px;">${esc(used)}</span> ` : ''}
+        ${buyer ? `Buyer: <strong>${esc(buyer)}</strong>` : ''}
+      </div>`;
+    } else {
+      diffsHtml = `<span style="font-size:11px;color:#94a3b8;">All fields in sync</span>`;
+    }
+
+    let actionBtn = '';
+    if (item.type === 'NEW_IN_CSV') {
+      actionBtn = `<button type="button" class="btn btn-primary btn-xs btn-import-row" data-id="${esc(item.id)}" style="background:var(--success);border-color:var(--success);font-weight:600;">+ Import</button>`;
+    } else if (item.type === 'MODIFIED') {
+      actionBtn = `<button type="button" class="btn btn-secondary btn-xs btn-update-row" data-id="${esc(item.id)}" style="color:var(--primary-light);border-color:var(--primary);font-weight:600;">↻ Update</button>`;
+    } else if (item.type === 'SYNCED') {
+      actionBtn = `<span style="color:var(--success);font-size:11px;font-weight:700;">✓ Synced</span>`;
+    } else {
+      actionBtn = `<span style="color:var(--text-secondary);font-size:11px;">In App DB</span>`;
+    }
+
+    return `<tr>
+      <td>${badgeHtml}</td>
+      <td>${cardHtml}</td>
+      <td>${brandHtml}</td>
+      <td>${dateHtml}</td>
+      <td>${diffsHtml}</td>
+      <td style="text-align:right;">${actionBtn}</td>
+    </tr>`;
+  }).join('');
+}
+
+function applyCSVImportRow(diffItem) {
+  const row = diffItem.csvRow;
+  const card = diffItem.card || resolveCardFromCSV(row.card, row.bank);
+  if (!card) {
+    showToast(`Cannot import: Card "${row.card || 'Unknown'}" not found in My Cards`, 'error');
+    return false;
+  }
+
+  const variant = getVariantById(card.variantId);
+  let benefitId = '';
+  if (variant && Array.isArray(variant.benefits)) {
+    if (row.brand) {
+      const bBrand = variant.benefits.find(b => b.brand && b.brand.toLowerCase() === row.brand.toLowerCase());
+      if (bBrand) benefitId = bBrand.id;
+    }
+    if (!benefitId && row.benefit) {
+      const rBen = row.benefit.toLowerCase();
+      const bMatch = variant.benefits.find(b => {
+        const bName = getBenefitDisplayName(b).toLowerCase();
+        const bType = (b.type || '').toLowerCase();
+        return bName === rBen || bType === rBen || bType.includes(rBen) || rBen.includes(bType);
+      });
+      if (bMatch) benefitId = bMatch.id;
+    }
+    if (!benefitId && variant.benefits.length === 1) {
+      benefitId = variant.benefits[0].id;
+    }
+  }
+
+  const newUsage = {
+    id: genId(),
+    cardId: card.id,
+    benefitId: benefitId,
+    account: row.account || card.account || '',
+    brand: row.brand || '',
+    redeemStatus: row.redeemStatus || 'Redeemed',
+    date: normalizeGSheetDate(row.redeemDate) || nowLocalISO(),
+    bookingId: (row.bookingId || '').trim(),
+    couponCode: (row.couponCode || '').trim(),
+    couponUsed: (row.couponUsed || '').trim().toUpperCase(),
+    buyer: (row.buyer || '').trim(),
+    sellDate: normalizeGSheetDate(row.sellDate),
+    notes: (row.notes || '').trim()
+  };
+
+  DB.usages.push(newUsage);
+
+  saveDB(true);
+  diffItem.type = 'SYNCED';
+  diffItem.diffs = [];
+  diffItem.usage = newUsage;
+  diffItem.usageId = newUsage.id;
+
+  if (currentCSVDiffResult && currentCSVDiffResult.summary) {
+    currentCSVDiffResult.summary.newInCSV = Math.max(0, currentCSVDiffResult.summary.newInCSV - 1);
+    currentCSVDiffResult.summary.synced++;
+  }
+  return true;
+}
+
+function applyCSVUpdateRow(diffItem) {
+  const usage = diffItem.usage || DB.usages.find(u => u.id === diffItem.usageId);
+  if (!usage) {
+    showToast('Redemption not found in app DB', 'error');
+    return false;
+  }
+
+  const row = diffItem.csvRow;
+  if (!row) return false;
+
+  diffItem.diffs.forEach(d => {
+    if (d.field === 'couponCode' && row.couponCode) usage.couponCode = row.couponCode;
+    if (d.field === 'couponUsed') usage.couponUsed = row.couponUsed === 'NA' ? '' : (row.couponUsed || '').toUpperCase();
+    if (d.field === 'buyer') usage.buyer = row.buyer === 'NA' ? '' : (row.buyer || '');
+    if (d.field === 'sellDate') usage.sellDate = normalizeGSheetDate(row.sellDate);
+    if (d.field === 'notes' && row.notes) usage.notes = row.notes;
+    if (d.field === 'bookingId' && row.bookingId) usage.bookingId = row.bookingId;
+    if (d.field === 'account' && row.account) usage.account = row.account;
+  });
+
+  saveDB(true);
+  diffItem.type = 'SYNCED';
+  diffItem.diffs = [];
+
+  if (currentCSVDiffResult && currentCSVDiffResult.summary) {
+    currentCSVDiffResult.summary.modified = Math.max(0, currentCSVDiffResult.summary.modified - 1);
+    currentCSVDiffResult.summary.synced++;
+  }
+  return true;
+}
+
+function applyAllCSVImports() {
+  if (!currentCSVDiffResult) return;
+  const newItems = currentCSVDiffResult.items.filter(d => d.type === 'NEW_IN_CSV');
+  if (newItems.length === 0) {
+    showToast('No new items to import', 'info');
+    return;
+  }
+
+  let count = 0;
+  newItems.forEach(item => {
+    if (applyCSVImportRow(item)) count++;
+  });
+
+  renderAll();
+  renderCSVDiffSummary();
+  renderCSVDiffTable();
+  showToast(`Imported ${count} redemptions from CSV! 🎉`, 'success');
+}
+
+function applyAllCSVUpdates() {
+  if (!currentCSVDiffResult) return;
+  const modItems = currentCSVDiffResult.items.filter(d => d.type === 'MODIFIED');
+  if (modItems.length === 0) {
+    showToast('No conflicts to update', 'info');
+    return;
+  }
+
+  let count = 0;
+  modItems.forEach(item => {
+    if (applyCSVUpdateRow(item)) count++;
+  });
+
+  renderAll();
+  renderCSVDiffSummary();
+  renderCSVDiffTable();
+  showToast(`Updated ${count} redemptions in app from CSV! 🔄✅`, 'success');
+}
+
+function exportCSVDiffReport() {
+  if (!currentCSVDiffResult || currentCSVDiffResult.items.length === 0) {
+    showToast('No diff results to export', 'info');
+    return;
+  }
+
+  const headers = ['Status', 'Card', 'Brand', 'Benefit', 'Date', 'Booking ID', 'App Code', 'CSV Code', 'App Used', 'CSV Used', 'App Buyer', 'CSV Buyer', 'Differences'];
+  const rows = [headers.map(h => `"${h}"`).join(',')];
+
+  currentCSVDiffResult.items.forEach(item => {
+    const diffDesc = (item.diffs || []).map(d => `${d.label}: App[${d.appVal}] -> CSV[${d.csvVal}]`).join('; ');
+    const row = [
+      item.type,
+      item.cardName || '',
+      item.brand || '',
+      item.benefit || '',
+      item.date || '',
+      item.bookingId || '',
+      item.usage ? item.usage.couponCode || '' : '',
+      item.csvRow ? item.csvRow.couponCode || '' : '',
+      item.usage ? item.usage.couponUsed || '' : '',
+      item.csvRow ? item.csvRow.couponUsed || '' : '',
+      item.usage ? item.usage.buyer || '' : '',
+      item.csvRow ? item.csvRow.buyer || '' : '',
+      diffDesc
+    ];
+    rows.push(row.map(val => `"${String(val || '').replace(/"/g, '""')}"`).join(','));
+  });
+
+  const csvContent = 'data:text/csv;charset=utf-8,' + encodeURIComponent(rows.join('\r\n'));
+  const link = document.createElement('a');
+  link.setAttribute('href', csvContent);
+  link.setAttribute('download', `rupay-csv-diff-${new Date().toISOString().slice(0, 10)}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  showToast('Diff report exported! 📥', 'success');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
 
   /* ── GitHub Cloud Sync UI wiring ── */
@@ -8225,6 +10260,297 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   updateGSheetStatusUI();
+
+  /* ── Google Sheet CSV Diff Modal Wiring ── */
+  const btnOpenCSVDiff = document.getElementById('btn-open-csv-diff');
+  if (btnOpenCSVDiff) {
+    btnOpenCSVDiff.addEventListener('click', () => {
+      openModal('modal-csv-diff');
+    });
+  }
+
+  const btnHistoryCSVDiff = document.getElementById('btn-history-csv-diff');
+  if (btnHistoryCSVDiff) {
+    btnHistoryCSVDiff.addEventListener('click', () => {
+      openModal('modal-csv-diff');
+    });
+  }
+
+  const csvDropzone = document.getElementById('csv-diff-dropzone');
+  const csvFileInput = document.getElementById('csv-diff-file-input');
+
+  if (csvDropzone && csvFileInput) {
+    csvDropzone.addEventListener('click', (e) => {
+      if (e.target.id === 'btn-toggle-csv-paste' || e.target.closest('#csv-paste-area-wrap')) return;
+      csvFileInput.click();
+    });
+
+    csvDropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      csvDropzone.classList.add('dragover');
+    });
+
+    csvDropzone.addEventListener('dragleave', () => {
+      csvDropzone.classList.remove('dragover');
+    });
+
+    csvDropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      csvDropzone.classList.remove('dragover');
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+        const file = e.dataTransfer.files[0];
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          processUploadedCSV(evt.target.result, file.name);
+        };
+        reader.readAsText(file);
+      }
+    });
+
+    csvFileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          processUploadedCSV(evt.target.result, file.name);
+        };
+        reader.readAsText(file);
+      }
+    });
+  }
+
+  const btnToggleCSVPaste = document.getElementById('btn-toggle-csv-paste');
+  const csvPasteWrap = document.getElementById('csv-paste-area-wrap');
+  if (btnToggleCSVPaste && csvPasteWrap) {
+    btnToggleCSVPaste.addEventListener('click', (e) => {
+      e.stopPropagation();
+      csvPasteWrap.classList.toggle('hidden');
+    });
+  }
+
+  const btnAnalyzePastedCSV = document.getElementById('btn-analyze-pasted-csv');
+  const csvPasteInput = document.getElementById('csv-diff-paste-input');
+  if (btnAnalyzePastedCSV && csvPasteInput) {
+    btnAnalyzePastedCSV.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const txt = csvPasteInput.value;
+      if (!txt.trim()) {
+        showToast('Please paste CSV text first', 'error');
+        return;
+      }
+      processUploadedCSV(txt, 'Pasted_Data.csv');
+    });
+  }
+
+  const btnCSVChangeFile = document.getElementById('btn-csv-change-file');
+  if (btnCSVChangeFile) {
+    btnCSVChangeFile.addEventListener('click', () => {
+      resetCSVDiffModal();
+    });
+  }
+
+  // Filter Pills & KPI Cards
+  document.querySelectorAll('.csv-pill-btn, .csv-kpi-card').forEach(el => {
+    el.addEventListener('click', () => {
+      const f = el.dataset.filter;
+      if (!f) return;
+      currentCSVDiffFilter = f;
+
+      document.querySelectorAll('.csv-pill-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === f);
+      });
+      document.querySelectorAll('.csv-kpi-card').forEach(card => {
+        card.classList.toggle('active', card.dataset.filter === f);
+      });
+
+      renderCSVDiffTable();
+    });
+  });
+
+  // Search input
+  const csvSearchInput = document.getElementById('csv-diff-search-input');
+  if (csvSearchInput) {
+    csvSearchInput.addEventListener('input', (e) => {
+      currentCSVDiffSearch = e.target.value;
+      renderCSVDiffTable();
+    });
+  }
+
+  // Bulk buttons
+  const btnImportAllCSV = document.getElementById('btn-import-all-csv');
+  if (btnImportAllCSV) {
+    btnImportAllCSV.addEventListener('click', () => {
+      applyAllCSVImports();
+    });
+  }
+
+  const btnUpdateAllCSV = document.getElementById('btn-update-all-csv');
+  if (btnUpdateAllCSV) {
+    btnUpdateAllCSV.addEventListener('click', () => {
+      applyAllCSVUpdates();
+    });
+  }
+
+  const btnExportDiffReport = document.getElementById('btn-export-diff-report');
+  if (btnExportDiffReport) {
+    btnExportDiffReport.addEventListener('click', () => {
+      exportCSVDiffReport();
+    });
+  }
+
+  // Table row action click delegation
+  const csvTbody = document.getElementById('csv-diff-tbody');
+  if (csvTbody) {
+    csvTbody.addEventListener('click', (e) => {
+      const importBtn = e.target.closest('.btn-import-row');
+      if (importBtn && currentCSVDiffResult) {
+        const id = importBtn.dataset.id;
+        const item = currentCSVDiffResult.items.find(x => x.id === id);
+        if (item) {
+          if (applyCSVImportRow(item)) {
+            renderAll();
+            renderCSVDiffSummary();
+            renderCSVDiffTable();
+            showToast(`Imported ${item.cardName} redemption! ✅`, 'success');
+          }
+        }
+        return;
+      }
+
+      const updateBtn = e.target.closest('.btn-update-row');
+      if (updateBtn && currentCSVDiffResult) {
+        const id = updateBtn.dataset.id;
+        const item = currentCSVDiffResult.items.find(x => x.id === id);
+        if (item) {
+          if (applyCSVUpdateRow(item)) {
+            renderAll();
+            renderCSVDiffSummary();
+            renderCSVDiffTable();
+            showToast(`Updated ${item.cardName} redemption! 🔄`, 'success');
+          }
+        }
+        return;
+      }
+    });
+  }
+
+  const csvCycleSelect = document.getElementById('csv-diff-cycle-select');
+  if (csvCycleSelect) {
+    csvCycleSelect.addEventListener('change', (e) => {
+      currentCSVDiffCycleScope = e.target.value;
+      if (currentCSVDiffResult && currentCSVDiffResult.rawParsed) {
+        const rawParsed = currentCSVDiffResult.rawParsed;
+        const fn = currentCSVDiffResult.fileName;
+        currentCSVDiffResult = computeCSVDiff(rawParsed.rows, currentCSVDiffCycleScope);
+        currentCSVDiffResult.rawParsed = rawParsed;
+        currentCSVDiffResult.fileName = fn;
+        renderCSVDiffSummary();
+        renderCSVDiffTable();
+      }
+    });
+  }
+
+  const btnToggleSkippedRows = document.getElementById('btn-toggle-skipped-rows');
+  const csvSkippedWrap = document.getElementById('csv-skipped-rows-wrap');
+  if (btnToggleSkippedRows && csvSkippedWrap) {
+    btnToggleSkippedRows.addEventListener('click', () => {
+      const isHidden = csvSkippedWrap.classList.toggle('hidden');
+      if (!isHidden) {
+        renderSkippedRowsList();
+      }
+    });
+  }
+
+  /* ── Quick SMS / Email Parser Wiring ── */
+  const btnToggleLogSms = document.getElementById('btn-toggle-log-sms');
+  const logSmsDrawer = document.getElementById('log-sms-paste-drawer');
+  const logSmsArrow = document.getElementById('log-sms-toggle-arrow');
+  if (btnToggleLogSms && logSmsDrawer) {
+    btnToggleLogSms.addEventListener('click', () => {
+      const isHidden = logSmsDrawer.classList.toggle('hidden');
+      if (logSmsArrow) logSmsArrow.textContent = isHidden ? '▼ Paste' : '▲ Hide';
+      if (!isHidden) {
+        const txt = document.getElementById('log-sms-paste-text');
+        if (txt) setTimeout(() => txt.focus(), 100);
+      }
+    });
+  }
+
+  const btnApplyLogSms = document.getElementById('btn-apply-log-sms');
+  if (btnApplyLogSms) {
+    btnApplyLogSms.addEventListener('click', applySMSPasteToLogModal);
+  }
+
+  const btnDashSms = document.getElementById('btn-dashboard-sms-log');
+  if (btnDashSms) {
+    btnDashSms.addEventListener('click', openQuickSMSModal);
+  }
+
+  const btnHistSms = document.getElementById('btn-history-sms-log');
+  if (btnHistSms) {
+    btnHistSms.addEventListener('click', openQuickSMSModal);
+  }
+
+  const quickSmsInput = document.getElementById('quick-sms-input');
+  if (quickSmsInput) {
+    quickSmsInput.addEventListener('input', handleQuickSMSInput);
+  }
+
+  const btnQuickSmsSaveAll = document.getElementById('btn-quick-sms-save-all');
+  if (btnQuickSmsSaveAll) {
+    btnQuickSmsSaveAll.addEventListener('click', saveQuickSMSBatch);
+  }
+
+  const quickSMSContainer = document.getElementById('quick-sms-cards-container');
+  if (quickSMSContainer) {
+    quickSMSContainer.addEventListener('change', (e) => {
+      const cardSel = e.target.closest('.quick-sms-card-select');
+      if (cardSel) {
+        const idx = parseInt(cardSel.dataset.idx, 10);
+        if (!isNaN(idx) && currentParsedSMSItems[idx]) {
+          const cardId = cardSel.value;
+          currentParsedSMSItems[idx].cardId = cardId;
+          const card = getCardById(cardId);
+          if (card) {
+            currentParsedSMSItems[idx].benefitId = findBenefitIdForCardAndBrand(card, currentParsedSMSItems[idx].brand);
+            currentParsedSMSItems[idx].account = card.account || currentParsedSMSItems[idx].account;
+          }
+          renderQuickSMSItemsList();
+        }
+        return;
+      }
+
+      const benSel = e.target.closest('.quick-sms-benefit-select');
+      if (benSel) {
+        const idx = parseInt(benSel.dataset.idx, 10);
+        if (!isNaN(idx) && currentParsedSMSItems[idx]) {
+          currentParsedSMSItems[idx].benefitId = benSel.value;
+        }
+        return;
+      }
+    });
+
+    quickSMSContainer.addEventListener('click', (e) => {
+      const removeBtn = e.target.closest('.btn-remove-quick-sms');
+      if (removeBtn) {
+        const idx = parseInt(removeBtn.dataset.idx, 10);
+        if (!isNaN(idx) && currentParsedSMSItems[idx]) {
+          currentParsedSMSItems.splice(idx, 1);
+          const countEl = document.getElementById('quick-sms-count');
+          const btnCountEl = document.getElementById('quick-sms-btn-count');
+          const wrap = document.getElementById('quick-sms-results-wrap');
+          const btnSave = document.getElementById('btn-quick-sms-save-all');
+          if (countEl) countEl.textContent = currentParsedSMSItems.length;
+          if (btnCountEl) btnCountEl.textContent = currentParsedSMSItems.length;
+          if (currentParsedSMSItems.length === 0) {
+            if (wrap) wrap.classList.add('hidden');
+            if (btnSave) btnSave.style.display = 'none';
+          }
+          renderQuickSMSItemsList();
+        }
+      }
+    });
+  }
 
 
   /* ── Tab navigation ── */
@@ -8828,6 +11154,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-bulk-used').addEventListener('click', bulkMarkUsed);
   document.getElementById('btn-bulk-unused').addEventListener('click', bulkMarkUnused);
   document.getElementById('btn-bulk-copy').addEventListener('click', bulkCopyCodes);
+  document.getElementById('btn-bulk-whatsapp')?.addEventListener('click', bulkShareWhatsApp);
 
   // Quick single actions in vouchers table
   document.addEventListener('click', e => {
