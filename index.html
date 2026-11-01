@@ -1257,6 +1257,376 @@
     .badge-brand.reliance, .badge-brand.reliancedigital { background: rgba(99,102,241,0.15); color: #818cf8; border-color: rgba(99,102,241,0.3); }
     .badge-brand.apollo, .badge-brand.apollopharmacy { background: rgba(16,185,129,0.15); color: #34d399; border-color: rgba(16,185,129,0.3); }
     .badge-brand.uber { background: rgba(255,255,255,0.1); color: #f1f5f9; border-color: rgba(255,255,255,0.2); }
+    .badge-brand.bookmyshow, .badge-brand.bms { background: rgba(225,29,72,0.15); color: #f43f5e; border-color: rgba(225,29,72,0.3); }
+
+    /* ===== VOUCHER EXPIRY & AGING STYLES ===== */
+    @keyframes pulseUrgent {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(0.97); }
+    }
+    .badge-pulse {
+      animation: pulseUrgent 1.8s infinite ease-in-out;
+    }
+    .voucher-expiry-alert-banner {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(245, 158, 11, 0.08) 100%);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-radius: var(--radius);
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      animation: fadeIn 0.25s ease;
+    }
+    .row-expiring-soon td {
+      background: rgba(245, 158, 11, 0.04) !important;
+    }
+    .row-expired td {
+      background: rgba(239, 68, 68, 0.04) !important;
+      opacity: 0.85;
+    }
+    .btn-val-days-preset {
+      padding: 2px 7px;
+      font-size: 11px;
+      line-height: 1.2;
+      border-radius: 4px;
+    }
+
+    /* ===== CLAIM MATRIX STYLES ===== */
+    .matrix-table-card {
+      background: var(--card-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    .matrix-table-wrap {
+      overflow-x: auto;
+      max-height: calc(100vh - 270px);
+      position: relative;
+    }
+    .matrix-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      min-width: 980px;
+    }
+    .matrix-table th {
+      background: var(--surface);
+      color: var(--text-secondary);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      white-space: nowrap;
+    }
+    .matrix-table td {
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      border-right: 1px solid rgba(255,255,255,0.04);
+      padding: 7px 9px;
+      vertical-align: middle;
+      font-size: 12px;
+    }
+    .matrix-table tr:hover td {
+      background-color: rgba(255,255,255,0.02);
+    }
+    .matrix-th-card, .matrix-td-card {
+      position: sticky;
+      left: 0;
+      z-index: 5;
+      background: var(--card-surface) !important;
+      min-width: 220px;
+      max-width: 240px;
+      border-right: 2px solid var(--border) !important;
+      box-shadow: 2px 0 6px rgba(0,0,0,0.25);
+    }
+    .matrix-table th.matrix-th-card {
+      z-index: 15 !important;
+      background: var(--surface) !important;
+    }
+    .matrix-th-progress, .matrix-td-progress {
+      min-width: 85px;
+      text-align: center;
+    }
+    .matrix-th-cat {
+      min-width: 110px;
+      text-align: center;
+    }
+    .matrix-cell {
+      text-align: center;
+    }
+    .matrix-bank-sep td {
+      background: rgba(124,58,237,0.08) !important;
+      color: var(--primary-light);
+      font-weight: 700;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      padding: 6px 12px;
+      border-top: 1px solid rgba(124,58,237,0.2);
+      border-bottom: 1px solid rgba(124,58,237,0.2);
+    }
+    .matrix-dash {
+      color: var(--text-secondary);
+      opacity: 0.3;
+      font-size: 13px;
+    }
+    .matrix-cell-claimed {
+      background: rgba(16,185,129,0.05);
+      border-radius: 6px;
+      padding: 5px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      border: 1px solid rgba(16,185,129,0.2);
+    }
+    .matrix-cell-claimed:hover {
+      background: rgba(16,185,129,0.14);
+      border-color: rgba(16,185,129,0.4);
+      transform: translateY(-1px);
+    }
+    .matrix-cell-unclaimed {
+      border-radius: 6px;
+      padding: 4px 2px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+    }
+    .matrix-claim-btn {
+      width: 100%;
+      padding: 4px 6px;
+      font-size: 11px;
+      font-weight: 600;
+      background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(79,70,229,0.25));
+      border: 1px solid rgba(124,58,237,0.4);
+      color: #c4b5fd;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+    .matrix-claim-btn:hover {
+      background: linear-gradient(135deg, #7c3aed, #4f46e5);
+      color: #fff;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(124,58,237,0.4);
+    }
+    .matrix-cooldown-badge {
+      font-size: 10px;
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: rgba(245,158,11,0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245,158,11,0.3);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* ===== GLOBAL OMNISEARCH STYLES ===== */
+    .nav-search-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+    .nav-search-btn:hover {
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(124, 58, 237, 0.4);
+      color: var(--text-primary);
+    }
+    .nav-search-kbd {
+      font-size: 10px;
+      font-family: inherit;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+    @media (max-width: 768px) {
+      .nav-search-text, .nav-search-kbd { display: none; }
+      .nav-search-btn { padding: 7px; }
+    }
+
+    .omnisearch-modal {
+      max-width: 680px;
+      width: 100%;
+      background: var(--card-surface);
+      border: 1px solid rgba(124, 58, 237, 0.35);
+      border-radius: var(--radius);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.65), 0 0 25px rgba(124, 58, 237, 0.15);
+      display: flex;
+      flex-direction: column;
+      max-height: 82vh;
+      overflow: hidden;
+      margin: 40px auto;
+      animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .omnisearch-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .omnisearch-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 15px;
+      color: var(--text-primary);
+      font-family: inherit;
+    }
+    .omnisearch-input::placeholder {
+      color: var(--text-secondary);
+      opacity: 0.6;
+    }
+    .omnisearch-filter-pills {
+      display: flex;
+      gap: 6px;
+      padding: 8px 16px;
+      background: rgba(0,0,0,0.15);
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+    .omnisearch-pill {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-secondary);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.12s ease;
+    }
+    .omnisearch-pill:hover {
+      color: var(--text-primary);
+      background: rgba(255,255,255,0.05);
+    }
+    .omnisearch-pill.active {
+      background: rgba(124, 58, 237, 0.2);
+      border-color: rgba(124, 58, 237, 0.4);
+      color: var(--primary-light);
+    }
+    .omnisearch-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      overscroll-behavior: contain;
+    }
+    .omnisearch-group-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-secondary);
+      padding: 6px 8px 2px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .omnisearch-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 9px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      background: rgba(255,255,255,0.02);
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+    .omnisearch-item:hover, .omnisearch-item.selected {
+      background: rgba(124, 58, 237, 0.12);
+      border-color: rgba(124, 58, 237, 0.3);
+      transform: translateX(2px);
+    }
+    .omnisearch-item-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .omnisearch-item-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.05);
+    }
+    .omnisearch-item-info {
+      min-width: 0;
+    }
+    .omnisearch-item-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .omnisearch-item-sub {
+      font-size: 11px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 1px;
+    }
+    .omnisearch-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      font-size: 11px;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+    .omnisearch-footer kbd {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 3px;
+      padding: 1px 4px;
+      font-size: 10px;
+    }
 
   
     /* ===== 24-HOUR ACCOUNT COOLDOWN TRACKER ===== */
@@ -2273,6 +2643,7 @@
   </div>
   <div class="nav-tabs">
     <button class="nav-tab active" data-tab="dashboard">Dashboard</button>
+    <button class="nav-tab" data-tab="matrix">Claim Matrix</button>
     <button class="nav-tab" data-tab="vouchers">Vouchers</button>
     <button class="nav-tab" data-tab="insights">Insights</button>
     <button class="nav-tab" data-tab="variants">Variants</button>
@@ -2280,6 +2651,15 @@
     <button class="nav-tab" data-tab="history">History</button>
   </div>
   <div class="nav-actions">
+    <!-- Omnisearch Trigger -->
+    <button type="button" class="nav-search-btn" id="btn-open-omnisearch" title="Global Omnisearch (Cmd+K)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <span class="nav-search-text">Search...</span>
+      <kbd class="nav-search-kbd">⌘K</kbd>
+    </button>
     <button class="btn-icon" id="btn-disk-sync" title="Local Disk Storage (rupay-perks-data.json)" style="position:relative;" aria-label="Local File Storage">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
@@ -2552,6 +2932,18 @@
     </div>
     <div class="alert-strip hidden" id="alert-strip">⚠️ <span id="alert-text"></span></div>
 
+    <!-- Claimed Vouchers Expiring Soon Urgency Banner -->
+    <div class="voucher-expiry-alert-banner hidden" id="dash-voucher-expiry-banner">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-size:24px;">🚨</span>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text-primary);" id="dash-voucher-expiry-title">0 Vouchers Expiring Soon (≤ 7 Days)</div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:2px;" id="dash-voucher-expiry-sub">Protect your inventory from expiring worthless.</div>
+        </div>
+      </div>
+      <button type="button" class="btn btn-secondary btn-sm" id="btn-dash-view-expiring-vouchers" style="background:rgba(239,68,68,0.15);color:#f87171;border-color:rgba(239,68,68,0.35);font-weight:600;font-size:12px;">View Expiring Vouchers &rarr;</button>
+    </div>
+
     <!-- Use-It-or-Lose-It Cycle Expiry & Value at Risk -->
     <div class="cycle-expiry-section" id="cycle-expiry-section">
       <div class="cycle-expiry-header">
@@ -2581,9 +2973,14 @@
       </div>
       <div class="cycle-breakdown-bar">
         <div class="cycle-breakdown-pills" id="cycle-category-pills"></div>
-        <button class="btn btn-secondary btn-xs cycle-pending-toggle" id="btn-toggle-pending-cards">
-          ⚡ Show Cards With Pending Perks Only
-        </button>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <button type="button" class="btn btn-primary btn-xs" id="btn-dash-open-matrix" style="font-weight:600;background:linear-gradient(135deg, #7c3aed, #4f46e5);border:none;">
+            🗓️ Open Claim Matrix
+          </button>
+          <button class="btn btn-secondary btn-xs cycle-pending-toggle" id="btn-toggle-pending-cards">
+            ⚡ Show Cards With Pending Perks Only
+          </button>
+        </div>
       </div>
     </div>
 
@@ -2666,6 +3063,106 @@
     <div id="dashboard-cards-grid" class="cards-grid"></div>
   </section>
 
+  <!-- ======== TAB: CLAIM MATRIX (QUOTA COMMAND CENTER) ======== -->
+  <section class="tab-panel" id="tab-matrix">
+    <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div class="page-title">🗓️ Quarterly Claim Matrix</div>
+        <div class="page-subtitle">Track quota completion across all 39 cards & benefit categories at a single glance</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-matrix-refresh" title="Refresh Matrix">
+          🔄 Refresh
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-matrix-quick-sms" style="background:rgba(124,58,237,0.12);color:var(--primary-light);border-color:rgba(124,58,237,0.3);font-weight:600;">
+          ⚡ Quick Log SMS
+        </button>
+      </div>
+    </div>
+
+    <!-- Matrix Summary KPIs -->
+    <div class="stats-bar" style="margin-bottom:14px;">
+      <div class="stat-card">
+        <div class="stat-label">Active Cards</div>
+        <div class="stat-value primary" id="matrix-stat-cards">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Quotas (<span id="matrix-stat-cycle-name">Q4</span>)</div>
+        <div class="stat-value secondary" id="matrix-stat-quotas">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Claimed Slots</div>
+        <div class="stat-value success" id="matrix-stat-claimed">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Unclaimed Remaining</div>
+        <div class="stat-value warning" id="matrix-stat-remaining">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Unclaimed Value</div>
+        <div class="stat-value danger" id="matrix-stat-risk">₹0</div>
+      </div>
+    </div>
+
+    <!-- Matrix Filter Toolbar -->
+    <div class="history-filters" style="margin-bottom:12px;">
+      <select class="filter-select" id="matrix-filter-cycle" style="font-weight:600;">
+        <option value="Q4" selected>📅 Q4 2026 (Oct – Dec) · Active</option>
+        <option value="Q3">📅 Q3 2026 (Jul – Sep)</option>
+        <option value="Q2">📅 Q2 2026 (Apr – Jun)</option>
+        <option value="Q1">📅 Q1 2026 (Jan – Mar)</option>
+        <option value="ALL">📅 Entire Year 2026</option>
+      </select>
+
+      <select class="filter-select" id="matrix-filter-bank">
+        <option value="">All Banks</option>
+      </select>
+
+      <select class="filter-select" id="matrix-filter-status">
+        <option value="ALL">All Cards</option>
+        <option value="UNCLAIMED" selected>⚡ Has Unclaimed Perks</option>
+        <option value="READY">🚀 Ready to Claim (0-Cooldown)</option>
+        <option value="COMPLETED">✅ 100% Completed</option>
+        <option value="UNAVAILABLE">🚫 Revisit Unavailable (Not on Portal)</option>
+      </select>
+
+      <input type="text" class="filter-select" id="matrix-search" placeholder="🔍 Search card, last 4, email..." style="min-width:180px;background:var(--elevated);" />
+
+      <label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);cursor:pointer;user-select:none;margin-left:auto;">
+        <input type="checkbox" id="matrix-include-inactive" />
+        <span>Include Inactive Cards</span>
+      </label>
+    </div>
+
+    <!-- Matrix Table Container -->
+    <div class="matrix-table-card">
+      <div class="matrix-table-wrap" id="matrix-table-wrap">
+        <table class="matrix-table" id="matrix-table">
+          <thead>
+            <tr>
+              <th class="matrix-th-card">Card / Account</th>
+              <th class="matrix-th-progress">Quota</th>
+              <th class="matrix-th-cat" title="OTT Entertainment (Prime, Hotstar, Sony LIV)">🎬 OTT</th>
+              <th class="matrix-th-cat" title="Spa & Salon (Lakme)">💆 Spa</th>
+              <th class="matrix-th-cat" title="Health Checkup (Thyrocare)">🩺 Health</th>
+              <th class="matrix-th-cat" title="Gym & Fitness (Cult.fit Pass)">🏋️ Gym</th>
+              <th class="matrix-th-cat" title="Cab Rides (Uber)">🚕 Cab</th>
+              <th class="matrix-th-cat" title="Online Shopping (Myntra, Decathlon, Flipkart, Nykaa)">🛍️ Shopping</th>
+              <th class="matrix-th-cat" title="Online Groceries (BigBasket)">🛒 Groceries</th>
+              <th class="matrix-th-cat" title="Online Pharmacy (Apollo Pharmacy)">💊 Pharmacy</th>
+            </tr>
+          </thead>
+          <tbody id="matrix-tbody"></tbody>
+        </table>
+      </div>
+      <div id="matrix-empty" class="section-empty hidden" style="padding:32px 16px;">
+        <div style="font-size:32px;margin-bottom:8px">🔍</div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:4px;color:var(--text-primary)">No cards found</div>
+        <div style="font-size:12px;color:var(--text-secondary);">Try clearing your search or status filters.</div>
+      </div>
+    </div>
+  </section>
+
   <!-- ======== TAB: VOUCHERS (VAULT & BULK ACTIONS) ======== -->
   <section class="tab-panel" id="tab-vouchers">
     <div class="page-header">
@@ -2678,10 +3175,36 @@
     <!-- Quick Brand Pills Filter -->
     <div class="brand-pills-wrap" id="voucher-brand-pills"></div>
 
+    <!-- Voucher Expiry Urgency Alert Banner -->
+    <div class="voucher-expiry-alert-banner hidden" id="voucher-expiring-soon-banner">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:20px;">⚠️</span>
+        <div>
+          <strong style="font-size:13px;color:var(--text-primary);"><span id="voucher-expiring-count">0</span> vouchers are expiring within 7 days!</strong>
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">Prioritize selling or redeeming these codes before their validity window lapses.</div>
+        </div>
+      </div>
+      <button type="button" class="btn btn-secondary btn-xs" id="btn-filter-expiring-now" style="background:rgba(245,158,11,0.2);color:#fbbf24;border-color:rgba(245,158,11,0.4);font-weight:600;">Show Expiring Only</button>
+    </div>
+
+    <!-- Pending Voucher Codes Alert Banner -->
+    <div class="voucher-expiry-alert-banner hidden" id="voucher-pending-codes-banner" style="background:linear-gradient(135deg, rgba(59,130,246,0.12), rgba(37,99,235,0.05)); border:1px solid rgba(59,130,246,0.3);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:20px;">⏳</span>
+        <div>
+          <strong style="font-size:13px;color:var(--text-primary);"><span id="voucher-pending-count">0</span> claimed redemptions are awaiting voucher codes</strong>
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">These have Booking IDs logged but will only appear in inventory once their voucher code is entered.</div>
+        </div>
+      </div>
+      <button type="button" class="btn btn-secondary btn-xs" id="btn-view-pending-history" onclick="navigateToPendingCodesInHistory()" style="background:rgba(59,130,246,0.2);color:#60a5fa;border-color:rgba(59,130,246,0.4);font-weight:600;">View in History ↗</button>
+    </div>
+
     <!-- Filter Bar -->
     <div class="history-filters">
       <select class="filter-select" id="voucher-filter-status">
         <option value="AVAILABLE" selected>⚡ Available / Unused</option>
+        <option value="EXPIRING_SOON">⚠️ Expiring Soon (≤ 7 Days)</option>
+        <option value="EXPIRED">❌ Expired (Unused)</option>
         <option value="SOLD">🏷️ SOLD</option>
         <option value="USED">✅ USED</option>
         <option value="ALL">All Vouchers</option>
@@ -2693,6 +3216,11 @@
         <option value="Q2">Q2</option>
         <option value="Q3">Q3</option>
         <option value="Q4">Q4</option>
+      </select>
+      <select class="filter-select" id="voucher-sort" title="Sort Vouchers">
+        <option value="DATE_DESC" selected>📅 Newest First</option>
+        <option value="EXPIRY_ASC">⏰ Expiring Soonest</option>
+        <option value="BRAND_ASC">🔤 Brand (A-Z)</option>
       </select>
       <input type="text" class="filter-select" id="voucher-search" placeholder="🔍 Search card, code, buyer..." style="flex:1;min-width:180px;" />
     </div>
@@ -2725,6 +3253,7 @@
             <th>Status</th>
             <th>Buyer</th>
             <th>Redeem Date</th>
+            <th>Validity / Expiry</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -2958,6 +3487,15 @@
     </svg>
     <span class="tab-label">Dashboard</span>
   </button>
+  <button class="nav-tab" data-tab="matrix">
+    <svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="16" y1="2" x2="16" y2="6"></line>
+      <line x1="8" y1="2" x2="8" y2="6"></line>
+      <line x1="3" y1="10" x2="21" y2="10"></line>
+    </svg>
+    <span class="tab-label">Matrix</span>
+  </button>
   <button class="nav-tab" data-tab="vouchers">
     <svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M21 9V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3a2 2 0 0 1 0 4v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3a2 2 0 0 1 0-4Z"></path>
@@ -3063,6 +3601,26 @@
             <option value="Redeemed">Redeemed</option>
             <option value="Pending">Pending</option>
           </select>
+        </div>
+      </div>
+      <!-- Voucher Validity & Expiry Countdown -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="log-validity-days">Voucher Validity (Days from Claim)</label>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <input type="number" class="form-control" id="log-validity-days" placeholder="e.g. 30" min="1" max="730" style="width:95px;" />
+            <span style="font-size:12px;color:var(--text-secondary)">days</span>
+            <div style="display:flex;gap:4px;margin-left:auto;">
+              <button type="button" class="btn btn-secondary btn-xs btn-val-days-preset" data-days="30">30d</button>
+              <button type="button" class="btn btn-secondary btn-xs btn-val-days-preset" data-days="60">60d</button>
+              <button type="button" class="btn btn-secondary btn-xs btn-val-days-preset" data-days="90">90d</button>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="log-expiry-date">Calculated Expiry Date</label>
+          <input type="date" class="form-control" id="log-expiry-date" />
+          <div id="log-expiry-hint" style="font-size:11px;color:var(--text-secondary);margin-top:4px;">Auto-calculated from claim date + validity</div>
         </div>
       </div>
       <div class="form-row">
@@ -3260,16 +3818,16 @@
   </div>
 </div>
 
-<!-- ===== MODAL: BRAND PRICE PRESETS ===== -->
+<!-- ===== MODAL: BRAND PRESETS (PRICE & VALIDITY) ===== -->
 <div class="modal-backdrop" id="modal-price-presets">
-  <div class="modal" role="dialog" aria-modal="true" style="max-width: 520px;">
+  <div class="modal" role="dialog" aria-modal="true" style="max-width: 580px;">
     <div class="modal-header">
-      <div class="modal-title">⚙️ Default Selling Prices per Brand</div>
+      <div class="modal-title">⚙️ Brand Presets (Selling Price & Default Validity)</div>
       <button class="modal-close" data-close="modal-price-presets">✕</button>
     </div>
     <div class="modal-body">
       <div style="font-size:12px;color:var(--text-secondary);margin-bottom:14px;">
-        Set default market prices when selling vouchers. These default prices are automatically applied to revenue tracking and bulk sales unless manually overridden.
+        Set default selling prices and voucher validity windows (in days from claim date) per brand. These defaults are auto-applied when creating new redemptions or logging via SMS.
       </div>
       <div id="price-presets-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
         <!-- Injected dynamically by JS -->
@@ -3607,6 +4165,46 @@
   </div>
 </div>
 
+<!-- ===== MODAL: GLOBAL OMNISEARCH (CMD+K) ===== -->
+<div class="modal-backdrop" id="modal-omnisearch">
+  <div class="modal omnisearch-modal" role="dialog" aria-modal="true">
+    <div class="omnisearch-header">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary-light);flex-shrink:0;">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text" id="omnisearch-input" class="omnisearch-input" placeholder="Search cards, last 4, voucher codes, booking IDs, buyers, brands..." autocomplete="off" />
+      <button type="button" class="modal-close" data-close="modal-omnisearch" style="position:static;">✕</button>
+    </div>
+
+    <!-- Category Pills Filter within Search -->
+    <div class="omnisearch-filter-pills" id="omnisearch-pills">
+      <button type="button" class="omnisearch-pill active" data-cat="ALL">All Results</button>
+      <button type="button" class="omnisearch-pill" data-cat="CARDS">💳 Cards (<span id="omnisearch-count-cards">0</span>)</button>
+      <button type="button" class="omnisearch-pill" data-cat="VOUCHERS">🎟️ Vouchers (<span id="omnisearch-count-vouchers">0</span>)</button>
+      <button type="button" class="omnisearch-pill" data-cat="BUYERS">👤 Buyers (<span id="omnisearch-count-buyers">0</span>)</button>
+      <button type="button" class="omnisearch-pill" data-cat="PERKS">🎁 Perks (<span id="omnisearch-count-perks">0</span>)</button>
+    </div>
+
+    <!-- Results Body -->
+    <div class="omnisearch-body" id="omnisearch-results">
+      <!-- Injected by renderOmnisearch -->
+    </div>
+
+    <!-- Footer with keyboard shortcuts -->
+    <div class="omnisearch-footer">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span><kbd>↑</kbd> <kbd>↓</kbd> to navigate</span>
+        <span><kbd>↵</kbd> to select</span>
+        <span><kbd>esc</kbd> to close</span>
+      </div>
+      <div id="omnisearch-total-stat" style="color:var(--text-secondary);font-size:11px;">
+        Type anything to search instantly
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="confirm-overlay" id="confirm-overlay">
   <div class="confirm-box">
     <div class="confirm-icon" id="confirm-icon">⚠️</div>
@@ -3811,6 +4409,241 @@ function getVoucherPrice(u) {
   return getBrandPresetPrice(u.brand);
 }
 
+/* ===== BRAND DEFAULT VALIDITY PRESETS & VOUCHER EXPIRY ENGINE ===== */
+
+const DEFAULT_BRAND_VALIDITY = {
+  'BookMyShow': 30,
+  'Cult': 30,
+  'Cult.fit': 30,
+  'Prime': 60,
+  'Amazon Prime': 60,
+  'Hotstar': 60,
+  'Disney+ Hotstar': 60,
+  'Sony LIV': 60,
+  'Lakme': 60,
+  'Thyrocare': 60,
+  'Uber': 30,
+  'Myntra': 30,
+  'Reliance': 30,
+  'Reliance Digital': 30,
+  'Decathlon': 60,
+  'Apollo': 60,
+  'Apollo Pharmacy': 60,
+  'BigBasket': 30,
+  'Swiggy': 30,
+  'Zomato': 30,
+  'Other': 30
+};
+
+function getBrandValidityPresets() {
+  let userPresets = {};
+  try {
+    const stored = localStorage.getItem('rupay_brand_validity_presets');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed && typeof parsed === 'object') userPresets = parsed;
+    }
+  } catch (_) {}
+  if (typeof DB !== 'undefined' && DB && DB.brandValidityPresets) {
+    userPresets = { ...userPresets, ...DB.brandValidityPresets };
+  }
+
+  const merged = { ...DEFAULT_BRAND_VALIDITY, ...userPresets };
+  if (userPresets['Cult'] !== undefined) merged['Cult.fit'] = userPresets['Cult'];
+  else if (userPresets['Cult.fit'] !== undefined) merged['Cult'] = userPresets['Cult.fit'];
+
+  if (userPresets['Prime'] !== undefined) merged['Amazon Prime'] = userPresets['Prime'];
+  else if (userPresets['Amazon Prime'] !== undefined) merged['Prime'] = userPresets['Amazon Prime'];
+
+  if (userPresets['Hotstar'] !== undefined) merged['Disney+ Hotstar'] = userPresets['Hotstar'];
+  else if (userPresets['Disney+ Hotstar'] !== undefined) merged['Hotstar'] = userPresets['Disney+ Hotstar'];
+
+  if (userPresets['Reliance'] !== undefined) merged['Reliance Digital'] = userPresets['Reliance'];
+  else if (userPresets['Reliance Digital'] !== undefined) merged['Reliance'] = userPresets['Reliance Digital'];
+
+  if (userPresets['Apollo'] !== undefined) merged['Apollo Pharmacy'] = userPresets['Apollo'];
+  else if (userPresets['Apollo Pharmacy'] !== undefined) merged['Apollo'] = userPresets['Apollo Pharmacy'];
+  return merged;
+}
+
+function saveBrandValidityPresets(presets) {
+  if (presets['Cult'] !== undefined) presets['Cult.fit'] = presets['Cult'];
+  else if (presets['Cult.fit'] !== undefined) presets['Cult'] = presets['Cult.fit'];
+
+  if (presets['Prime'] !== undefined) presets['Amazon Prime'] = presets['Prime'];
+  else if (presets['Amazon Prime'] !== undefined) presets['Prime'] = presets['Amazon Prime'];
+
+  if (presets['Hotstar'] !== undefined) presets['Disney+ Hotstar'] = presets['Hotstar'];
+  else if (presets['Disney+ Hotstar'] !== undefined) presets['Hotstar'] = presets['Disney+ Hotstar'];
+
+  if (presets['Reliance'] !== undefined) presets['Reliance Digital'] = presets['Reliance'];
+  else if (presets['Reliance Digital'] !== undefined) presets['Reliance'] = presets['Reliance Digital'];
+
+  if (presets['Apollo'] !== undefined) presets['Apollo Pharmacy'] = presets['Apollo'];
+  else if (presets['Apollo Pharmacy'] !== undefined) presets['Apollo'] = presets['Apollo Pharmacy'];
+
+  try {
+    localStorage.setItem('rupay_brand_validity_presets', JSON.stringify(presets));
+  } catch (_) {}
+  if (typeof DB !== 'undefined' && DB) {
+    DB.brandValidityPresets = presets;
+    saveDB();
+  }
+}
+
+function getBrandPresetValidity(brandName) {
+  if (!brandName) return DEFAULT_BRAND_VALIDITY['Other'] || 30;
+  const presets = getBrandValidityPresets();
+  const normKey = normalizeBrandKey(brandName);
+
+  if (presets[normKey] !== undefined && !isNaN(Number(presets[normKey]))) {
+    return Number(presets[normKey]);
+  }
+  const clean = String(brandName).trim();
+  if (presets[clean] !== undefined && !isNaN(Number(presets[clean]))) {
+    return Number(presets[clean]);
+  }
+  if (DEFAULT_BRAND_VALIDITY[normKey] !== undefined) {
+    return Number(DEFAULT_BRAND_VALIDITY[normKey]);
+  }
+  return Number(presets['Other'] || DEFAULT_BRAND_VALIDITY['Other'] || 30);
+}
+
+function getVoucherExpiry(usage) {
+  if (!usage) return null;
+
+  let expDate = null;
+  let validityDays = usage.validityDays;
+
+  const claimDateStr = (usage.date || '').split('T')[0];
+  let claimDate = null;
+  if (claimDateStr) {
+    const parts = claimDateStr.split('-');
+    if (parts.length === 3) {
+      claimDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+    }
+  }
+
+  if (usage.expiryDate) {
+    const expParts = String(usage.expiryDate).split('T')[0].split('-');
+    if (expParts.length === 3) {
+      expDate = new Date(parseInt(expParts[0], 10), parseInt(expParts[1], 10) - 1, parseInt(expParts[2], 10));
+    }
+  }
+
+  if (!expDate && claimDate && !isNaN(claimDate.getTime())) {
+    if (!validityDays || isNaN(validityDays)) {
+      validityDays = getBrandPresetValidity(usage.brand);
+    }
+    validityDays = parseInt(validityDays, 10) || 30;
+    expDate = new Date(claimDate);
+    expDate.setDate(expDate.getDate() + validityDays);
+  }
+
+  if (!expDate || isNaN(expDate.getTime())) return null;
+
+  expDate.setHours(23, 59, 59, 999);
+
+  const now = new Date();
+  const diffMs = expDate.getTime() - now.getTime();
+  const daysRemaining = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  const isExpired = daysRemaining < 0;
+  const isExpiringSoon = !isExpired && daysRemaining <= 7;
+
+  const year = expDate.getFullYear();
+  const month = String(expDate.getMonth() + 1).padStart(2, '0');
+  const day = String(expDate.getDate()).padStart(2, '0');
+  const expiryDateStr = `${year}-${month}-${day}`;
+
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const formattedExpiry = `${day} ${MONTHS[expDate.getMonth()]} ${year}`;
+
+  return {
+    claimDate,
+    expiryDate: expDate,
+    expiryDateStr,
+    formattedExpiry,
+    validityDays: validityDays || (claimDate ? Math.round((expDate - claimDate) / (1000 * 60 * 60 * 24)) : 30),
+    daysRemaining,
+    isExpired,
+    isExpiringSoon
+  };
+}
+
+function renderExpiryBadge(u, exp) {
+  if (!exp) return '<span style="color:var(--text-secondary)">—</span>';
+  const isAvailable = isVoucherAvailable(u);
+
+  if (!isAvailable) {
+    return `<span style="font-size:11px;color:var(--text-secondary);opacity:0.85;" title="Claimed: ${u.date ? u.date.split('T')[0] : '—'} | Validity: ${exp.validityDays}d | Exp: ${exp.formattedExpiry}">Till ${exp.formattedExpiry}</span>`;
+  }
+
+  if (exp.isExpired) {
+    const past = Math.abs(exp.daysRemaining);
+    return `
+      <div>
+        <span class="badge" style="background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.35);font-size:11px;font-weight:700;" title="Expired on ${exp.formattedExpiry} (${past} days ago)">
+          ❌ Expired (${past}d ago)
+        </span>
+        <div style="font-size:10px;color:var(--text-secondary);margin-top:2px;">Exp: ${exp.formattedExpiry}</div>
+      </div>
+    `;
+  }
+
+  if (exp.daysRemaining === 0) {
+    return `
+      <div>
+        <span class="badge badge-pulse" style="background:#ef4444;color:#fff;border:1px solid #ef4444;font-size:11px;font-weight:700;" title="Expires Today! (${exp.formattedExpiry})">
+          🚨 Expires Today!
+        </span>
+        <div style="font-size:10px;color:#ef4444;font-weight:600;margin-top:2px;">Till 11:59 PM</div>
+      </div>
+    `;
+  }
+
+  if (exp.daysRemaining <= 3) {
+    return `
+      <div>
+        <span class="badge badge-pulse" style="background:rgba(239,68,68,0.18);color:#ef4444;border:1px solid rgba(239,68,68,0.4);font-size:11px;font-weight:700;" title="Valid till ${exp.formattedExpiry} (${exp.validityDays}d from claim)">
+          🚨 ${exp.daysRemaining}d left
+        </span>
+        <div style="font-size:10px;color:var(--text-secondary);margin-top:2px;">Till ${exp.formattedExpiry}</div>
+      </div>
+    `;
+  }
+
+  if (exp.daysRemaining <= 7) {
+    return `
+      <div>
+        <span class="badge" style="background:rgba(245,158,11,0.18);color:#f59e0b;border:1px solid rgba(245,158,11,0.4);font-size:11px;font-weight:600;" title="Valid till ${exp.formattedExpiry} (${exp.validityDays}d from claim)">
+          ⚠️ ${exp.daysRemaining}d left
+        </span>
+        <div style="font-size:10px;color:var(--text-secondary);margin-top:2px;">Till ${exp.formattedExpiry}</div>
+      </div>
+    `;
+  }
+
+  if (exp.daysRemaining <= 15) {
+    return `
+      <div>
+        <span class="badge" style="background:rgba(59,130,246,0.12);color:#3b82f6;border:1px solid rgba(59,130,246,0.25);font-size:11px;font-weight:500;" title="Valid till ${exp.formattedExpiry} (${exp.validityDays}d from claim)">
+          ⏰ ${exp.daysRemaining}d left
+        </span>
+        <div style="font-size:10px;color:var(--text-secondary);margin-top:2px;">Till ${exp.formattedExpiry}</div>
+      </div>
+    `;
+  }
+
+  return `
+    <div>
+      <span class="badge" style="background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.25);font-size:11px;font-weight:500;" title="Valid till ${exp.formattedExpiry} (${exp.validityDays}d from claim)">
+        ⏳ ${exp.daysRemaining}d left
+      </span>
+      <div style="font-size:10px;color:var(--text-secondary);margin-top:2px;">Till ${exp.formattedExpiry}</div>
+    </div>
+  `;
+}
+
 function genId() {
   try { return crypto.randomUUID(); } catch (_) {
     return 'id-' + Math.random().toString(36).slice(2, 11) + '-' + Date.now().toString(36);
@@ -3873,6 +4706,7 @@ function loadDB() {
         usages:   cleanedUsages.length > 0                                       ? cleanedUsages   : seed.usages,
         perks:    (Array.isArray(parsed.perks) && parsed.perks.length > 0)       ? parsed.perks    : seed.perks,
         brandPricePresets: parsed.brandPricePresets || (seed && seed.brandPricePresets) || undefined,
+        brandValidityPresets: parsed.brandValidityPresets || (seed && seed.brandValidityPresets) || undefined,
         buyers:   (parsed.buyers && typeof parsed.buyers === 'object') ? parsed.buyers : (seed.buyers || {})
       };
       (DB.cards || []).forEach(normalizeCardObject);
@@ -3900,8 +4734,10 @@ function loadDB() {
    ============================================================== */
 
 let localFileHandle = null;
+let checkedStoredHandleOnce = false;
 let isDiskSaving = false;
-let pendingDiskSave = false;
+let activeDiskSavePromise = null;
+let pendingDiskSaveRequested = false;
 
 /* --- IndexedDB File Handle Storage (Permanent across reloads) --- */
 const FILE_IDB_NAME = 'rupay_storage_db';
@@ -3994,74 +4830,87 @@ function updateDiskStatusUI(status, label, subtext) {
 
 /** Directly writes entire database to the linked rupay-perks-data.json file */
 async function persistToLocalDisk(options = { silent: true }) {
-  if (isDiskSaving) {
-    pendingDiskSave = true;
-    return true;
-  }
-  isDiskSaving = true;
-  updateDiskStatusUI('syncing', 'Writing to rupay-perks-data.json...');
-
-  try {
-    const payload = JSON.stringify(DB, null, 2);
-    let saved = false;
-
-    if (!localFileHandle) {
-      localFileHandle = await getStoredFileHandle();
-    }
-
-    if (localFileHandle) {
-      try {
-        let perm = await localFileHandle.queryPermission({ mode: 'readwrite' });
-        if (perm !== 'granted') {
-          perm = await localFileHandle.requestPermission({ mode: 'readwrite' });
-        }
-        if (perm === 'granted') {
-          const writable = await localFileHandle.createWritable();
-          await writable.write(payload);
-          await writable.close();
-          saved = true;
-        }
-      } catch (e) {
-        console.warn('Native File System write error:', e);
-      }
-    }
-
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-
-    if (saved) {
-      localStorage.setItem('rupay_last_disk_save', now.toISOString());
-      const usagesCount = (DB && Array.isArray(DB.usages)) ? DB.usages.length : 0;
-      updateDiskStatusUI('synced', (localFileHandle && localFileHandle.name) ? localFileHandle.name : 'rupay-perks-data.json', `Saved at ${timeStr} (${usagesCount} redemptions)`);
-      if (!options.silent) {
-        showToast(`Saved to ${localFileHandle.name} directly! 📁✅ (${usagesCount} redemptions)`, 'success');
+  if (activeDiskSavePromise) {
+    pendingDiskSaveRequested = true;
+    return activeDiskSavePromise.then(() => {
+      if (pendingDiskSaveRequested) {
+        return persistToLocalDisk(options);
       }
       return true;
-    } else {
-      updateDiskStatusUI('unlinked', 'File Not Linked', 'Saved in browser memory. Click "Select rupay-perks-data.json" below to enable direct disk logging.');
-      if (!options.silent) {
-        showToast('Click "Select rupay-perks-data.json" in Settings to link your local file.', 'info');
-      }
-      return false;
-    }
-  } catch (err) {
-    console.error('persistToLocalDisk error:', err);
-    updateDiskStatusUI('error', 'File Save Failed', err.message);
-    return false;
-  } finally {
-    isDiskSaving = false;
-    if (pendingDiskSave) {
-      pendingDiskSave = false;
-      persistToLocalDisk({ silent: true });
-    }
+    });
   }
+
+  activeDiskSavePromise = (async () => {
+    isDiskSaving = true;
+    updateDiskStatusUI('syncing', 'Writing to rupay-perks-data.json...');
+
+    try {
+      const payload = JSON.stringify(DB, null, 2);
+      let saved = false;
+
+      if (!localFileHandle && !checkedStoredHandleOnce) {
+        checkedStoredHandleOnce = true;
+        localFileHandle = await getStoredFileHandle();
+      }
+
+      if (localFileHandle) {
+        try {
+          let perm = await localFileHandle.queryPermission({ mode: 'readwrite' });
+          if (perm !== 'granted') {
+            perm = await localFileHandle.requestPermission({ mode: 'readwrite' });
+          }
+          if (perm === 'granted') {
+            const writable = await localFileHandle.createWritable();
+            await writable.write(payload);
+            await writable.close();
+            saved = true;
+          }
+        } catch (e) {
+          console.warn('Native File System write error:', e);
+        }
+      }
+
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+
+      if (saved) {
+        localStorage.setItem('rupay_last_disk_save', now.toISOString());
+        const usagesCount = (DB && Array.isArray(DB.usages)) ? DB.usages.length : 0;
+        updateDiskStatusUI('synced', (localFileHandle && localFileHandle.name) ? localFileHandle.name : 'rupay-perks-data.json', `Saved at ${timeStr} (${usagesCount} redemptions)`);
+        if (!options.silent) {
+          showToast(`Saved to ${localFileHandle.name} directly! 📁✅ (${usagesCount} redemptions)`, 'success');
+        }
+        return true;
+      } else {
+        updateDiskStatusUI('unlinked', 'File Not Linked', 'Saved in browser memory. Click "Select rupay-perks-data.json" below to enable direct disk logging.');
+        if (!options.silent) {
+          showToast('Click "Select rupay-perks-data.json" in Settings to link your local file.', 'info');
+        }
+        return false;
+      }
+    } catch (err) {
+      console.error('persistToLocalDisk error:', err);
+      updateDiskStatusUI('error', 'File Save Failed', err.message);
+      return false;
+    } finally {
+      isDiskSaving = false;
+      activeDiskSavePromise = null;
+    }
+  })();
+
+  const result = await activeDiskSavePromise;
+  if (pendingDiskSaveRequested) {
+    pendingDiskSaveRequested = false;
+    return persistToLocalDisk(options);
+  }
+  return result;
 }
 
 /**
  * Universal Database Save:
  * 1. Synchronous localStorage backup (instant safety net)
- * 2. Immediate direct disk write to linked rupay-perks-data.json
- * 3. Immediate push to GitHub Gist post-save
+ * 2. Asynchronous direct disk write to linked rupay-perks-data.json
+ * 3. Non-blocking debounced push to GitHub Gist post-save
  */
 async function saveDB(skipCloudSync = false) {
   try {
@@ -4070,12 +4919,12 @@ async function saveDB(skipCloudSync = false) {
     console.warn('localStorage error:', e);
   }
 
-  // Direct disk write to rupay-perks-data.json
-  await persistToLocalDisk({ silent: true });
+  // Direct disk write to rupay-perks-data.json (non-blocking)
+  persistToLocalDisk({ silent: true });
 
-  // Post that, push to GitHub Gist
-  if (!skipCloudSync && typeof pushToGist === 'function' && typeof hasSyncCredentials === 'function' && hasSyncCredentials()) {
-    pushToGist({ silent: true });
+  // Post that, push to GitHub Gist via debounced non-blocking sync
+  if (!skipCloudSync) {
+    triggerDebouncedCloudPush();
   }
 }
 
@@ -4091,6 +4940,7 @@ function mergeDatasets(fileData, currentDB) {
     cards:    Array.isArray(fileData.cards)    && fileData.cards.length > 0    ? fileData.cards    : (currentDB.cards || []),
     perks:    Array.isArray(fileData.perks)    && fileData.perks.length > 0    ? fileData.perks    : (currentDB.perks || []),
     brandPricePresets: fileData.brandPricePresets || (currentDB && currentDB.brandPricePresets) || undefined,
+    brandValidityPresets: fileData.brandValidityPresets || (currentDB && currentDB.brandValidityPresets) || undefined,
     buyers:   { ...(currentDB && currentDB.buyers ? currentDB.buyers : {}), ...(fileData && fileData.buyers ? fileData.buyers : {}) },
     usages:   []
   };
@@ -4162,9 +5012,28 @@ function mergeDatasets(fileData, currentDB) {
       const existing = mergedMap.get(targetId);
       const merged = { ...existing };
 
-      if (lu.couponCode && (!existing.couponCode || existing.couponCode.length < lu.couponCode.length)) {
-        merged.couponCode = lu.couponCode;
+      // Priority 1: Coupon Code / Voucher Code
+      const luHasRealCode = Boolean(lu.couponCode && lu.couponCode.trim() && lu.couponCode.trim() !== '—' && lu.couponCode.trim() !== '-');
+      const fuHasRealCode = Boolean(existing.couponCode && existing.couponCode.trim() && existing.couponCode.trim() !== '—' && existing.couponCode.trim() !== '-' && existing.couponCode.toUpperCase() !== 'NA' && existing.couponCode.toUpperCase() !== 'DIRECT ACTIVATION');
+
+      if (luHasRealCode) {
+        if (!fuHasRealCode || lu.couponCode.length >= (existing.couponCode || '').length) {
+          merged.couponCode = lu.couponCode;
+        }
       }
+
+      // Priority 2: Voucher validity & expiry
+      if (lu.validityDays !== undefined && lu.validityDays !== null) {
+        merged.validityDays = lu.validityDays;
+      }
+      if (lu.expiryDate) {
+        merged.expiryDate = lu.expiryDate;
+      }
+      if (lu.voucherPin) {
+        merged.voucherPin = lu.voucherPin;
+      }
+
+      // Priority 3: Selling & status info
       if (lu.couponUsed && (!existing.couponUsed || lu.couponUsed === 'SOLD' || lu.couponUsed === 'USED')) {
         merged.couponUsed = lu.couponUsed;
       }
@@ -4174,20 +5043,31 @@ function mergeDatasets(fileData, currentDB) {
       if (lu.sellDate && !existing.sellDate) {
         merged.sellDate = lu.sellDate;
       }
+      if (lu.price !== undefined && existing.price === undefined) {
+        merged.price = lu.price;
+      }
+      if (lu.redeemedOnBuyerAccount !== undefined) {
+        merged.redeemedOnBuyerAccount = lu.redeemedOnBuyerAccount;
+      }
+
+      // Priority 4: Benefit metadata edits
       if (lu.notes && (!existing.notes || existing.notes === 'Imported from Q4')) {
         merged.notes = lu.notes;
       }
       if (lu.redeemStatus && !existing.redeemStatus) {
         merged.redeemStatus = lu.redeemStatus;
       }
-      if (lu.brand && !existing.brand) {
+      if (lu.brand && (!existing.brand || existing.brand === 'Other')) {
         merged.brand = lu.brand;
       }
-      if (lu.price !== undefined && existing.price === undefined) {
-        merged.price = lu.price;
+      if (lu.benefitId && !existing.benefitId) {
+        merged.benefitId = lu.benefitId;
       }
-      if (lu.redeemedOnBuyerAccount !== undefined) {
-        merged.redeemedOnBuyerAccount = lu.redeemedOnBuyerAccount;
+      if (lu.cardId && !existing.cardId) {
+        merged.cardId = lu.cardId;
+      }
+      if (lu.account && !existing.account) {
+        merged.account = lu.account;
       }
 
       mergedMap.set(targetId, merged);
@@ -4245,7 +5125,8 @@ async function loadExternalJSONIfAvailable(options = { silent: false }) {
   if (fetchedData) {
     const diskUsagesCount = (fetchedData.usages || []).length;
     const merged = mergeDatasets(fetchedData, DB);
-    const hasLocalAdditions = (merged.usages.length > diskUsagesCount);
+    const hasLocalDifferences = (merged.usages.length !== diskUsagesCount) ||
+      (JSON.stringify(merged.usages) !== JSON.stringify(fetchedData.usages || []));
 
     DB = merged;
     const healed = healUsages({ silent: true, skipSave: true });
@@ -4256,12 +5137,10 @@ async function loadExternalJSONIfAvailable(options = { silent: false }) {
     const fileName = localFileHandle ? localFileHandle.name : 'rupay-perks-data.json';
     updateDiskStatusUI(localFileHandle ? 'synced' : 'unlinked', fileName, `Loaded at ${timeStr} (${DB.usages.length} redemptions)`);
 
-    // If local had additions or healed usages not yet written to disk, persist immediately
-    if (hasLocalAdditions || healed > 0) {
-      await persistToLocalDisk({ silent: true });
-      if (typeof pushToGist === 'function' && typeof hasSyncCredentials === 'function' && hasSyncCredentials()) {
-        pushToGist({ silent: true });
-      }
+    // If local had additions, modified redemptions, or healed usages not yet written to disk, persist immediately
+    if (hasLocalDifferences || healed > 0) {
+      persistToLocalDisk({ silent: true });
+      triggerDebouncedCloudPush();
     }
 
     renderAll();
@@ -4422,8 +5301,8 @@ function deleteCard(id)        { DB.cards = DB.cards.filter(c => c.id !== id); D
 
 /* --- Usages --- */
 function getUsages()                          { return DB.usages; }
-function addUsage(data)                       { const u = { id: genId(), ...data }; DB.usages.push(u); saveDB(); if (typeof syncRedemptionToGSheet === 'function') syncRedemptionToGSheet(u); return u; }
-function updateUsage(id, d)                  { const i = DB.usages.findIndex(u => u.id === id); if (i !== -1) { DB.usages[i] = { ...DB.usages[i], ...d }; saveDB(); if (typeof syncRedemptionToGSheet === 'function') syncRedemptionToGSheet(DB.usages[i]); return DB.usages[i]; } }
+function addUsage(data, options = {})         { const u = { id: genId(), ...data }; DB.usages.push(u); if (!options.skipSave) saveDB(); if (typeof syncRedemptionToGSheet === 'function') syncRedemptionToGSheet(u); return u; }
+function updateUsage(id, d, options = {})     { const i = DB.usages.findIndex(u => u.id === id); if (i !== -1) { DB.usages[i] = { ...DB.usages[i], ...d }; if (!options.skipSave) saveDB(); if (typeof syncRedemptionToGSheet === 'function') syncRedemptionToGSheet(DB.usages[i]); return DB.usages[i]; } }
 function deleteUsage(id)                      { DB.usages = DB.usages.filter(u => u.id !== id); saveDB(); }
 
 /** Check if a bookingId already exists on another redemption (case-insensitive) */
@@ -4561,6 +5440,11 @@ function getBenefitForUsage(u) {
   const variant = card ? getVariantById(card.variantId) : null;
 
   if (variant && Array.isArray(variant.benefits)) {
+    if (u.brand) {
+      const uBrand = u.brand.trim().toLowerCase();
+      const brandMatch = variant.benefits.find(b => b.id === u.benefitId && b.brand && (b.brand.trim().toLowerCase() === uBrand || uBrand.includes(b.brand.trim().toLowerCase()) || b.brand.trim().toLowerCase().includes(uBrand)));
+      if (brandMatch) return brandMatch;
+    }
     const directMatch = variant.benefits.find(b => b.id === u.benefitId);
     if (directMatch) return directMatch;
 
@@ -4661,15 +5545,66 @@ function healUsages(options = {}) {
   return count;
 }
 
-function getUsagesForCardBenefit(cId, bId) {
+function resolveVariantBenefit(variant, benefitId, brandName) {
+  if (!variant || !Array.isArray(variant.benefits)) return null;
+  if (benefitId && brandName) {
+    const target = brandName.trim().toLowerCase();
+    const exact = variant.benefits.find(b => b.id === benefitId && b.brand && (b.brand.trim().toLowerCase() === target || b.brand.trim().toLowerCase().includes(target) || target.includes(b.brand.trim().toLowerCase())));
+    if (exact) return exact;
+  }
+  if (benefitId) {
+    const byId = variant.benefits.find(b => b.id === benefitId);
+    if (byId) return byId;
+  }
+  if (brandName) {
+    const target = brandName.trim().toLowerCase();
+    const byBrand = variant.benefits.find(b => b.brand && (b.brand.trim().toLowerCase() === target || b.brand.trim().toLowerCase().includes(target) || target.includes(b.brand.trim().toLowerCase())));
+    if (byBrand) return byBrand;
+  }
+  return null;
+}
+
+function isPerkUnavailable(cardId, benefitId, periodType, ref, brandName) {
+  const { start, end } = getCurrentPeriodWindow(periodType, ref);
+  const targetBrand = (brandName || '').trim().toLowerCase();
+  return (DB.usages || []).some(u => {
+    if (u.cardId !== cardId || u.redeemStatus !== 'UNAVAILABLE') return false;
+    const d = parseDate(u.date);
+    if (!d || d < start || d >= end) return false;
+    if (u.benefitId === benefitId) {
+      if (!targetBrand) return true;
+      const uBrand = (u.brand || '').trim().toLowerCase();
+      return !uBrand || uBrand === targetBrand || uBrand.includes(targetBrand) || targetBrand.includes(uBrand);
+    }
+    if (targetBrand) {
+      const uBrand = (u.brand || '').trim().toLowerCase();
+      return uBrand === targetBrand || uBrand.includes(targetBrand) || targetBrand.includes(uBrand);
+    }
+    return false;
+  });
+}
+
+function getUsagesForCardBenefit(cId, bId, brandName) {
   const card = getCardById(cId);
   const variant = card ? getVariantById(card.variantId) : null;
-  const benefit = variant ? (variant.benefits || []).find(b => b.id === bId) : null;
+  const benefit = variant ? resolveVariantBenefit(variant, bId, brandName) : null;
   if (!benefit) return [];
+
+  const hasMultipleSameId = variant && Array.isArray(variant.benefits) && variant.benefits.filter(b => b.id === bId).length > 1;
+  const targetBrand = (brandName || (!hasMultipleSameId ? benefit.brand : '') || '').trim().toLowerCase();
+
   return DB.usages.filter(u => {
     if (u.cardId !== cId) return false;
+    if (u.redeemStatus === 'UNAVAILABLE') return false; // Exclude portal unavailable markers
+    if (hasMultipleSameId) {
+      if (targetBrand) {
+        const uBrand = (u.brand || '').trim().toLowerCase();
+        return u.benefitId === bId && (uBrand === targetBrand || uBrand.includes(targetBrand) || targetBrand.includes(uBrand));
+      }
+      return u.benefitId === bId;
+    }
     if (u.benefitId === bId) return true;
-    if (benefit.brand && u.brand && u.brand.toLowerCase() === benefit.brand.toLowerCase()) {
+    if (targetBrand && u.brand && u.brand.toLowerCase() === targetBrand) {
       return true;
     }
     const resolved = getBenefitForUsage(u);
@@ -4681,23 +5616,37 @@ function getUsagesForCardBenefit(cId, bId) {
    SECTION 3: DATE & CALENDAR CALCULATION HELPERS
    ============================================================== */
 
+const IST_OFFSET_MS = 19800000; // 5.5 * 60 * 60 * 1000
+
+const _istDateFormatter = new Intl.DateTimeFormat('en-IN', {
+  timeZone: 'Asia/Kolkata',
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric'
+});
+
+const _istDateTimeFormatter = new Intl.DateTimeFormat('en-IN', {
+  timeZone: 'Asia/Kolkata',
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: true
+});
+
+const _parseDateCache = new Map();
+
 function getISTYearMonth(date) {
   const d = date || new Date();
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'Asia/Kolkata',
-    year: 'numeric',
-    month: 'numeric'
-  }).formatToParts(d);
-  let year = d.getFullYear(), month = d.getMonth();
-  parts.forEach(p => {
-    if (p.type === 'year') year = parseInt(p.value, 10);
-    if (p.type === 'month') month = parseInt(p.value, 10) - 1; // 0-based
-  });
-  return { year, month };
+  const ms = (d instanceof Date ? d.getTime() : new Date(d).getTime());
+  if (isNaN(ms)) return { year: 1970, month: 0 };
+  const ist = new Date(ms + IST_OFFSET_MS);
+  return { year: ist.getUTCFullYear(), month: ist.getUTCMonth() };
 }
 
 function istDate(year, month, day = 1, hour = 0, minute = 0) {
-  const utcMs = Date.UTC(year, month, day, hour, minute) - (5.5 * 60 * 60 * 1000);
+  const utcMs = Date.UTC(year, month, day, hour, minute) - IST_OFFSET_MS;
   return new Date(utcMs);
 }
 
@@ -4735,9 +5684,9 @@ function getNextResetDate(periodType, ref) {
   return getCurrentPeriodWindow(periodType, ref).end;
 }
 
-function getUsedCount(cardId, benefitId, periodType, ref) {
+function getUsedCount(cardId, benefitId, periodType, ref, brandName) {
   const { start, end } = getCurrentPeriodWindow(periodType, ref);
-  return getUsagesForCardBenefit(cardId, benefitId).filter(u => {
+  return getUsagesForCardBenefit(cardId, benefitId, brandName).filter(u => {
     const d = parseDate(u.date);
     return d >= start && d < end;
   }).length;
@@ -4746,62 +5695,60 @@ function getUsedCount(cardId, benefitId, periodType, ref) {
 function parseDate(str) {
   if (!str) return new Date(0);
   if (str instanceof Date) return isNaN(str.getTime()) ? new Date(0) : str;
-  const s = String(str).trim();
-  if (!s) return new Date(0);
+  if (typeof str !== 'string' && typeof str !== 'number') return new Date(0);
+  const cached = _parseDateCache.get(str);
+  if (cached !== undefined) return cached;
 
+  const s = String(str).trim();
+  if (!s) {
+    _parseDateCache.set(str, new Date(0));
+    return new Date(0);
+  }
+
+  let res = null;
   // If already standard ISO with Z or explicit offset (+/-HH:MM or +/-HHMM or +/-HH)
   if (/Z$/i.test(s) || /[+-]\d{2}(:?\d{2})?$/.test(s)) {
     const d = new Date(s);
-    if (!isNaN(d.getTime())) return d;
-  }
-
-  // If plain YYYY-MM-DD (e.g. historical CSV or sheet date), treat as midday IST to prevent boundary shifting
-  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    if (!isNaN(d.getTime())) res = d;
+  } else if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    // If plain YYYY-MM-DD (e.g. historical CSV or sheet date), treat as midday IST to prevent boundary shifting
     const d = new Date(s + 'T12:00:00+05:30');
-    if (!isNaN(d.getTime())) return d;
-  }
-
-  // If YYYY-MM-DDTHH:MM or YYYY-MM-DD HH:MM (:SS(.mmm)?) without timezone (e.g. datetime-local input), treat as IST (+05:30)
-  if (/^\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(s)) {
+    if (!isNaN(d.getTime())) res = d;
+  } else if (/^\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(s)) {
+    // If YYYY-MM-DDTHH:MM or YYYY-MM-DD HH:MM (:SS(.mmm)?) without timezone
     const isoStr = s.replace(' ', 'T') + '+05:30';
     const d = new Date(isoStr);
-    if (!isNaN(d.getTime())) return d;
-  }
-
-  // If purely numeric timestamp (epoch milliseconds)
-  if (/^\d{10,13}$/.test(s)) {
+    if (!isNaN(d.getTime())) res = d;
+  } else if (/^\d{10,13}$/.test(s)) {
+    // If purely numeric timestamp (epoch milliseconds)
     const ms = Number(s);
     const d = new Date(s.length === 10 ? ms * 1000 : ms);
-    if (!isNaN(d.getTime())) return d;
+    if (!isNaN(d.getTime())) res = d;
+  } else {
+    const d = new Date(s);
+    res = isNaN(d.getTime()) ? new Date(0) : d;
   }
 
-  const d = new Date(s);
-  return isNaN(d.getTime()) ? new Date(0) : d;
+  if (!res) res = new Date(0);
+  if (_parseDateCache.size > 2000) _parseDateCache.clear();
+  _parseDateCache.set(str, res);
+  return res;
 }
 
 function toISODate(date) {
   if (!date || isNaN(date.getTime()) || date.getTime() === 0) return '';
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Kolkata',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  }).formatToParts(date);
-  const p = {};
-  parts.forEach(x => { p[x.type] = x.value; });
-  return `${p.year}-${p.month}-${p.day}`;
+  const ist = new Date(date.getTime() + IST_OFFSET_MS);
+  const y = ist.getUTCFullYear();
+  const m = String(ist.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(ist.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 
 function fmtDate(date) {
   if (!date) return '—';
   const d = (date instanceof Date) ? date : parseDate(date);
   if (isNaN(d.getTime()) || d.getTime() === 0) return '—';
-  return d.toLocaleDateString('en-IN', {
-    timeZone: 'Asia/Kolkata',
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric'
-  });
+  return _istDateFormatter.format(d);
 }
 
 function fmtISO(str) {
@@ -4811,18 +5758,13 @@ function fmtISO(str) {
 
 /** Returns current IST timestamp in 'YYYY-MM-DDTHH:MM' for datetime-local inputs */
 function nowLocalISO() {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Kolkata',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hourCycle: 'h23'
-  }).formatToParts(new Date());
-  const p = {};
-  parts.forEach(x => { p[x.type] = x.value; });
-  return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}`;
+  const ist = new Date(Date.now() + IST_OFFSET_MS);
+  const y = ist.getUTCFullYear();
+  const m = String(ist.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(ist.getUTCDate()).padStart(2, '0');
+  const hh = String(ist.getUTCHours()).padStart(2, '0');
+  const mm = String(ist.getUTCMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d}T${hh}:${mm}`;
 }
 
 /** Format timestamp / date to human readable IST string with time if present */
@@ -4837,20 +5779,25 @@ function fmtTimestamp(str) {
   if (!hasTime) {
     return fmtDate(d);
   }
+  return _istDateTimeFormatter.format(d);
+}
 
-  const datePart = d.toLocaleDateString('en-IN', {
-    timeZone: 'Asia/Kolkata',
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric'
-  });
-  const timePart = d.toLocaleTimeString('en-IN', {
-    timeZone: 'Asia/Kolkata',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true
-  });
-  return `${datePart}, ${timePart}`;
+/**
+ * Check if a usage is a Direct Activation / Buyer Account redemption.
+ * Cult.fit / Gym redemptions are ALWAYS direct account activations (they do not use offline voucher codes).
+ * Any redemption explicitly flagged as redeemedOnBuyerAccount, or with couponCode 'Direct Activation' / 'NA',
+ * or belonging to Cult.fit is exempt from the card owner's RuPay account 24-hour cooldown.
+ */
+function isDirectActivationUsage(u) {
+  if (!u) return false;
+  if (u.redeemedOnBuyerAccount === true || u.redeemedOnBuyerAccount === 'true') return true;
+  const brand = (u.brand || '').trim().toLowerCase();
+  if (brand.includes('cult') || brand === 'cult.fit' || brand === 'cultpass') return true;
+  const code = (u.couponCode || '').trim().toUpperCase();
+  if (code === 'DIRECT ACTIVATION' || code === 'NA' || code === 'N/A') return true;
+  const notes = (u.notes || '').toLowerCase();
+  if (notes.includes('direct activation') || notes.includes('buyer account')) return true;
+  return false;
 }
 
 /** Calculate 24-hour cooldown status for an email account */
@@ -4863,18 +5810,16 @@ function getAccountCooldownStatus(email) {
       minsRemaining: 0,
       lastRedeemDate: null,
       lastBrand: '',
+      lastBookingId: '',
+      lastCardNickname: '',
       formattedTimeLeft: ''
     };
   }
 
   const normalizedEmail = String(email).trim().toLowerCase();
   const accountUsages = DB.usages.filter(u => {
-    // If explicitly marked as redeemed on buyer's account, it did NOT use the card owner's RuPay account!
-    if (u.redeemedOnBuyerAccount === true) return false;
-
-    // Automatic Cult check: Cult redeemed with a buyer is directly activated on the buyer's account
-    const isCult = (u.brand || '').toLowerCase().includes('cult');
-    if (isCult && u.buyer) return false;
+    // If explicitly marked as redeemed on buyer's account or direct activation, it did NOT use the card owner's RuPay account!
+    if (isDirectActivationUsage(u)) return false;
 
     return u.account && u.account.trim().toLowerCase() === normalizedEmail && 
       (u.redeemStatus === 'Redeemed' || u.bookingId || u.couponCode);
@@ -4883,6 +5828,8 @@ function getAccountCooldownStatus(email) {
   let lastRedeemDate = null;
   let lastRedeemMs = 0;
   let lastBrand = '';
+  let lastBookingId = '';
+  let lastCardNickname = '';
 
   accountUsages.forEach(u => {
     if (!u.date) return;
@@ -4892,6 +5839,9 @@ function getAccountCooldownStatus(email) {
       lastRedeemMs = ms;
       lastRedeemDate = u.date;
       lastBrand = u.brand || 'Perk';
+      lastBookingId = u.bookingId || '';
+      const c = getCardById(u.cardId);
+      lastCardNickname = c ? (c.nickname || `••••${c.last4}`) : '';
     }
   });
 
@@ -4909,6 +5859,8 @@ function getAccountCooldownStatus(email) {
     minsRemaining,
     lastRedeemDate,
     lastBrand,
+    lastBookingId,
+    lastCardNickname,
     formattedTimeLeft: `${hoursRemaining}h ${minsRemaining}m`
   };
 }
@@ -5057,12 +6009,9 @@ function getCycleFromDate(dateStr) {
   if (!dateStr) return '—';
   const d = parseDate(dateStr);
   if (isNaN(d.getTime()) || d.getTime() === 0) return '—';
-  const mStr = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Kolkata', month: 'numeric' }).format(d);
-  const m = parseInt(mStr, 10);
-  if (m <= 3) return 'Q1';
-  if (m <= 6) return 'Q2';
-  if (m <= 9) return 'Q3';
-  return 'Q4';
+  const { month } = getISTYearMonth(d);
+  const q = Math.floor(month / 3) + 1;
+  return 'Q' + q;
 }
 
 function getUpcomingResets() {
@@ -5249,8 +6198,9 @@ function renderCycleExpiryWidget() {
     let cardHasPending = false;
 
     (variant.benefits || []).forEach(b => {
-      const used = getUsedCount(card.id, b.id, b.periodType, now);
-      const remaining = Math.max(0, b.quota - used);
+      const isUnav = isPerkUnavailable(card.id, b.id, b.periodType, now, b.brand);
+      const used = getUsedCount(card.id, b.id, b.periodType, now, b.brand);
+      const remaining = isUnav ? 0 : Math.max(0, b.quota - used);
 
       totalCycleQuotas += b.quota;
       totalClaimedQuotas += Math.min(b.quota, used);
@@ -5360,22 +6310,101 @@ function renderCycleExpiryWidget() {
 }
 
 /** Smart "Next Card to Redeem" Finder */
-const SMART_PERK_OPTIONS = [
-  { id: 'lakme', label: 'Lakme / Spa', icon: '🧘', match: b => b.type === 'spa' || (b.brand && /lakme|spa/i.test(b.brand)), defaultBrand: 'Lakme' },
-  { id: 'cult', label: 'Cult.fit / Gym', icon: '🏋️', match: b => b.type === 'gym' || (b.brand && /cult/i.test(b.brand)), defaultBrand: 'Cult.fit' },
-  { id: 'uber', label: 'Uber / Cab', icon: '🚕', match: b => b.type === 'cab' || (b.brand && /uber/i.test(b.brand)), defaultBrand: 'Uber' },
-  { id: 'prime', label: 'Prime / OTT', icon: '📺', match: b => b.type === 'ott' || (b.brand && /prime|ott|hotstar/i.test(b.brand)), defaultBrand: 'Amazon Prime' },
-  { id: 'thyrocare', label: 'Thyrocare / Health', icon: '🩺', match: b => b.type === 'health' || (b.brand && /thyrocare/i.test(b.brand)), defaultBrand: 'Thyrocare' },
-  { id: 'myntra', label: 'Myntra / Shopping', icon: '🛍️', match: b => (b.brand && /myntra/i.test(b.brand)) || b.type === 'online-shopping', defaultBrand: 'Myntra' },
-  { id: 'apollo', label: 'Apollo / Pharmacy', icon: '💊', match: b => (b.brand && /apollo/i.test(b.brand)) || b.type === 'online-pharmacy', defaultBrand: 'Apollo Pharmacy' },
-  { id: 'bigbasket', label: 'BigBasket / Groceries', icon: '🥦', match: b => (b.brand && /bigbasket|groc/i.test(b.brand)) || b.type === 'online-groceries', defaultBrand: 'BigBasket' }
-];
+function getSmartPerkOptions() {
+  const brandMeta = {
+    'lakme': { icon: '🧘', label: 'Lakme / Spa', defaultBrand: 'Lakme' },
+    'cult': { icon: '🏋️', label: 'Cult.fit / Gym', defaultBrand: 'Cult.fit' },
+    'cult.fit': { icon: '🏋️', label: 'Cult.fit / Gym', defaultBrand: 'Cult.fit' },
+    'uber': { icon: '🚕', label: 'Uber / Cab', defaultBrand: 'Uber' },
+    'prime': { icon: '📺', label: 'Prime / OTT', defaultBrand: 'Amazon Prime' },
+    'amazon prime': { icon: '📺', label: 'Prime / OTT', defaultBrand: 'Amazon Prime' },
+    'thyrocare': { icon: '🩺', label: 'Thyrocare / Health', defaultBrand: 'Thyrocare' },
+    'apollo': { icon: '💊', label: 'Apollo Pharmacy', defaultBrand: 'Apollo Pharmacy' },
+    'apollo pharmacy': { icon: '💊', label: 'Apollo Pharmacy', defaultBrand: 'Apollo Pharmacy' },
+    'bigbasket': { icon: '🥦', label: 'BigBasket', defaultBrand: 'BigBasket' },
+    'myntra': { icon: '🛍️', label: 'Myntra', defaultBrand: 'Myntra' },
+    'reliance digital': { icon: '📱', label: 'Reliance Digital', defaultBrand: 'Reliance Digital' },
+    'reliance': { icon: '📱', label: 'Reliance Digital', defaultBrand: 'Reliance Digital' },
+    'decathlon': { icon: '⛺', label: 'Decathlon', defaultBrand: 'Decathlon' },
+    'kalyan': { icon: '💎', label: 'Kalyan', defaultBrand: 'Kalyan' },
+    'kalyan jewellers': { icon: '💎', label: 'Kalyan', defaultBrand: 'Kalyan' },
+    'flipkart': { icon: '📦', label: 'Flipkart', defaultBrand: 'Flipkart' },
+    'nykaa': { icon: '💄', label: 'Nykaa', defaultBrand: 'Nykaa' },
+    'bookmyshow': { icon: '🎬', label: 'BookMyShow', defaultBrand: 'BookMyShow' },
+    'bms': { icon: '🎬', label: 'BookMyShow', defaultBrand: 'BookMyShow' }
+  };
+
+  const basePills = [
+    { id: 'lakme', label: 'Lakme / Spa', icon: '🧘', defaultBrand: 'Lakme', match: b => b.type === 'spa' || b.perkId === 'ben-spa' || /spa|lakme/i.test(b.label || '') || (b.brand && /lakme|spa/i.test(b.brand)) },
+    { id: 'cult', label: 'Cult.fit / Gym', icon: '🏋️', defaultBrand: 'Cult.fit', match: b => b.type === 'gym' || b.perkId === 'ben-gym' || /gym|cult/i.test(b.label || '') || (b.brand && /cult/i.test(b.brand)) },
+    { id: 'uber', label: 'Uber / Cab', icon: '🚕', defaultBrand: 'Uber', match: b => b.type === 'cab' || b.perkId === 'ben-cab' || /cab|uber/i.test(b.label || '') || (b.brand && /uber/i.test(b.brand)) },
+    { id: 'prime', label: 'Prime / OTT', icon: '📺', defaultBrand: 'Amazon Prime', match: b => b.type === 'ott' || b.perkId === 'ben-ott' || /ott|prime|entertainment/i.test(b.label || '') || (b.brand && /prime|ott|hotstar|sony|zee/i.test(b.brand)) },
+    { id: 'thyrocare', label: 'Thyrocare / Health', icon: '🩺', defaultBrand: 'Thyrocare', match: b => b.type === 'health' || b.perkId === 'ben-health' || /health|checkup|thyrocare/i.test(b.label || '') || (b.brand && /thyrocare|health/i.test(b.brand)) },
+    { id: 'apollo', label: 'Apollo Pharmacy', icon: '💊', defaultBrand: 'Apollo Pharmacy', match: b => b.type === 'online-pharmacy' || b.perkId === 'ben-pharmacy' || (b.brand && /apollo/i.test(b.brand)) },
+    { id: 'bigbasket', label: 'BigBasket', icon: '🥦', defaultBrand: 'BigBasket', match: b => b.type === 'online-groceries' || b.perkId === 'ben-groceries' || (b.brand && /bigbasket|groc/i.test(b.brand)) },
+    { id: 'myntra', label: 'Myntra', icon: '🛍️', defaultBrand: 'Myntra', match: b => b.brand && /myntra/i.test(b.brand) },
+    { id: 'reliance-digital', label: 'Reliance Digital', icon: '📱', defaultBrand: 'Reliance Digital', match: b => b.brand && /reliance/i.test(b.brand) },
+    { id: 'decathlon', label: 'Decathlon', icon: '⛺', defaultBrand: 'Decathlon', match: b => b.brand && /decathlon/i.test(b.brand) },
+    { id: 'kalyan', label: 'Kalyan', icon: '💎', defaultBrand: 'Kalyan', match: b => b.brand && /kalyan/i.test(b.brand) },
+    { id: 'flipkart', label: 'Flipkart', icon: '📦', defaultBrand: 'Flipkart', match: b => b.brand && /flipkart/i.test(b.brand) },
+    { id: 'nykaa', label: 'Nykaa', icon: '💄', defaultBrand: 'Nykaa', match: b => b.brand && /nykaa/i.test(b.brand) },
+  ];
+
+  const activeCards = (DB.cards || []).filter(c => c.active);
+  const isMatched = b => basePills.some(opt => opt.match(b));
+
+  const extraOptions = [];
+  const seenKeys = new Set();
+
+  activeCards.forEach(c => {
+    const v = getVariantById(c.variantId);
+    if (!v || !Array.isArray(v.benefits)) return;
+    v.benefits.forEach(b => {
+      if (!isMatched(b)) {
+        const brand = (b.brand || '').trim();
+        const brandLower = brand.toLowerCase();
+        if (brand && !seenKeys.has(brandLower)) {
+          seenKeys.add(brandLower);
+          const meta = brandMeta[brandLower] || {};
+          extraOptions.push({
+            id: 'brand-' + brandLower.replace(/[^a-z0-9]/g, '-'),
+            label: meta.label || brand,
+            icon: meta.icon || benefitIcon(b.type) || '🛍️',
+            defaultBrand: meta.defaultBrand || brand,
+            match: x => x.brand && x.brand.trim().toLowerCase() === brandLower
+          });
+        } else if (!brand && b.type) {
+          const typeKey = 'type-' + b.type;
+          if (!seenKeys.has(typeKey)) {
+            seenKeys.add(typeKey);
+            extraOptions.push({
+              id: typeKey,
+              label: getBenefitDisplayName(b),
+              icon: benefitIcon(b.type) || '⭐',
+              defaultBrand: '',
+              match: x => x.type === b.type && !x.brand
+            });
+          }
+        }
+      }
+    });
+  });
+
+  const allOptions = [...basePills, ...extraOptions];
+  // Only include options that are actually present on at least one active card
+  return allOptions.filter(opt => {
+    return activeCards.some(c => {
+      const v = getVariantById(c.variantId);
+      return v && Array.isArray(v.benefits) && v.benefits.some(opt.match);
+    });
+  });
+}
 
 function smartClaimBenefit(cardId, benefitId, brandName) {
-  openLogUsageModal(cardId, benefitId);
+  openLogUsageModal(cardId, benefitId, brandName);
   const card = getCardById(cardId);
   const variant = card ? getVariantById(card.variantId) : null;
-  const benefit = variant ? (variant.benefits || []).find(b => b.id === benefitId) : null;
+  const benefit = variant ? resolveVariantBenefit(variant, benefitId, brandName) : null;
   if (benefit && brandName) {
     populateLogBrandDropdown(benefit, brandName);
   }
@@ -5393,31 +6422,39 @@ function renderSmartRedemptionAssistant() {
 
   const now = new Date();
   const activeCards = DB.cards.filter(c => c.active);
+  const smartPerkOptions = getSmartPerkOptions();
+
+  if (smartPerkOptions.length === 0) {
+    perksWrap.innerHTML = '';
+    container.innerHTML = '<div style="grid-column: 1 / -1; padding: 20px; text-align: center; color: var(--text-secondary);">No benefits configured on active cards.</div>';
+    return;
+  }
 
   // 1. Calculate available card counts for each perk option
   const perkCounts = {};
-  SMART_PERK_OPTIONS.forEach(opt => {
+  smartPerkOptions.forEach(opt => {
     let count = 0;
     activeCards.forEach(c => {
       const v = getVariantById(c.variantId);
       if (!v) return;
-      const b = (v.benefits || []).find(opt.match);
-      if (b) {
-        const used = getUsedCount(c.id, b.id, b.periodType, now);
-        if (used < b.quota) count++;
-      }
+      const matchingBenefits = (v.benefits || []).filter(opt.match);
+      matchingBenefits.forEach(b => {
+        const isUnav = isPerkUnavailable(c.id, b.id, b.periodType, now, b.brand);
+        const used = getUsedCount(c.id, b.id, b.periodType, now, b.brand);
+        if (!isUnav && used < b.quota) count++;
+      });
     });
     perkCounts[opt.id] = count;
   });
 
-  // Default to first perk with available quota
-  if (!activeSmartFinderPerk || perkCounts[activeSmartFinderPerk] === 0) {
-    const firstAvailable = SMART_PERK_OPTIONS.find(opt => perkCounts[opt.id] > 0);
-    activeSmartFinderPerk = firstAvailable ? firstAvailable.id : SMART_PERK_OPTIONS[0].id;
+  // Default to first perk with available quota if current active perk is invalid or unset
+  if (!activeSmartFinderPerk || !smartPerkOptions.some(opt => opt.id === activeSmartFinderPerk)) {
+    const firstAvailable = smartPerkOptions.find(opt => (perkCounts[opt.id] || 0) > 0);
+    activeSmartFinderPerk = firstAvailable ? firstAvailable.id : smartPerkOptions[0].id;
   }
 
   // 2. Render Perk selector pills
-  perksWrap.innerHTML = SMART_PERK_OPTIONS.map(opt => {
+  perksWrap.innerHTML = smartPerkOptions.map(opt => {
     const isActive = (activeSmartFinderPerk === opt.id);
     const cnt = perkCounts[opt.id] || 0;
     return `
@@ -5437,34 +6474,37 @@ function renderSmartRedemptionAssistant() {
   });
 
   // 3. For active perk, collect and rank cards
-  const activeOpt = SMART_PERK_OPTIONS.find(opt => opt.id === activeSmartFinderPerk) || SMART_PERK_OPTIONS[0];
+  const activeOpt = smartPerkOptions.find(opt => opt.id === activeSmartFinderPerk) || smartPerkOptions[0];
   const readyCards = [];
   const coolingCards = [];
 
   activeCards.forEach(card => {
     const variant = getVariantById(card.variantId);
     if (!variant) return;
-    const benefit = (variant.benefits || []).find(activeOpt.match);
-    if (!benefit) return;
+    const matchingBenefits = (variant.benefits || []).filter(activeOpt.match);
+    matchingBenefits.forEach(benefit => {
+      const isUnav = isPerkUnavailable(card.id, benefit.id, benefit.periodType, now, benefit.brand);
+      if (isUnav) return;
 
-    const used = getUsedCount(card.id, benefit.id, benefit.periodType, now);
-    const remaining = benefit.quota - used;
-    if (remaining <= 0) return;
+      const used = getUsedCount(card.id, benefit.id, benefit.periodType, now, benefit.brand);
+      const remaining = benefit.quota - used;
+      if (remaining <= 0) return;
 
-    const cooldown = getAccountCooldownStatus(card.account);
-    const isReady = cooldown.isAvailable;
+      const cooldown = getAccountCooldownStatus(card.account);
+      const isReady = cooldown.isAvailable;
 
-    const item = {
-      card,
-      variant,
-      benefit,
-      remaining,
-      cooldown,
-      isReady
-    };
+      const item = {
+        card,
+        variant,
+        benefit,
+        remaining,
+        cooldown,
+        isReady
+      };
 
-    if (isReady) readyCards.push(item);
-    else coolingCards.push(item);
+      if (isReady) readyCards.push(item);
+      else coolingCards.push(item);
+    });
   });
 
   // Sort Ready: highest remaining quota first, then card nickname
@@ -5491,6 +6531,7 @@ function renderSmartRedemptionAssistant() {
   container.innerHTML = allDisplayItems.map(item => {
     const { card, variant, benefit, remaining, cooldown, isReady } = item;
     const bankName = card.bank || getCardBank(card);
+    const targetBrand = benefit.brand || activeOpt.defaultBrand || '';
 
     return `
       <div class="smart-card-item ${isReady ? 'ready' : 'cooling'}">
@@ -5509,11 +6550,11 @@ function renderSmartRedemptionAssistant() {
             📧 <span style="font-family:var(--font-mono, monospace);">${esc(card.account || 'No email')}</span>
           </div>
           <div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">
-            🎁 <strong style="color:var(--text-primary);">${benefitIcon(benefit.type)} ${esc(getBenefitDisplayName(benefit))}</strong>: <span style="color:#10b981;font-weight:700">${remaining} left</span>
+            🎁 <strong style="color:var(--text-primary);">${benefitIcon(benefit.type)} ${esc(getBenefitDisplayName(benefit))}${benefit.brand ? ': ' + esc(benefit.brand) : ''}</strong>: <span style="color:#10b981;font-weight:700">${remaining} left</span>
           </div>
         </div>
         ${isReady
-          ? `<button type="button" class="smart-claim-btn" onclick="smartClaimBenefit('${card.id}', '${benefit.id}', '${esc(activeOpt.defaultBrand)}')">
+          ? `<button type="button" class="smart-claim-btn" onclick="smartClaimBenefit('${card.id}', '${benefit.id}', '${esc(targetBrand)}')">
                ⚡ Claim Now
              </button>`
           : `<div class="smart-cooling-badge">
@@ -5608,8 +6649,9 @@ function renderUnclaimedBenefits() {
     (variant.benefits || []).forEach(b => {
       const catName = getBenefitDisplayName(b);
       const icon = benefitIcon(b.type);
-      const used = getUsedCount(card.id, b.id, b.periodType, now);
-      const remaining = Math.max(0, b.quota - used);
+      const isUnav = isPerkUnavailable(card.id, b.id, b.periodType, now, b.brand);
+      const used = getUsedCount(card.id, b.id, b.periodType, now, b.brand);
+      const remaining = isUnav ? 0 : Math.max(0, b.quota - used);
 
       if (!categoryStats[catName]) {
         categoryStats[catName] = {
@@ -5811,7 +6853,9 @@ function renderDashboardCards() {
       if (!variant) return false;
       return (variant.benefits || []).some(b => {
         if (getBenefitDisplayName(b) !== activeUnclaimedFilter) return false;
-        const used = getUsedCount(card.id, b.id, b.periodType, now);
+        const isUnav = isPerkUnavailable(card.id, b.id, b.periodType, now, b.brand);
+        if (isUnav) return false;
+        const used = getUsedCount(card.id, b.id, b.periodType, now, b.brand);
         return used < b.quota;
       });
     });
@@ -5822,7 +6866,9 @@ function renderDashboardCards() {
       const variant = getVariantById(card.variantId);
       if (!variant) return false;
       return (variant.benefits || []).some(b => {
-        const used = getUsedCount(card.id, b.id, b.periodType, now);
+        const isUnav = isPerkUnavailable(card.id, b.id, b.periodType, now, b.brand);
+        if (isUnav) return false;
+        const used = getUsedCount(card.id, b.id, b.periodType, now, b.brand);
         return used < b.quota;
       });
     });
@@ -5883,10 +6929,11 @@ function renderDashboard() {
     const variant = getVariantById(card.variantId);
     if (!variant) return;
     (variant.benefits || []).forEach(b => {
-      const used = getUsedCount(card.id, b.id, b.periodType, now);
+      const isUnav = isPerkUnavailable(card.id, b.id, b.periodType, now, b.brand);
+      const used = getUsedCount(card.id, b.id, b.periodType, now, b.brand);
       totalBenefits++;
       usedTotal += used;
-      if (used < b.quota) availableCount++;
+      if (!isUnav && used < b.quota) availableCount++;
       else exhaustedCount++;
     });
   });
@@ -5907,6 +6954,7 @@ function renderDashboard() {
   document.getElementById('stat-exhausted').textContent   = exhaustedCount;
 
   renderCycleExpiryWidget();
+  renderDashboardVoucherExpiryAlert();
   renderSmartRedemptionAssistant();
   renderAccountCooldowns();
   renderUnclaimedBenefits();
@@ -5934,6 +6982,43 @@ function renderDashboard() {
   renderDashboardCards();
 }
 
+function renderDashboardVoucherExpiryAlert() {
+  const dashBanner = document.getElementById('dash-voucher-expiry-banner');
+  if (!dashBanner) return;
+
+  const expiringList = [];
+  if (Array.isArray(DB.usages)) {
+    DB.usages.forEach(u => {
+      if ((u.couponCode || u.bookingId || u.redeemedOnBuyerAccount) && isVoucherAvailable(u)) {
+        const exp = getVoucherExpiry(u);
+        if (exp && exp.isExpiringSoon && !exp.isExpired) {
+          expiringList.push({ usage: u, expiry: exp });
+        }
+      }
+    });
+  }
+
+  if (expiringList.length > 0) {
+    dashBanner.classList.remove('hidden');
+    const titleEl = document.getElementById('dash-voucher-expiry-title');
+    const subEl = document.getElementById('dash-voucher-expiry-sub');
+    if (titleEl) {
+      titleEl.textContent = `🚨 ${expiringList.length} Claimed Voucher${expiringList.length === 1 ? '' : 's'} Expiring Soon (≤ 7 Days)`;
+    }
+    if (subEl) {
+      const brandCounts = {};
+      expiringList.forEach(x => {
+        const b = x.usage.brand || 'Other';
+        brandCounts[b] = (brandCounts[b] || 0) + 1;
+      });
+      const brandSummary = Object.entries(brandCounts).map(([b, cnt]) => `${cnt}x ${b}`).slice(0, 4).join(', ');
+      subEl.textContent = `Brands at risk: ${brandSummary}. Sell or redeem before they lapse.`;
+    }
+  } else {
+    dashBanner.classList.add('hidden');
+  }
+}
+
 function buildCardWidget(card, variant, now) {
   const cooldown = getAccountCooldownStatus(card.account);
   const isCooling = !cooldown.isAvailable;
@@ -5951,7 +7036,7 @@ function buildCardWidget(card, variant, now) {
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
         <span class="badge ${subtypeBadge(variant.networkSubtype)}">${esc(variant.networkSubtype)}</span>
         ${!card.active ? '<span class="badge badge-gray">Inactive</span>' : ''}
-        ${isCooling ? `<span class="badge badge-warning" style="font-size:10px;padding:2px 6px;" title="Account in 24h cooldown · Ready in ${cooldown.formattedTimeLeft}">⏳ ${cooldown.formattedTimeLeft}</span>` : ''}
+        ${isCooling ? `<span class="badge badge-warning" style="font-size:10px;padding:2px 6px;" title="Account (${esc(card.account || 'this card')}) in 24h cooldown due to ${esc(cooldown.lastBrand)}${cooldown.lastCardNickname ? ' on ' + esc(cooldown.lastCardNickname) : ''} · Ready in ${cooldown.formattedTimeLeft}">⏳ ${cooldown.formattedTimeLeft}</span>` : ''}
       </div>
     </div>
   `;
@@ -5964,20 +7049,22 @@ function buildCardWidget(card, variant, now) {
     body.innerHTML = '<div style="font-size:12px;color:var(--text-secondary);text-align:center;padding:8px 0">No benefits configured</div>';
   } else {
     benefits.forEach(b => {
-      const used      = getUsedCount(card.id, b.id, b.periodType, now);
-      const remaining = b.quota - used;
+      const isUnav    = isPerkUnavailable(card.id, b.id, b.periodType, now, b.brand);
+      const used      = getUsedCount(card.id, b.id, b.periodType, now, b.brand);
+      const remaining = isUnav ? 0 : Math.max(0, b.quota - used);
       const pct       = b.quota > 0 ? Math.min(100, (used / b.quota) * 100) : 0;
-      const exhausted = remaining <= 0;
+      const exhausted = !isUnav && remaining <= 0;
       const nextReset = getNextResetDate(b.periodType, now);
 
       let fillClass = 'success';
-      if (exhausted)         fillClass = 'danger';
+      if (isUnav)            fillClass = 'warning';
+      else if (exhausted)    fillClass = 'danger';
       else if (remaining === 1 && b.quota > 1) fillClass = 'warning';
       else if (pct >= 50)    fillClass = 'warning';
 
       // Check if any usage for this card/benefit WITHIN THE CURRENT PERIOD was sold or used
       const { start: pStart, end: pEnd } = getCurrentPeriodWindow(b.periodType, now);
-      const periodUsages = getUsagesForCardBenefit(card.id, b.id).filter(u => {
+      const periodUsages = getUsagesForCardBenefit(card.id, b.id, b.brand).filter(u => {
         const d = parseDate(u.date);
         return d >= pStart && d < pEnd;
       });
@@ -5987,7 +7074,7 @@ function buildCardWidget(card, variant, now) {
       const currentPeriodUsed = showStatusTags && !currentPeriodSold && periodUsages.some(u => u.couponUsed === 'USED');
 
       const row = document.createElement('div');
-      row.className = 'benefit-row' + (exhausted ? ' exhausted' : '');
+      row.className = 'benefit-row' + (exhausted ? ' exhausted' : '') + (isUnav ? ' unavailable' : '');
       row.innerHTML = `
         <div class="benefit-row-header">
           <div class="benefit-name">
@@ -5997,11 +7084,15 @@ function buildCardWidget(card, variant, now) {
           </div>
           <div class="benefit-actions">
             ${currentPeriodSold ? '<span class="badge badge-sold" style="font-size:9px">SOLD</span>' : (currentPeriodUsed ? '<span class="badge badge-used" style="font-size:9px">USED</span>' : '')}
-            ${exhausted
-              ? '<span class="badge badge-danger">Exhausted</span>'
-              : `<button class="btn btn-primary btn-xs log-use-btn"
-                   data-card-id="${card.id}"
-                   data-benefit-id="${b.id}">+ Log Redeem</button>`
+            ${isUnav
+              ? '<span class="badge" style="background:rgba(245,158,11,0.2);color:#fbbf24;font-size:9px;" title="Marked as Not on Portal for this cycle">🚫 Not on Portal</span>'
+              : (exhausted
+                ? '<span class="badge badge-danger">Exhausted</span>'
+                : `<button class="btn btn-primary btn-xs log-use-btn"
+                     data-card-id="${card.id}"
+                     data-benefit-id="${b.id}"
+                     data-brand="${esc(b.brand || '')}">+ Log Redeem</button>`
+              )
             }
           </div>
         </div>
@@ -6347,41 +7438,706 @@ function populateHistoryFilters() {
 
 
 /* ==============================================================
+   SECTION 4d: CLAIM MATRIX TAB (QUOTA COMMAND CENTER)
+   ============================================================== */
+
+const MATRIX_CATEGORIES = [
+  { key: 'ott', label: 'OTT', icon: '🎬', title: 'OTT Entertainment (Prime, Hotstar, Sony LIV)' },
+  { key: 'spa', label: 'Spa', icon: '💆', title: 'Spa & Salon (Lakme)' },
+  { key: 'health', label: 'Health', icon: '🩺', title: 'Health Checkup (Thyrocare)' },
+  { key: 'gym', label: 'Gym', icon: '🏋️', title: 'Gym & Fitness (Cult.fit Pass)' },
+  { key: 'cab', label: 'Cab', icon: '🚕', title: 'Cab Rides (Uber)' },
+  { key: 'shopping', label: 'Shopping', icon: '🛍️', title: 'Online Shopping (Myntra, Decathlon, Flipkart, Nykaa, Reliance Digital)' },
+  { key: 'groceries', label: 'Groceries', icon: '🛒', title: 'Online Groceries (BigBasket)' },
+  { key: 'pharmacy', label: 'Pharmacy', icon: '💊', title: 'Online Pharmacy (Apollo Pharmacy)' }
+];
+
+function getBenefitMatrixCategory(b) {
+  if (!b) return 'other';
+  const t = (b.type || '').toLowerCase();
+  const lbl = (b.label || '').toLowerCase();
+  const br = (b.brand || '').toLowerCase();
+
+  if (t === 'ott' || lbl.includes('ott') || br.includes('prime') || br.includes('hotstar') || br.includes('sony')) return 'ott';
+  if (t === 'spa' || lbl.includes('spa') || br.includes('lakme')) return 'spa';
+  if (t === 'health' || lbl.includes('health') || br.includes('thyrocare')) return 'health';
+  if (t === 'gym' || lbl.includes('gym') || br.includes('cult')) return 'gym';
+  if (t === 'cab' || lbl.includes('cab') || br.includes('uber')) return 'cab';
+  if (t === 'online-shopping' || lbl.includes('shopping') || br.includes('myntra') || br.includes('flipkart') || br.includes('decathlon') || br.includes('nykaa') || br.includes('reliance') || br.includes('kalyan')) return 'shopping';
+  if (t === 'online-groceries' || lbl.includes('groc') || br.includes('bigbasket') || br.includes('swiggy') || br.includes('zomato')) return 'groceries';
+  if (t === 'online-pharmacy' || lbl.includes('pharm') || br.includes('apollo')) return 'pharmacy';
+  return 'other';
+}
+
+function getMatrixCycleRefDate(cycle) {
+  const currentYear = new Date().getFullYear();
+  if (cycle === 'Q1') return istDate(currentYear, 1, 15);
+  if (cycle === 'Q2') return istDate(currentYear, 4, 15);
+  if (cycle === 'Q3') return istDate(currentYear, 7, 15);
+  if (cycle === 'Q4') return istDate(currentYear, 10, 15);
+  return new Date();
+}
+
+function markBenefitUnavailable(cardId, benefitId, brandName) {
+  const card = getCardById(cardId);
+  if (!card) return;
+  const variant = getVariantById(card.variantId);
+  const benefit = resolveVariantBenefit(variant, benefitId, brandName);
+  const brand = brandName || (benefit ? benefit.brand : '') || 'Perk';
+
+  const cycleSelect = document.getElementById('matrix-filter-cycle');
+  const cycleFilter = cycleSelect ? cycleSelect.value : 'Q4';
+
+  const existing = (DB.usages || []).find(u => {
+    if (u.cardId !== cardId || u.redeemStatus !== 'UNAVAILABLE') return false;
+    if (u.benefitId === benefitId) {
+      if (brand) {
+        return (u.brand || '').trim().toLowerCase() === brand.trim().toLowerCase();
+      }
+      return true;
+    }
+    return false;
+  });
+
+  if (existing) {
+    showToast(`${card.nickname} (${brand}) already marked as Not on Portal`, 'info');
+    return;
+  }
+
+  addUsage({
+    cardId: card.id,
+    benefitId: benefitId,
+    brand: brand,
+    date: nowLocalISO(),
+    account: card.account || '',
+    redeemStatus: 'UNAVAILABLE',
+    bookingId: 'NOT_ON_PORTAL',
+    couponCode: '',
+    couponUsed: '',
+    buyer: '',
+    notes: `Marked Not Available on RuPay portal for ${cycleFilter === 'ALL' ? '2026' : cycleFilter}`,
+    redeemedOnBuyerAccount: true
+  });
+
+  renderMatrix();
+  renderDashboard();
+  showToast(`Marked ${card.nickname} (${brand}) as Not on Portal 🚫`, 'info');
+}
+
+function restoreBenefitAvailable(usageId) {
+  const u = (DB.usages || []).find(x => x.id === usageId);
+  if (!u) return;
+  const card = getCardById(u.cardId);
+  const cardName = card ? card.nickname : 'Card';
+  const brand = u.brand || 'Perk';
+
+  deleteUsage(usageId);
+  renderMatrix();
+  renderDashboard();
+  showToast(`Restored ${cardName} (${brand}) to Available! ⚡`, 'success');
+}
+
+function populateMatrixBankSelect(cards, currentVal) {
+  const sel = document.getElementById('matrix-filter-bank');
+  if (!sel) return;
+
+  const banks = {};
+  cards.forEach(c => {
+    if (!c.active && !document.getElementById('matrix-include-inactive')?.checked) return;
+    const b = getCardBank(c);
+    banks[b] = (banks[b] || 0) + 1;
+  });
+
+  const sortedBanks = Object.keys(banks).sort();
+  sel.innerHTML = '<option value="">All Banks</option>';
+  sortedBanks.forEach(b => {
+    const opt = document.createElement('option');
+    opt.value = b;
+    opt.textContent = `${b} (${banks[b]})`;
+    if (b === currentVal) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+function renderMatrix() {
+  const cycleSelect = document.getElementById('matrix-filter-cycle');
+  const cycleFilter = cycleSelect ? cycleSelect.value : 'Q4';
+
+  const bankSelect = document.getElementById('matrix-filter-bank');
+  const bankFilter = bankSelect ? bankSelect.value : '';
+
+  const statusSelect = document.getElementById('matrix-filter-status');
+  const statusFilter = statusSelect ? statusSelect.value : 'UNCLAIMED';
+
+  const searchInput = document.getElementById('matrix-search');
+  const searchFilter = searchInput ? (searchInput.value || '').trim().toLowerCase() : '';
+
+  const includeInactive = Boolean(document.getElementById('matrix-include-inactive')?.checked);
+
+  const cycleNameEl = document.getElementById('matrix-stat-cycle-name');
+  if (cycleNameEl) cycleNameEl.textContent = cycleFilter === 'ALL' ? '2026' : cycleFilter;
+
+  const allCards = (DB && Array.isArray(DB.cards)) ? DB.cards : [];
+  const allUsages = (DB && Array.isArray(DB.usages)) ? DB.usages : [];
+
+  // Update bank dropdown with active card banks
+  populateMatrixBankSelect(allCards, bankFilter);
+
+  // Filter cards to consider
+  let cards = allCards.filter(c => includeInactive ? true : Boolean(c.active));
+
+  if (bankFilter) {
+    cards = cards.filter(c => getCardBank(c) === bankFilter);
+  }
+
+  if (searchFilter) {
+    cards = cards.filter(c => {
+      const nick = (c.nickname || '').toLowerCase();
+      const last4 = (c.last4 || '').toLowerCase();
+      const acc = (c.account || '').toLowerCase();
+      const bank = getCardBank(c).toLowerCase();
+      return nick.includes(searchFilter) || last4.includes(searchFilter) || acc.includes(searchFilter) || bank.includes(searchFilter);
+    });
+  }
+
+  // Sort cards by Bank -> Nickname -> Last4
+  cards.sort((a, b) => {
+    const bankA = getCardBank(a);
+    const bankB = getCardBank(b);
+    if (bankA !== bankB) return bankA.localeCompare(bankB);
+    return (a.nickname || '').localeCompare(b.nickname || '') || (a.last4 || '').localeCompare(b.last4 || '');
+  });
+
+  const cycleRef = getMatrixCycleRefDate(cycleFilter);
+  const currentYear = cycleRef.getFullYear();
+
+  let totalActiveCards = 0;
+  let totalQuotaSlots = 0;
+  let totalClaimedSlots = 0;
+  let totalRemainingSlots = 0;
+  let totalValueAtRisk = 0;
+
+  const cardMatrixData = [];
+
+  cards.forEach(card => {
+    const variant = getVariantById(card.variantId);
+    if (!variant) return;
+
+    if (card.active) totalActiveCards++;
+
+    const cooldown = getAccountCooldownStatus(card.account);
+    const benefits = variant.benefits || [];
+
+    let cardQuotaTotal = 0;
+    let cardClaimedTotal = 0;
+    let cardUnavailableTotal = 0;
+    const catMap = {};
+
+    MATRIX_CATEGORIES.forEach(cat => {
+      const matchingBenefits = benefits.filter(b => getBenefitMatrixCategory(b) === cat.key);
+      if (matchingBenefits.length === 0) {
+        catMap[cat.key] = null; // Ineligible
+        return;
+      }
+
+      let catQuota = 0;
+      let catClaimed = 0;
+      let catUnavailable = 0;
+      let catRemaining = 0;
+      const catItems = [];
+      const catAllUsages = [];
+
+      matchingBenefits.forEach(b => {
+        let bQuota = b.quota || 1;
+        if (cycleFilter === 'ALL') {
+          if (b.periodType === 'quarterly') bQuota *= 4;
+          else if (b.periodType === 'half-yearly') bQuota *= 2;
+          else if (b.periodType === 'monthly') bQuota *= 12;
+        }
+
+        let pStart, pEnd;
+        if (cycleFilter === 'ALL') {
+          pStart = istDate(currentYear, 0, 1);
+          pEnd = istDate(currentYear + 1, 0, 1);
+        } else {
+          const win = getCurrentPeriodWindow(b.periodType, cycleRef);
+          pStart = win.start;
+          pEnd = win.end;
+        }
+
+        const bBrand = (b.brand || '').trim().toLowerCase();
+        const bUsages = allUsages.filter(u => {
+          if (u.cardId !== card.id) return false;
+          const d = parseDate(u.date);
+          if (!d || d < pStart || d >= pEnd) return false;
+
+          if (u.benefitId === b.id) {
+            if (bBrand && matchingBenefits.length > 1) {
+              const uBrand = (u.brand || '').trim().toLowerCase();
+              return uBrand === bBrand || uBrand.includes(bBrand) || bBrand.includes(uBrand);
+            }
+            return true;
+          }
+
+          if (bBrand) {
+            const uBrand = (u.brand || '').trim().toLowerCase();
+            if ((uBrand === bBrand || uBrand.includes(bBrand) || bBrand.includes(uBrand)) && getBenefitMatrixCategory(u) === cat.key) {
+              return true;
+            }
+          }
+          return false;
+        });
+
+        // Separate real claims vs unavailable markers
+        const bRealUsages = [];
+        const bUnavUsages = [];
+        const seenIds = new Set();
+        bUsages.forEach(u => {
+          if (!seenIds.has(u.id)) {
+            seenIds.add(u.id);
+            if (u.redeemStatus === 'UNAVAILABLE') {
+              bUnavUsages.push(u);
+            } else {
+              bRealUsages.push(u);
+            }
+          }
+        });
+
+        const bClaimed = bRealUsages.length;
+        const bUnavailable = bUnavUsages.length;
+        const bRemaining = Math.max(0, bQuota - bClaimed - bUnavailable);
+
+        catQuota += bQuota;
+        catClaimed += Math.min(bQuota, bClaimed);
+        catUnavailable += bUnavailable;
+        catRemaining += bRemaining;
+        catAllUsages.push(...bRealUsages);
+
+        catItems.push({
+          benefit: b,
+          benefitId: b.id,
+          brand: b.brand || b.label || cat.label,
+          periodType: b.periodType,
+          quota: bQuota,
+          claimed: bClaimed,
+          unavailable: bUnavailable,
+          remaining: bRemaining,
+          usages: bRealUsages,
+          unavailableUsages: bUnavUsages
+        });
+      });
+
+      // Catch any unassigned usages for this card & category
+      const matchedUsageIds = new Set(catAllUsages.map(u => u.id));
+      let cycleWindowStart, cycleWindowEnd;
+      if (cycleFilter === 'ALL') {
+        cycleWindowStart = istDate(currentYear, 0, 1);
+        cycleWindowEnd = istDate(currentYear + 1, 0, 1);
+      } else {
+        const win = getCurrentPeriodWindow('quarterly', cycleRef);
+        cycleWindowStart = win.start;
+        cycleWindowEnd = win.end;
+      }
+
+      const unassignedUsages = allUsages.filter(u => {
+        if (u.cardId !== card.id) return false;
+        if (u.redeemStatus === 'UNAVAILABLE') return false;
+        if (matchedUsageIds.has(u.id)) return false;
+        if (getBenefitMatrixCategory(u) !== cat.key && !matchingBenefits.some(b => b.id === u.benefitId)) return false;
+        const d = parseDate(u.date);
+        return d >= cycleWindowStart && d < cycleWindowEnd;
+      });
+
+      if (unassignedUsages.length > 0) {
+        unassignedUsages.forEach(u => {
+          const itemWithRemaining = catItems.find(it => it.remaining > 0) || catItems[0];
+          if (itemWithRemaining) {
+            itemWithRemaining.usages.push(u);
+            itemWithRemaining.claimed = itemWithRemaining.usages.length;
+            itemWithRemaining.remaining = Math.max(0, itemWithRemaining.quota - itemWithRemaining.claimed - itemWithRemaining.unavailable);
+            catAllUsages.push(u);
+          }
+        });
+        catClaimed = catItems.reduce((sum, it) => sum + Math.min(it.quota, it.claimed), 0);
+        catRemaining = catItems.reduce((sum, it) => sum + it.remaining, 0);
+      }
+
+      cardQuotaTotal += catQuota;
+      cardClaimedTotal += catClaimed;
+      cardUnavailableTotal += catUnavailable;
+
+      totalQuotaSlots += catQuota;
+      totalClaimedSlots += catClaimed;
+      totalRemainingSlots += catRemaining;
+
+      if (catRemaining > 0) {
+        catItems.forEach(item => {
+          if (item.remaining > 0) {
+            const estPrice = getBrandPresetPrice(item.brand || item.benefit.brand || item.benefit.label || cat.label);
+            totalValueAtRisk += (estPrice * item.remaining);
+          }
+        });
+      }
+
+      catMap[cat.key] = {
+        eligible: true,
+        quota: catQuota,
+        claimed: catClaimed,
+        unavailable: catUnavailable,
+        remaining: catRemaining,
+        items: catItems,
+        usages: catAllUsages,
+        benefitId: matchingBenefits[0].id,
+        benefit: matchingBenefits[0]
+      };
+    });
+
+    const cardRemainingTotal = Math.max(0, cardQuotaTotal - cardClaimedTotal - cardUnavailableTotal);
+    const isCompleted = cardQuotaTotal > 0 && cardRemainingTotal === 0 && cardClaimedTotal > 0;
+    const isReadyNow = cardRemainingTotal > 0 && cooldown.isAvailable;
+
+    cardMatrixData.push({
+      card,
+      variant,
+      cooldown,
+      quotaTotal: cardQuotaTotal,
+      claimedTotal: cardClaimedTotal,
+      unavailableTotal: cardUnavailableTotal,
+      remainingTotal: cardRemainingTotal,
+      pct: cardQuotaTotal > 0 ? Math.round((cardClaimedTotal / cardQuotaTotal) * 100) : 0,
+      isCompleted,
+      isReadyNow,
+      hasUnavailable: cardUnavailableTotal > 0,
+      cats: catMap
+    });
+  });
+
+  // Apply Status Filter
+  let filteredRows = cardMatrixData;
+  if (statusFilter === 'UNCLAIMED') {
+    filteredRows = cardMatrixData.filter(r => r.remainingTotal > 0);
+  } else if (statusFilter === 'READY') {
+    filteredRows = cardMatrixData.filter(r => r.isReadyNow);
+  } else if (statusFilter === 'COMPLETED') {
+    filteredRows = cardMatrixData.filter(r => r.isCompleted);
+  } else if (statusFilter === 'UNAVAILABLE') {
+    filteredRows = cardMatrixData.filter(r => r.unavailableTotal > 0);
+  }
+
+  // Update Stats KPIs
+  const statCardsEl = document.getElementById('matrix-stat-cards');
+  const statQuotasEl = document.getElementById('matrix-stat-quotas');
+  const statClaimedEl = document.getElementById('matrix-stat-claimed');
+  const statRemainingEl = document.getElementById('matrix-stat-remaining');
+  const statRiskEl = document.getElementById('matrix-stat-risk');
+
+  if (statCardsEl) statCardsEl.textContent = totalActiveCards;
+  if (statQuotasEl) statQuotasEl.textContent = totalQuotaSlots;
+  if (statClaimedEl) {
+    const claimPct = totalQuotaSlots > 0 ? Math.round((totalClaimedSlots / totalQuotaSlots) * 100) : 0;
+    statClaimedEl.textContent = `${totalClaimedSlots} (${claimPct}%)`;
+  }
+  if (statRemainingEl) statRemainingEl.textContent = totalRemainingSlots;
+  if (statRiskEl) statRiskEl.textContent = '₹' + Math.round(totalValueAtRisk).toLocaleString('en-IN');
+
+  // Render Table
+  const tbody = document.getElementById('matrix-tbody');
+  const emptyEl = document.getElementById('matrix-empty');
+  const tableWrap = document.getElementById('matrix-table-wrap');
+
+  if (!tbody) return;
+
+  if (filteredRows.length === 0) {
+    tbody.innerHTML = '';
+    if (tableWrap) tableWrap.classList.add('hidden');
+    if (emptyEl) emptyEl.classList.remove('hidden');
+    return;
+  }
+
+  if (tableWrap) tableWrap.classList.remove('hidden');
+  if (emptyEl) emptyEl.classList.add('hidden');
+
+  let currentBank = null;
+  const rowsHtml = [];
+
+  filteredRows.forEach(row => {
+    const { card, variant, cooldown, quotaTotal, claimedTotal, remainingTotal, pct, cats } = row;
+    const cardBank = getCardBank(card);
+    const bankLower = cardBank.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    // Bank separator row
+    if (cardBank !== currentBank) {
+      currentBank = cardBank;
+      const bankCards = filteredRows.filter(r => getCardBank(r.card) === cardBank);
+      const bankTotal = bankCards.reduce((sum, r) => sum + r.quotaTotal, 0);
+      const bankClaimed = bankCards.reduce((sum, r) => sum + r.claimedTotal, 0);
+      const bankPct = bankTotal > 0 ? Math.round((bankClaimed / bankTotal) * 100) : 0;
+
+      rowsHtml.push(`
+        <tr class="matrix-bank-sep">
+          <td colspan="10">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span>🏦 ${esc(cardBank)} (${bankCards.length} card${bankCards.length === 1 ? '' : 's'})</span>
+              <span style="font-weight:500;opacity:0.85;">${bankClaimed}/${bankTotal} claimed (${bankPct}%)</span>
+            </div>
+          </td>
+        </tr>
+      `);
+    }
+
+    const trCells = [];
+
+    // Sticky Card Info Cell
+    trCells.push(`
+      <td class="matrix-td-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+          <div style="font-weight:700;font-size:13px;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(card.nickname)}">
+            ${esc(card.nickname)}
+          </div>
+          <span class="badge badge-brand ${bankLower}" style="font-size:10px;padding:2px 6px;">${esc(cardBank)}</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:2px;">
+          <span style="font-family:monospace;font-size:11px;color:var(--text-secondary);">••••${esc(card.last4)}</span>
+          ${cooldown.isAvailable ? 
+            '<span class="badge badge-success" style="font-size:9px;padding:1px 5px;" title="⚡ Account is ready to claim">⚡ Ready</span>' : 
+            `<span class="badge badge-warning" style="font-size:9px;padding:1px 5px;" title="Account (${esc(card.account || 'this card')}) in 24h cooldown due to ${esc(cooldown.lastBrand)}${cooldown.lastCardNickname ? ' on ' + esc(cooldown.lastCardNickname) : ''} · Ready in ${cooldown.formattedTimeLeft}">⏳ ${cooldown.formattedTimeLeft}</span>`
+          }
+        </div>
+        ${card.account ? `<div style="font-size:10px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;" title="${esc(card.account)}">📧 ${esc(card.account)}</div>` : ''}
+      </td>
+    `);
+
+    // Quota Progress Cell
+    trCells.push(`
+      <td class="matrix-td-progress">
+        <div style="font-weight:700;font-size:12px;color:${pct === 100 ? '#10b981' : (pct >= 50 ? '#38bdf8' : '#fbbf24')};">
+          ${claimedTotal}/${quotaTotal}
+        </div>
+        <div class="progress-wrap" style="height:4px;margin-top:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;">
+          <div class="progress-bar-fill ${pct === 100 ? 'success' : 'primary'}" style="width:${pct}%;height:100%;"></div>
+        </div>
+        <div style="font-size:10px;color:var(--text-secondary);margin-top:2px;">
+          ${pct === 100 ? '✅ Done' : `${remainingTotal} left`}
+        </div>
+      </td>
+    `);
+
+    // 8 Category Cells
+    MATRIX_CATEGORIES.forEach(cat => {
+      const slot = cats[cat.key];
+      if (!slot) {
+        trCells.push('<td class="matrix-cell" style="vertical-align:middle;"><span class="matrix-dash">—</span></td>');
+        return;
+      }
+
+      const items = slot.items || [];
+      const itemPills = [];
+
+      items.forEach(item => {
+        const itemBrand = item.brand || cat.label;
+
+        // Render claimed usages
+        if (item.usages && item.usages.length > 0) {
+          if (cycleFilter === 'ALL' && item.usages.length > 2) {
+            itemPills.push(`
+              <div class="matrix-cell-claimed" onclick="openEditUsageModal('${esc(item.usages[0].id)}')" title="${esc(item.usages.map(u => (u.brand||itemBrand) + ': ' + (u.date?u.date.split('T')[0]:'') + ' [' + (u.couponUsed||'Active') + ']').join('\n'))}" style="width:100%;box-sizing:border-box;padding:3px 5px;">
+                <div style="font-weight:700;color:var(--text-primary);font-size:11px;display:flex;justify-content:space-between;align-items:center;width:100%;">
+                  <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(itemBrand)}</span>
+                  <span class="badge badge-brand" style="font-size:9px;padding:1px 5px;">${item.claimed}/${item.quota}</span>
+                </div>
+                <div style="font-size:9px;color:var(--text-secondary);margin-top:2px;display:flex;gap:3px;flex-wrap:wrap;">
+                  ${item.usages.map(u => `<span class="badge ${u.couponUsed==='SOLD'?'badge-sold':(u.couponUsed==='USED'?'badge-used':'badge-success')}" style="font-size:8px;padding:0 3px;">${u.date ? u.date.split('T')[0].split('-').slice(1).join('/') : '✓'}</span>`).join('')}
+                </div>
+              </div>
+            `);
+          } else {
+            item.usages.forEach(u => {
+              const uBrand = u.brand || itemBrand;
+              const dateStr = u.date ? u.date.split('T')[0].split('-').slice(1).join('/') : '';
+              let tagHtml = '';
+              if (u.couponUsed === 'SOLD') {
+                const price = getVoucherPrice(u);
+                tagHtml = `<span class="badge badge-sold" style="font-size:9px;padding:1px 4px;">SOLD ${price ? '₹'+Math.round(price) : ''}</span>`;
+              } else if (u.couponUsed === 'USED') {
+                tagHtml = '<span class="badge badge-used" style="font-size:9px;padding:1px 4px;">USED</span>';
+              } else if (hasVoucherCode(u)) {
+                tagHtml = '<span class="badge badge-success" style="font-size:9px;padding:1px 4px;">⚡ Available</span>';
+              } else {
+                tagHtml = '<span class="badge badge-warning" style="font-size:9px;padding:1px 4px;">⏳ Need Code</span>';
+              }
+
+              itemPills.push(`
+                <div class="matrix-cell-claimed" onclick="openEditUsageModal('${esc(u.id)}')" title="Click to view/edit: ${esc(uBrand)} (${esc(u.bookingId || u.couponCode || 'Redeemed')})" style="width:100%;box-sizing:border-box;padding:4px 6px;">
+                  <div style="font-weight:700;color:var(--text-primary);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;text-align:left;">
+                    ${esc(uBrand)}
+                  </div>
+                  <div style="font-size:10px;color:var(--text-secondary);display:flex;align-items:center;justify-content:space-between;width:100%;gap:4px;margin-top:1px;">
+                    <span>${esc(dateStr || 'Claimed')}</span>
+                    ${tagHtml}
+                  </div>
+                </div>
+              `);
+            });
+          }
+        }
+
+        // Render unavailable markers (Not on Portal)
+        if (item.unavailableUsages && item.unavailableUsages.length > 0) {
+          item.unavailableUsages.forEach(unavU => {
+            itemPills.push(`
+              <div class="matrix-cell-unavailable" style="background:rgba(245,158,11,0.08);border:1px dashed rgba(245,158,11,0.35);border-radius:6px;padding:3px 5px;display:flex;flex-direction:column;gap:2px;width:100%;box-sizing:border-box;">
+                <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:4px;">
+                  <span style="font-weight:700;color:#fbbf24;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                    ${esc(itemBrand)}
+                  </span>
+                  <span class="badge" style="background:rgba(245,158,11,0.2);color:#fbbf24;font-size:8px;padding:1px 3px;">🚫 Portal</span>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:2px;">
+                  <span style="font-size:9px;color:var(--text-secondary);" title="${esc(unavU.notes || 'Marked not available on portal')}">Not on Portal</span>
+                  <button type="button" class="btn-matrix-restore-available" data-usage-id="${unavU.id}" style="font-size:9px;padding:1px 5px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.35);color:#34d399;border-radius:3px;cursor:pointer;font-weight:600;" title="Revisit & restore to available to claim">
+                    ⚡ Restore
+                  </button>
+                </div>
+              </div>
+            `);
+          });
+        }
+
+        // Render remaining unclaimed buttons
+        if (item.remaining > 0) {
+          const isCooling = !cooldown.isAvailable;
+          const showBrand = items.length > 1;
+          const btnLabel = showBrand ? `⚡ ${itemBrand}` : (item.claimed > 0 ? `+ Claim (${item.remaining} left)` : '⚡ Claim');
+          const logLabel = showBrand ? `+ ${itemBrand}` : '+ Log';
+
+          itemPills.push(`
+            <div class="matrix-cell-unclaimed" style="width:100%;">
+              ${isCooling && items.length === 1 && item.claimed === 0 && (item.unavailable || 0) === 0 ? `<span class="matrix-cooldown-badge" style="margin-bottom:2px;" title="Account (${esc(card.account || 'this card')}) in 24h cooldown due to ${esc(cooldown.lastBrand)}${cooldown.lastCardNickname ? ' on ' + esc(cooldown.lastCardNickname) : ''} · Ready in ${cooldown.formattedTimeLeft}">⏳ ${cooldown.formattedTimeLeft}</span>` : ''}
+              <div style="display:flex;align-items:center;gap:3px;width:100%;">
+                ${isCooling ? `
+                  <button type="button" class="matrix-claim-btn" data-card-id="${card.id}" data-benefit-id="${item.benefitId}" data-brand="${esc(item.brand || '')}" style="flex:1;font-size:10px;padding:2px 4px;opacity:0.85;" title="Account in cooldown due to ${esc(cooldown.lastBrand)} (${cooldown.formattedTimeLeft}) · Click to log anyway">
+                    ${esc(logLabel)}
+                  </button>
+                ` : `
+                  <button type="button" class="matrix-claim-btn" data-card-id="${card.id}" data-benefit-id="${item.benefitId}" data-brand="${esc(item.brand || '')}" style="flex:1;">
+                    ${esc(btnLabel)}
+                  </button>
+                `}
+                <button type="button" class="btn-matrix-mark-unavailable" data-card-id="${card.id}" data-benefit-id="${item.benefitId}" data-brand="${esc(item.brand || '')}" title="Mark as Not on Portal for this cycle (Revisit later)" style="padding:3px 5px;font-size:10px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);color:#f87171;border-radius:4px;cursor:pointer;line-height:1;display:inline-flex;align-items:center;justify-content:center;">
+                  🚫
+                </button>
+              </div>
+            </div>
+          `);
+        }
+      });
+
+      if (itemPills.length === 0) {
+        trCells.push('<td class="matrix-cell" style="vertical-align:middle;"><span class="matrix-dash">—</span></td>');
+      } else {
+        trCells.push(`
+          <td class="matrix-cell" style="vertical-align:top;">
+            <div style="display:flex;flex-direction:column;gap:4px;min-width:110px;">
+              ${itemPills.join('')}
+            </div>
+          </td>
+        `);
+      }
+    });
+
+    rowsHtml.push(`<tr>${trCells.join('')}</tr>`);
+  });
+
+  tbody.innerHTML = rowsHtml.join('');
+}
+
+
+/* ==============================================================
    SECTION 4e: VOUCHERS TAB (INVENTORY & BULK ACTIONS)
    ============================================================== */
 
 let selectedVoucherIds = new Set();
 let activeVoucherBrandFilter = '';
 
+function hasVoucherCode(u) {
+  if (!u) return false;
+  const code = (u.couponCode || '').trim();
+  if (!code || code === '—' || code === '-') return false;
+  const upper = code.toUpperCase();
+  if (upper === 'NA' || upper === 'N/A' || upper === 'DIRECT ACTIVATION' || upper === 'NULL' || upper === 'UNDEFINED') return false;
+  return true;
+}
+
+function getPendingCodeUsages() {
+  if (!DB || !Array.isArray(DB.usages)) return [];
+  return DB.usages.filter(u => !hasVoucherCode(u) && !u.redeemedOnBuyerAccount && !(u.couponUsed === 'SOLD' || u.couponUsed === 'USED'));
+}
+
 function isVoucherAvailable(u) {
   if (!u) return false;
+  if (!hasVoucherCode(u)) return false;
   if (u.couponUsed === 'SOLD' || u.couponUsed === 'USED') return false;
-  if (u.redeemedOnBuyerAccount === true) return false;
-  const isCult = (u.brand || '').toLowerCase().includes('cult');
-  if (isCult && u.buyer) return false;
+  if (isDirectActivationUsage(u)) return false;
   return true;
 }
 
 function getVouchersList() {
-  return DB.usages.filter(u => u.couponCode || u.bookingId || u.redeemedOnBuyerAccount);
+  return DB.usages.filter(hasVoucherCode);
+}
+
+function navigateToPendingCodesInHistory() {
+  const filterCoupon = document.getElementById('filter-coupon-used');
+  if (filterCoupon) filterCoupon.value = 'PENDING_CODE';
+  navigateToTab('history');
 }
 
 function renderVouchers() {
   const allVouchers = getVouchersList();
 
-  // 1. Calculate available counts per brand
+  // 1. Calculate available counts per brand & expiry urgency
   const brandCounts = {};
   let totalAvailable = 0;
+  let expiringSoonCount = 0;
 
   allVouchers.forEach(u => {
     const brand = u.brand || 'Other';
     if (isVoucherAvailable(u)) {
       brandCounts[brand] = (brandCounts[brand] || 0) + 1;
       totalAvailable++;
+      const exp = getVoucherExpiry(u);
+      if (exp && exp.isExpiringSoon && !exp.isExpired) {
+        expiringSoonCount++;
+      }
     } else {
       if (!brandCounts[brand]) brandCounts[brand] = 0;
     }
   });
+
+  // Toggle expiry warning banner in Vouchers tab
+  const bannerEl = document.getElementById('voucher-expiring-soon-banner');
+  const countEl = document.getElementById('voucher-expiring-count');
+  const statusFilterVal = document.getElementById('voucher-filter-status')?.value || 'AVAILABLE';
+  if (bannerEl) {
+    if (expiringSoonCount > 0 && statusFilterVal !== 'EXPIRING_SOON') {
+      bannerEl.classList.remove('hidden');
+      if (countEl) countEl.textContent = expiringSoonCount;
+    } else {
+      bannerEl.classList.add('hidden');
+    }
+  }
+
+  // Toggle pending voucher codes banner in Vouchers tab
+  const pendingBanner = document.getElementById('voucher-pending-codes-banner');
+  const pendingCountEl = document.getElementById('voucher-pending-count');
+  const pendingUsages = getPendingCodeUsages();
+  if (pendingBanner) {
+    if (pendingUsages.length > 0) {
+      pendingBanner.classList.remove('hidden');
+      if (pendingCountEl) pendingCountEl.textContent = pendingUsages.length;
+    } else {
+      pendingBanner.classList.add('hidden');
+    }
+  }
 
   // 2. Render Brand Pills
   const pillsContainer = document.getElementById('voucher-brand-pills');
@@ -6452,6 +8208,7 @@ function renderVouchersTable() {
   const statusFilter = document.getElementById('voucher-filter-status').value;
   const brandFilter  = document.getElementById('voucher-filter-brand').value || activeVoucherBrandFilter;
   const cycleFilter  = document.getElementById('voucher-filter-cycle').value;
+  const sortFilter   = document.getElementById('voucher-sort')?.value || 'DATE_DESC';
   const searchFilter = (document.getElementById('voucher-search').value || '').trim().toLowerCase();
 
   let vouchers = getVouchersList();
@@ -6459,6 +8216,18 @@ function renderVouchersTable() {
   // Filter by status
   if (statusFilter === 'AVAILABLE') {
     vouchers = vouchers.filter(isVoucherAvailable);
+  } else if (statusFilter === 'EXPIRING_SOON') {
+    vouchers = vouchers.filter(u => {
+      if (!isVoucherAvailable(u)) return false;
+      const exp = getVoucherExpiry(u);
+      return exp && exp.isExpiringSoon && !exp.isExpired;
+    });
+  } else if (statusFilter === 'EXPIRED') {
+    vouchers = vouchers.filter(u => {
+      if (!isVoucherAvailable(u)) return false;
+      const exp = getVoucherExpiry(u);
+      return exp && exp.isExpired;
+    });
   } else if (statusFilter === 'SOLD') {
     vouchers = vouchers.filter(u => u.couponUsed === 'SOLD');
   } else if (statusFilter === 'USED') {
@@ -6490,7 +8259,21 @@ function renderVouchersTable() {
     });
   }
 
-  vouchers.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  // Sorting
+  if (sortFilter === 'EXPIRY_ASC') {
+    vouchers.sort((a, b) => {
+      const expA = getVoucherExpiry(a);
+      const expB = getVoucherExpiry(b);
+      const tA = expA ? expA.expiryDate.getTime() : 9999999999999;
+      const tB = expB ? expB.expiryDate.getTime() : 9999999999999;
+      return tA - tB;
+    });
+  } else if (sortFilter === 'BRAND_ASC') {
+    vouchers.sort((a, b) => (a.brand || '').localeCompare(b.brand || '') || (b.date || '').localeCompare(a.date || ''));
+  } else {
+    // DATE_DESC
+    vouchers.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  }
 
   const tableWrap  = document.getElementById('vouchers-table-wrap');
   const emptyState = document.getElementById('vouchers-empty');
@@ -6527,7 +8310,12 @@ function renderVouchersTable() {
       statusBadge = '<span class="badge badge-used">USED</span>';
     }
 
+    const exp = getVoucherExpiry(u);
+    const expiryBadge = renderExpiryBadge(u, exp);
+    const rowExpClass = (isAvailable && exp) ? (exp.isExpired ? 'row-expired' : (exp.isExpiringSoon ? 'row-expiring-soon' : '')) : '';
+
     const tr = document.createElement('tr');
+    if (rowExpClass) tr.className = rowExpClass;
     tr.innerHTML = `
       <td style="text-align:center">
         <input type="checkbox" class="voucher-checkbox row-select-cb" data-id="${u.id}" ${selectedVoucherIds.has(u.id) ? 'checked' : ''} />
@@ -6565,6 +8353,7 @@ function renderVouchersTable() {
         ${u.buyer ? (getBuyerContactName(u.buyer) ? `<div style="font-weight:600;color:var(--text-primary);">${esc(getBuyerContactName(u.buyer))}</div><div style="font-size:10px;color:var(--text-secondary);font-family:var(--font-mono, monospace);">${esc(u.buyer)}</div>` : `<span style="font-family:var(--font-mono, monospace);">${esc(u.buyer)}</span>`) : '—'}
       </td>
       <td style="font-size:11px">${fmtTimestamp(u.date)}</td>
+      <td>${expiryBadge}</td>
       <td>
         <div style="display:flex;gap:4px">
           ${isAvailable ? `
@@ -6800,6 +8589,7 @@ function navigateToTab(t) {
   const panel = document.getElementById('tab-' + t);
   if (panel) panel.classList.add('active');
   if (t === 'dashboard')      renderDashboard();
+  else if (t === 'matrix')    renderMatrix();
   else if (t === 'vouchers')  renderVouchers();
   else if (t === 'insights')  renderInsights();
   else if (t === 'variants')  renderVariants();
@@ -7155,28 +8945,39 @@ function renderInsightsBankAndAccounts(cycleFilter) {
 }
 
 function viewBuyerVouchers(buyerPhone) {
-  const statusEl = document.getElementById('voucher-filter-status');
-  if (statusEl) statusEl.value = 'ALL';
-  const cycleEl = document.getElementById('voucher-filter-cycle');
-  if (cycleEl) cycleEl.value = '';
-  const brandEl = document.getElementById('voucher-filter-brand');
-  if (brandEl) brandEl.value = '';
-  const searchEl = document.getElementById('voucher-search');
-  if (searchEl) searchEl.value = buyerPhone;
-  navigateToTab('vouchers');
+  const hasVouchers = (DB.usages || []).some(u => (u.buyer || '').trim() === String(buyerPhone).trim() && hasVoucherCode(u));
+  if (hasVouchers) {
+    const statusEl = document.getElementById('voucher-filter-status');
+    if (statusEl) statusEl.value = 'ALL';
+    const cycleEl = document.getElementById('voucher-filter-cycle');
+    if (cycleEl) cycleEl.value = '';
+    const brandEl = document.getElementById('voucher-filter-brand');
+    if (brandEl) brandEl.value = '';
+    const searchEl = document.getElementById('voucher-search');
+    if (searchEl) searchEl.value = buyerPhone;
+    navigateToTab('vouchers');
+  } else {
+    const filterCard = document.getElementById('filter-card');
+    if (filterCard) filterCard.value = '';
+    const filterType = document.getElementById('filter-benefit-type');
+    if (filterType) filterType.value = '';
+    const filterCoupon = document.getElementById('filter-coupon-used');
+    if (filterCoupon) filterCoupon.value = 'SOLD';
+    navigateToTab('history');
+  }
 }
 
 function openPricePresetsModal() {
   const grid = document.getElementById('price-presets-grid');
   if (!grid) return;
 
-  const presets = getBrandPricePresets();
   const brands = [
     { key: 'Lakme', label: 'Lakme Salon' },
     { key: 'Thyrocare', label: 'Thyrocare' },
     { key: 'Cult', label: 'Cult.fit' },
     { key: 'Prime', label: 'Amazon Prime' },
     { key: 'Hotstar', label: 'Disney+ Hotstar' },
+    { key: 'BookMyShow', label: 'BookMyShow' },
     { key: 'Reliance', label: 'Reliance Digital' },
     { key: 'Decathlon', label: 'Decathlon' },
     { key: 'BigBasket', label: 'BigBasket' },
@@ -7188,12 +8989,25 @@ function openPricePresetsModal() {
 
   grid.innerHTML = brands.map(b => {
     const val = getBrandPresetPrice(b.key);
+    const valDays = getBrandPresetValidity(b.key);
     return `
-      <div class="form-group" style="margin-bottom:6px;">
-        <label class="form-label" style="font-size:12px;">${esc(b.label)}</label>
-        <div style="position:relative">
-          <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-secondary);font-size:13px;pointer-events:none">₹</span>
-          <input type="number" class="form-control preset-price-input" data-brand="${esc(b.key)}" value="${val}" style="padding-left:24px;" />
+      <div style="background:var(--elevated);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;display:flex;flex-direction:column;gap:5px;">
+        <div style="font-weight:600;font-size:12px;color:var(--text-primary);">${esc(b.label)}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          <div>
+            <label style="font-size:10px;color:var(--text-secondary);display:block;margin-bottom:2px;">Price (₹)</label>
+            <div style="position:relative">
+              <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text-secondary);font-size:11px;pointer-events:none">₹</span>
+              <input type="number" class="form-control preset-price-input" data-brand="${esc(b.key)}" value="${val}" style="padding-left:18px;font-size:11px;height:30px;" placeholder="Price" />
+            </div>
+          </div>
+          <div>
+            <label style="font-size:10px;color:var(--text-secondary);display:block;margin-bottom:2px;">Validity</label>
+            <div style="position:relative">
+              <input type="number" class="form-control preset-validity-input" data-brand="${esc(b.key)}" value="${valDays}" min="1" max="730" style="font-size:11px;height:30px;padding-right:22px;" placeholder="Days" />
+              <span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);color:var(--text-secondary);font-size:10px;pointer-events:none">d</span>
+            </div>
+          </div>
         </div>
       </div>
     `;
@@ -7301,9 +9115,9 @@ function openEditMasterPerkModal(id) {
 
 function renderCurrentTab() {
   const active = document.querySelector('.nav-tab.active');
-  if (!active) return;
-  const tab = active.dataset.tab;
+  const tab = active ? active.dataset.tab : 'dashboard';
   if (tab === 'dashboard') renderDashboard();
+  else if (tab === 'matrix') renderMatrix();
   else if (tab === 'vouchers') renderVouchers();
   else if (tab === 'insights') renderInsights();
   else if (tab === 'variants') renderVariants();
@@ -7311,13 +9125,17 @@ function renderCurrentTab() {
   else if (tab === 'history') renderHistory();
 }
 
-function renderAll() {
-  renderDashboard();
-  renderVouchers();
-  renderInsights();
-  renderVariants();
-  renderCards();
-  renderHistory();
+function renderAll(forceAll = false) {
+  renderCurrentTab();
+  if (forceAll) {
+    renderDashboard();
+    renderMatrix();
+    renderVouchers();
+    renderInsights();
+    renderVariants();
+    renderCards();
+    renderHistory();
+  }
 }
 
 /* ==============================================================
@@ -7432,6 +9250,66 @@ function updateBuyerAccountUI(isBuyerAccount, cardAccount) {
   }
 }
 
+/* ---- Voucher Validity & Expiry Synchronizer for Modal ---- */
+function updateLogModalExpirySync(source) {
+  const dateInput = document.getElementById('log-date');
+  const valDaysInput = document.getElementById('log-validity-days');
+  const expDateInput = document.getElementById('log-expiry-date');
+  const hintEl = document.getElementById('log-expiry-hint');
+  if (!dateInput || !valDaysInput || !expDateInput) return;
+
+  const claimStr = (dateInput.value || '').split('T')[0];
+  if (!claimStr) return;
+  const parts = claimStr.split('-');
+  if (parts.length !== 3) return;
+  const claimD = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+  if (isNaN(claimD.getTime())) return;
+
+  if (source === 'expiryDate') {
+    const expStr = expDateInput.value;
+    if (expStr) {
+      const eParts = expStr.split('-');
+      if (eParts.length === 3) {
+        const expD = new Date(parseInt(eParts[0], 10), parseInt(eParts[1], 10) - 1, parseInt(eParts[2], 10));
+        if (!isNaN(expD.getTime())) {
+          const diffDays = Math.round((expD.getTime() - claimD.getTime()) / (1000 * 60 * 60 * 24));
+          valDaysInput.value = Math.max(1, diffDays);
+        }
+      }
+    }
+  } else {
+    let days = parseInt(valDaysInput.value, 10);
+    if (isNaN(days) || days < 1) {
+      const brandVal = document.getElementById('log-brand-select')?.value || document.getElementById('log-brand')?.value;
+      days = getBrandPresetValidity(brandVal);
+      valDaysInput.value = days;
+    }
+    const expD = new Date(claimD);
+    expD.setDate(expD.getDate() + days);
+    const y = expD.getFullYear();
+    const m = String(expD.getMonth() + 1).padStart(2, '0');
+    const d = String(expD.getDate()).padStart(2, '0');
+    expDateInput.value = `${y}-${m}-${d}`;
+  }
+
+  // Update hint text
+  if (hintEl && expDateInput.value) {
+    const expParts = expDateInput.value.split('-');
+    const expD = new Date(parseInt(expParts[0], 10), parseInt(expParts[1], 10) - 1, parseInt(expParts[2], 10), 23, 59, 59);
+    const now = new Date();
+    const rem = Math.ceil((expD.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const fmt = `${expParts[2]} ${MONTHS[expD.getMonth()]} ${expParts[0]}`;
+    if (rem < 0) {
+      hintEl.innerHTML = `<span style="color:var(--danger)">❌ Expired ${Math.abs(rem)} days ago (${fmt})</span>`;
+    } else if (rem <= 7) {
+      hintEl.innerHTML = `<span style="color:var(--warning)">⚠️ <strong>${rem} days remaining</strong> (Expires: ${fmt})</span>`;
+    } else {
+      hintEl.innerHTML = `<span style="color:var(--success)">⏳ <strong>${rem} days remaining</strong> (Expires: ${fmt})</span>`;
+    }
+  }
+}
+
 /* ---- Edit Existing Usage ---- */
 function openEditUsageModal(usageId) {
   const u = DB.usages.find(x => x.id === usageId);
@@ -7467,10 +9345,21 @@ function openEditUsageModal(usageId) {
   }
   document.getElementById('log-notes').value          = u.notes || '';
 
-  const isBuyerAccount = Boolean(
-    u.redeemedOnBuyerAccount === true ||
-    ((u.brand || '').toLowerCase().includes('cult') && u.buyer)
-  );
+  // Voucher Validity & Expiry initialization
+  const defaultValDays = getBrandPresetValidity(u.brand);
+  const valDaysInput = document.getElementById('log-validity-days');
+  if (valDaysInput) valDaysInput.value = u.validityDays || defaultValDays;
+  const expDateInput = document.getElementById('log-expiry-date');
+  if (expDateInput) {
+    if (u.expiryDate) {
+      expDateInput.value = u.expiryDate;
+      updateLogModalExpirySync('expiryDate');
+    } else {
+      updateLogModalExpirySync('days');
+    }
+  }
+
+  const isBuyerAccount = isDirectActivationUsage(u);
   const buyerAccountCb = document.getElementById('log-buyer-account');
   if (buyerAccountCb) {
     buyerAccountCb.checked = isBuyerAccount;
@@ -7499,6 +9388,12 @@ function openEditUsageModal(usageId) {
 
   populateBuyerDatalist();
   openModal('modal-log-usage');
+  if (!hasVoucherCode(u)) {
+    setTimeout(() => {
+      const codeInp = document.getElementById('log-coupon-code');
+      if (codeInp) codeInp.focus();
+    }, 120);
+  }
 }
 
 
@@ -7592,21 +9487,21 @@ function populateLogBrandDropdown(benefit, selectedBrand) {
 }
 
 /* ---- Log Usage ---- */
-function openLogUsageModal(cardId, benefitId) {
+function openLogUsageModal(cardId, benefitId, brandName) {
   const card    = getCardById(cardId);
   const variant = card ? getVariantById(card.variantId) : null;
-  const benefit = variant ? (variant.benefits||[]).find(b => b.id === benefitId) : null;
+  const benefit = variant ? resolveVariantBenefit(variant, benefitId, brandName) : null;
   if (!card || !variant || !benefit) { showToast('Could not resolve card / benefit', 'error'); return; }
 
-    document.getElementById('log-edit-usage-id').value = '';
+  document.getElementById('log-edit-usage-id').value = '';
   document.querySelector('#modal-log-usage .modal-title').textContent = 'Log Benefit Redemption';
   document.getElementById('log-card-id').value        = cardId;
-  document.getElementById('log-benefit-id').value     = benefitId;
+  document.getElementById('log-benefit-id').value     = benefit.id || benefitId;
   document.getElementById('log-card-display').textContent    = `${card.nickname} (••••${card.last4})`;
   document.getElementById('log-benefit-display').textContent = `${benefitIcon(benefit.type)} ${getBenefitDisplayName(benefit)}${benefit.brand ? ': ' + benefit.brand : ''} · ${periodLabel(benefit.periodType)} · Quota: ${benefit.quota}`;
   document.getElementById('log-date').value           = nowLocalISO();
   document.getElementById('log-account').value        = card.account || '';
-  populateLogBrandDropdown(benefit, benefit.brand || '');
+  populateLogBrandDropdown(benefit, brandName || benefit.brand || '');
   document.getElementById('log-redeem-status').value  = 'Redeemed';
   document.getElementById('log-booking-id').value     = '';
   document.getElementById('log-coupon-code').value    = '';
@@ -7616,6 +9511,12 @@ function openLogUsageModal(cardId, benefitId) {
   const priceInput = document.getElementById('log-sell-price');
   if (priceInput) priceInput.value = '';
   document.getElementById('log-notes').value          = '';
+
+  // Voucher Validity & Expiry initialization
+  const defaultValDays = getBrandPresetValidity(brandName || benefit.brand || '');
+  const valDaysInput = document.getElementById('log-validity-days');
+  if (valDaysInput) valDaysInput.value = defaultValDays;
+  updateLogModalExpirySync('days');
 
   const isCult = (benefit.type === 'gym') ||
     (benefit.brand && benefit.brand.toLowerCase().includes('cult')) ||
@@ -7630,7 +9531,7 @@ function openLogUsageModal(cardId, benefitId) {
     document.getElementById('sold-fields').classList.add('hidden');
   }
 
-  const used      = getUsedCount(cardId, benefitId, benefit.periodType);
+  const used      = getUsedCount(cardId, benefit.id || benefitId, benefit.periodType, undefined, brandName || benefit.brand);
   const remaining = benefit.quota - used;
   document.getElementById('log-quota-warning').classList.toggle('hidden', remaining > 0);
 
@@ -7910,6 +9811,340 @@ function saveCard() {
 }
 
 /* ==============================================================
+   SECTION 5d: GLOBAL OMNISEARCH & QUICK NAVIGATOR (CMD+K)
+   ============================================================== */
+
+let omnisearchActiveCat = 'ALL';
+let omnisearchSelectedIndex = -1;
+let omnisearchItems = [];
+
+function openOmnisearch() {
+  const modal = document.getElementById('modal-omnisearch');
+  if (!modal) return;
+  openModal('modal-omnisearch');
+  const inp = document.getElementById('omnisearch-input');
+  if (inp) {
+    inp.value = '';
+    setTimeout(() => inp.focus(), 80);
+  }
+  omnisearchActiveCat = 'ALL';
+  updateOmnisearchPills();
+  renderOmnisearch('');
+}
+
+function closeOmnisearch() {
+  closeModal('modal-omnisearch');
+}
+
+function updateOmnisearchPills() {
+  document.querySelectorAll('.omnisearch-pill').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.cat === omnisearchActiveCat);
+  });
+}
+
+function renderOmnisearch(query) {
+  const container = document.getElementById('omnisearch-results');
+  const statEl = document.getElementById('omnisearch-total-stat');
+  if (!container) return;
+
+  const q = (query || '').trim().toLowerCase();
+  const allCards = (DB && Array.isArray(DB.cards)) ? DB.cards : [];
+  const allUsages = (DB && Array.isArray(DB.usages)) ? DB.usages : [];
+  const allVariants = (DB && Array.isArray(DB.variants)) ? DB.variants : [];
+
+  omnisearchItems = [];
+  omnisearchSelectedIndex = -1;
+
+  // 1. If Query is empty: Show Quick Actions + Recent Redemptions
+  if (!q) {
+    let html = `
+      <div class="omnisearch-group-title">⚡ Quick Actions</div>
+      <div class="omnisearch-item" data-action="quick-sms">
+        <div class="omnisearch-item-left">
+          <div class="omnisearch-item-icon">⚡</div>
+          <div class="omnisearch-item-info">
+            <div class="omnisearch-item-title">Quick Log from SMS / Email Text</div>
+            <div class="omnisearch-item-sub">Batch paste confirmation SMS to extract codes & booking IDs</div>
+          </div>
+        </div>
+        <kbd style="font-size:10px;background:rgba(255,255,255,0.08);padding:2px 5px;border-radius:3px;">SMS</kbd>
+      </div>
+      <div class="omnisearch-item" data-action="matrix">
+        <div class="omnisearch-item-left">
+          <div class="omnisearch-item-icon">🗓️</div>
+          <div class="omnisearch-item-info">
+            <div class="omnisearch-item-title">Quarterly Claim Matrix</div>
+            <div class="omnisearch-item-sub">View 39 cards & benefit completion across Q1–Q4</div>
+          </div>
+        </div>
+        <kbd style="font-size:10px;background:rgba(255,255,255,0.08);padding:2px 5px;border-radius:3px;">Matrix</kbd>
+      </div>
+      <div class="omnisearch-item" data-action="vouchers">
+        <div class="omnisearch-item-left">
+          <div class="omnisearch-item-icon">🎟️</div>
+          <div class="omnisearch-item-info">
+            <div class="omnisearch-item-title">Vouchers & Inventory</div>
+            <div class="omnisearch-item-sub">View, filter, or bulk-copy available voucher codes</div>
+          </div>
+        </div>
+        <kbd style="font-size:10px;background:rgba(255,255,255,0.08);padding:2px 5px;border-radius:3px;">Vault</kbd>
+      </div>
+      <div class="omnisearch-item" data-action="presets">
+        <div class="omnisearch-item-left">
+          <div class="omnisearch-item-icon">⚙️</div>
+          <div class="omnisearch-item-info">
+            <div class="omnisearch-item-title">Brand Presets (Selling Price & Validity)</div>
+            <div class="omnisearch-item-sub">Configure default rates and expiration days per brand</div>
+          </div>
+        </div>
+        <kbd style="font-size:10px;background:rgba(255,255,255,0.08);padding:2px 5px;border-radius:3px;">Config</kbd>
+      </div>
+    `;
+
+    // Recent 5 Redemptions
+    const recentUsages = [...allUsages].sort((a, b) => (b.date || '').localeCompare(a.date || '')).slice(0, 5);
+    if (recentUsages.length > 0) {
+      html += `<div class="omnisearch-group-title" style="margin-top:10px;">🕒 Recently Claimed Redemptions</div>`;
+      recentUsages.forEach(u => {
+        const card = getCardById(u.cardId);
+        const codeDisplay = u.couponCode || u.bookingId || 'No Code';
+        const brand = u.brand || 'Perk';
+        const brandLower = brand.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+        html += `
+          <div class="omnisearch-item" data-action="edit-usage" data-id="${esc(u.id)}">
+            <div class="omnisearch-item-left">
+              <span class="badge badge-brand ${brandLower}" style="font-size:10px;padding:2px 6px;">${esc(brand)}</span>
+              <div class="omnisearch-item-info">
+                <div class="omnisearch-item-title" style="font-family:monospace;font-size:12px;">${esc(codeDisplay)}</div>
+                <div class="omnisearch-item-sub">${card ? esc(card.nickname) : 'Deleted'} · ${fmtDate(u.date)}</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              ${u.couponUsed === 'SOLD' ? '<span class="badge badge-sold" style="font-size:9px;">SOLD</span>' : (hasVoucherCode(u) ? '<span class="badge badge-success" style="font-size:9px;">Available</span>' : '')}
+              <button type="button" class="btn-copy" onclick="event.stopPropagation(); copyCode('${esc(u.couponCode || u.bookingId || '')}')" title="Copy code">📋</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    container.innerHTML = html;
+    if (statEl) statEl.textContent = 'Type anything to search cards, vouchers, buyers, or perks';
+
+    // Populate category count badges
+    const cntCards = document.getElementById('omnisearch-count-cards');
+    const cntVouchers = document.getElementById('omnisearch-count-vouchers');
+    const cntBuyers = document.getElementById('omnisearch-count-buyers');
+    const cntPerks = document.getElementById('omnisearch-count-perks');
+    if (cntCards) cntCards.textContent = allCards.length;
+    if (cntVouchers) cntVouchers.textContent = allUsages.filter(hasVoucherCode).length;
+    if (cntBuyers) cntBuyers.textContent = new Set(allUsages.map(u => (u.buyer || '').trim()).filter(Boolean)).size;
+    if (cntPerks) cntPerks.textContent = allVariants.length;
+    return;
+  }
+
+  // 2. Query is NOT empty: Execute live query across 4 categories
+  const matchedCards = [];
+  const matchedVouchers = [];
+  const matchedBuyers = [];
+  const matchedPerks = [];
+
+  // Cards
+  allCards.forEach(c => {
+    const nick = (c.nickname || '').toLowerCase();
+    const last4 = (c.last4 || '').toLowerCase();
+    const acc = (c.account || '').toLowerCase();
+    const bank = getCardBank(c).toLowerCase();
+    if (nick.includes(q) || last4.includes(q) || acc.includes(q) || bank.includes(q)) {
+      matchedCards.push(c);
+    }
+  });
+
+  // Vouchers / Redemptions
+  allUsages.forEach(u => {
+    const code = (u.couponCode || '').toLowerCase();
+    const bid = (u.bookingId || '').toLowerCase();
+    const brand = (u.brand || '').toLowerCase();
+    const notes = (u.notes || '').toLowerCase();
+    if (code.includes(q) || bid.includes(q) || brand.includes(q) || notes.includes(q)) {
+      matchedVouchers.push(u);
+    }
+  });
+
+  // Buyers
+  const buyerMap = {};
+  allUsages.forEach(u => {
+    const b = (u.buyer || '').trim();
+    if (!b) return;
+    const name = (getBuyerContactName(b) || '').toLowerCase();
+    if (b.toLowerCase().includes(q) || name.includes(q)) {
+      if (!buyerMap[b]) buyerMap[b] = { phone: b, count: 0, spend: 0 };
+      buyerMap[b].count++;
+      buyerMap[b].spend += getVoucherPrice(u);
+    }
+  });
+  Object.values(buyerMap).forEach(b => matchedBuyers.push(b));
+  matchedBuyers.sort((x, y) => y.spend - x.spend);
+
+  // Perks / Variants
+  allVariants.forEach(v => {
+    const vName = (v.name || '').toLowerCase();
+    const vBank = (v.bank || '').toLowerCase();
+    const matchPerk = (v.benefits || []).some(b => {
+      const lbl = (b.label || '').toLowerCase();
+      const br = (b.brand || '').toLowerCase();
+      return lbl.includes(q) || br.includes(q);
+    });
+    if (vName.includes(q) || vBank.includes(q) || matchPerk) {
+      matchedPerks.push(v);
+    }
+  });
+
+  // Update Count Pills
+  const cntCards = document.getElementById('omnisearch-count-cards');
+  const cntVouchers = document.getElementById('omnisearch-count-vouchers');
+  const cntBuyers = document.getElementById('omnisearch-count-buyers');
+  const cntPerks = document.getElementById('omnisearch-count-perks');
+  if (cntCards) cntCards.textContent = matchedCards.length;
+  if (cntVouchers) cntVouchers.textContent = matchedVouchers.length;
+  if (cntBuyers) cntBuyers.textContent = matchedBuyers.length;
+  if (cntPerks) cntPerks.textContent = matchedPerks.length;
+
+  const totalResults = matchedCards.length + matchedVouchers.length + matchedBuyers.length + matchedPerks.length;
+  if (statEl) statEl.textContent = `${totalResults} result${totalResults === 1 ? '' : 's'} found`;
+
+  if (totalResults === 0) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:36px 16px;color:var(--text-secondary);">
+        <div style="font-size:32px;margin-bottom:8px">🔍</div>
+        <div style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:4px;">No matches found for "${esc(query)}"</div>
+        <div style="font-size:12px;">Try searching by brand (e.g. Prime, Cult), card last 4 digits, booking ID, or buyer phone.</div>
+      </div>
+    `;
+    return;
+  }
+
+  let html = '';
+
+  // 1. Render Cards
+  if ((omnisearchActiveCat === 'ALL' || omnisearchActiveCat === 'CARDS') && matchedCards.length > 0) {
+    html += `<div class="omnisearch-group-title">💳 Cards (${matchedCards.length})</div>`;
+    matchedCards.slice(0, 6).forEach(c => {
+      const bank = getCardBank(c);
+      const bankLower = bank.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const cooldown = getAccountCooldownStatus(c.account);
+
+      html += `
+        <div class="omnisearch-item" data-action="card" data-id="${esc(c.id)}" data-account="${esc(c.account || '')}">
+          <div class="omnisearch-item-left">
+            <span class="badge badge-brand ${bankLower}" style="font-size:10px;padding:2px 6px;">${esc(bank)}</span>
+            <div class="omnisearch-item-info">
+              <div class="omnisearch-item-title">${esc(c.nickname)} · <span style="font-family:monospace;font-size:12px;">••••${esc(c.last4)}</span></div>
+              <div class="omnisearch-item-sub">${c.account ? `📧 ${esc(c.account)}` : 'No Account'} · ${c.active ? 'Active' : 'Inactive'}</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            ${cooldown.isAvailable ? 
+              '<span class="badge badge-success" style="font-size:9px;">⚡ Ready</span>' : 
+              `<span class="badge badge-warning" style="font-size:9px;">⏳ ${cooldown.formattedTimeLeft}</span>`
+            }
+            <button type="button" class="btn-copy" onclick="event.stopPropagation(); copyText('${esc(c.last4)}', 'Card Last 4 Copied!')" title="Copy last 4">📋</button>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  // 2. Render Vouchers / Redemptions
+  if ((omnisearchActiveCat === 'ALL' || omnisearchActiveCat === 'VOUCHERS') && matchedVouchers.length > 0) {
+    html += `<div class="omnisearch-group-title" style="margin-top:8px;">🎟️ Vouchers & Redemptions (${matchedVouchers.length})</div>`;
+    matchedVouchers.slice(0, 8).forEach(u => {
+      const card = getCardById(u.cardId);
+      const brand = u.brand || 'Perk';
+      const brandLower = brand.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const codeDisplay = u.couponCode || u.bookingId || 'No Code';
+      const exp = getVoucherExpiry(u);
+
+      let statusPill = '';
+      if (u.couponUsed === 'SOLD') {
+        const price = getVoucherPrice(u);
+        statusPill = `<span class="badge badge-sold" style="font-size:9px;">SOLD ${price ? '₹'+Math.round(price) : ''}</span>`;
+      } else if (u.couponUsed === 'USED') {
+        statusPill = '<span class="badge badge-used" style="font-size:9px;">USED</span>';
+      } else if (hasVoucherCode(u)) {
+        statusPill = '<span class="badge badge-success" style="font-size:9px;">Available</span>';
+      } else {
+        statusPill = '<span class="badge badge-warning" style="font-size:9px;">Need Code</span>';
+      }
+
+      html += `
+        <div class="omnisearch-item" data-action="edit-usage" data-id="${esc(u.id)}">
+          <div class="omnisearch-item-left">
+            <span class="badge badge-brand ${brandLower}" style="font-size:10px;padding:2px 6px;">${esc(brand)}</span>
+            <div class="omnisearch-item-info">
+              <div class="omnisearch-item-title" style="font-family:monospace;font-size:12px;">${esc(codeDisplay)}</div>
+              <div class="omnisearch-item-sub">
+                ${card ? esc(card.nickname) : 'Deleted'} · ${fmtDate(u.date)} 
+                ${exp && !exp.isExpired ? ` · <span style="color:#fbbf24;">${exp.daysRemaining}d left</span>` : ''}
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            ${statusPill}
+            <button type="button" class="btn-copy" onclick="event.stopPropagation(); copyCode('${esc(u.couponCode || u.bookingId || '')}')" title="Copy code">📋</button>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  // 3. Render Buyers
+  if ((omnisearchActiveCat === 'ALL' || omnisearchActiveCat === 'BUYERS') && matchedBuyers.length > 0) {
+    html += `<div class="omnisearch-group-title" style="margin-top:8px;">👤 Buyers (${matchedBuyers.length})</div>`;
+    matchedBuyers.slice(0, 5).forEach(b => {
+      const contactName = getBuyerContactName(b.phone);
+      html += `
+        <div class="omnisearch-item" data-action="buyer" data-phone="${esc(b.phone)}">
+          <div class="omnisearch-item-left">
+            <div class="omnisearch-item-icon">👤</div>
+            <div class="omnisearch-item-info">
+              <div class="omnisearch-item-title">${esc(contactName || b.phone)} ${contactName ? `<span style="font-size:11px;color:var(--text-secondary);font-family:monospace;">(${esc(b.phone)})</span>` : ''}</div>
+              <div class="omnisearch-item-sub">${b.count} voucher${b.count === 1 ? '' : 's'} purchased</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-weight:700;color:#10b981;font-size:12px;">₹${Math.round(b.spend).toLocaleString('en-IN')}</span>
+            <button type="button" class="btn btn-secondary btn-xs" onclick="event.stopPropagation(); viewBuyerVouchers('${esc(b.phone)}'); closeOmnisearch();">View ↗</button>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  // 4. Render Perks & Variants
+  if ((omnisearchActiveCat === 'ALL' || omnisearchActiveCat === 'PERKS') && matchedPerks.length > 0) {
+    html += `<div class="omnisearch-group-title" style="margin-top:8px;">🎁 Card Variants & Perks (${matchedPerks.length})</div>`;
+    matchedPerks.slice(0, 4).forEach(v => {
+      html += `
+        <div class="omnisearch-item" data-action="variant" data-id="${esc(v.id)}">
+          <div class="omnisearch-item-left">
+            <div class="omnisearch-item-icon">💳</div>
+            <div class="omnisearch-item-info">
+              <div class="omnisearch-item-title">${esc(v.name)}</div>
+              <div class="omnisearch-item-sub">${esc(v.bank)} · ${(v.benefits || []).length} benefits configured</div>
+            </div>
+          </div>
+          <button type="button" class="btn btn-secondary btn-xs" onclick="event.stopPropagation(); openEditVariantModal('${esc(v.id)}'); closeOmnisearch();">Edit ✏️</button>
+        </div>
+      `;
+    });
+  }
+
+  container.innerHTML = html;
+}
+
+/* ==============================================================
    SECTION 5c: QUICK LOG VIA SMS / EMAIL CONFIRMATION PARSER
    ============================================================== */
 
@@ -8059,8 +10294,13 @@ function parseSingleRedemptionText(rawText) {
       { key: 'Zomato', patterns: ['zomato'] },
       { key: 'Croma', patterns: ['croma'] },
       { key: 'Myntra', patterns: ['myntra'] },
-      { key: 'Flipkart', patterns: ['flipkart'] },
+      { key: 'Reliance Digital', patterns: ['reliance digital', 'reliancedigital', 'reliance'] },
+      { key: 'Decathlon', patterns: ['decathlon'] },
+      { key: 'Kalyan', patterns: ['kalyan jewellers', 'kalyan'] },
+      { key: 'Apollo Pharmacy', patterns: ['apollo pharmacy', 'apollo'] },
       { key: 'BigBasket', patterns: ['bigbasket', 'big basket'] },
+      { key: 'Flipkart', patterns: ['flipkart'] },
+      { key: 'Nykaa', patterns: ['nykaa'] },
       { key: 'MakeMyTrip', patterns: ['makemytrip', 'mmt'] }
     ];
 
@@ -8107,6 +10347,25 @@ function parseSingleRedemptionText(rawText) {
     }
   }
 
+  // 8. Validity / Expiry extraction
+  result.validityDays = null;
+  result.expiryDate = '';
+  const valDaysMatch = text.match(/(?:valid\s*(?:for|period|duration)?|validity)[\s:=#-]*([0-9]{1,3})\s*days?\b/i);
+  if (valDaysMatch) {
+    result.validityDays = parseInt(valDaysMatch[1], 10);
+  }
+  const expMatch = text.match(/(?:valid\s*(?:till|until|through|thru)|expires\s*(?:on|by)?)[\s:=#-]*([0-9]{1,2}[\s\-\/.][A-Za-z0-9]{2,9}[\s\-\/.][0-9]{2,4}|[0-9]{4}[\s\-\/.][0-9]{1,2}[\s\-\/.][0-9]{1,2})\b/i);
+  if (expMatch) {
+    const rawDateStr = expMatch[1].trim();
+    const d = new Date(rawDateStr);
+    if (!isNaN(d.getTime())) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      result.expiryDate = `${y}-${m}-${day}`;
+    }
+  }
+
   return result;
 }
 
@@ -8142,7 +10401,7 @@ function findBestCardForBrand(brand, cardLast4) {
         return false;
       });
       if (matchingBenefit) {
-        const used = getUsedCount(card.id, matchingBenefit.id, matchingBenefit.periodType);
+        const used = getUsedCount(card.id, matchingBenefit.id, matchingBenefit.periodType, undefined, matchingBenefit.brand);
         if (matchingBenefit.quota - used > 0) {
           return card;
         }
@@ -8164,15 +10423,18 @@ function findBenefitIdForCardAndBrand(card, brand) {
   if (!variant || !variant.benefits || variant.benefits.length === 0) return '';
   const bLower = (brand || '').toLowerCase();
 
-  const exactBrand = variant.benefits.find(b => b.brand && b.brand.toLowerCase() === bLower);
+  const exactBrand = variant.benefits.find(b => b.brand && (b.brand.toLowerCase() === bLower || b.brand.toLowerCase().includes(bLower) || bLower.includes(b.brand.toLowerCase())));
   if (exactBrand) return exactBrand.id;
 
   const typeMatch = variant.benefits.find(b => {
-    if (bLower.includes('prime') || bLower.includes('hotstar') || bLower.includes('sony') || bLower.includes('zee')) return b.type === 'ott';
-    if (bLower.includes('lakme') || bLower.includes('spa')) return b.type === 'spa';
-    if (bLower.includes('uber') || bLower.includes('cab')) return b.type === 'cab';
-    if (bLower.includes('cult') || bLower.includes('gym')) return b.type === 'gym';
-    if (bLower.includes('thyrocare') || bLower.includes('health')) return b.type === 'health';
+    if (bLower.includes('prime') || bLower.includes('hotstar') || bLower.includes('sony') || bLower.includes('zee')) return b.type === 'ott' || b.perkId === 'ben-ott';
+    if (bLower.includes('lakme') || bLower.includes('spa')) return b.type === 'spa' || b.perkId === 'ben-spa';
+    if (bLower.includes('uber') || bLower.includes('cab')) return b.type === 'cab' || b.perkId === 'ben-cab';
+    if (bLower.includes('cult') || bLower.includes('gym')) return b.type === 'gym' || b.perkId === 'ben-gym';
+    if (bLower.includes('thyrocare') || bLower.includes('health') || bLower.includes('checkup')) return b.type === 'health' || b.perkId === 'ben-health';
+    if (bLower.includes('apollo') || bLower.includes('pharmacy')) return b.type === 'online-pharmacy' || b.perkId === 'ben-pharmacy';
+    if (bLower.includes('bigbasket') || bLower.includes('grocer')) return b.type === 'online-groceries' || b.perkId === 'ben-groceries';
+    if (bLower.includes('myntra') || bLower.includes('reliance') || bLower.includes('decathlon') || bLower.includes('kalyan') || bLower.includes('flipkart') || bLower.includes('nykaa') || bLower.includes('shop')) return b.type === 'online-shopping' || b.perkId === 'ben-shopping';
     if (bLower.includes('bookmyshow') || bLower.includes('bms')) return b.type === 'movie' || (b.label && b.label.toLowerCase().includes('movie'));
     return false;
   });
@@ -8398,7 +10660,7 @@ function renderQuickSMSItemsList() {
   }).join('');
 }
 
-function saveQuickSMSBatch() {
+async function saveQuickSMSBatch() {
   if (!currentParsedSMSItems || currentParsedSMSItems.length === 0) {
     showToast('No redemptions to save', 'error');
     return;
@@ -8435,29 +10697,37 @@ function saveQuickSMSBatch() {
     const card = getCardById(item.cardId);
     if (!card) continue;
 
-    // Check if updating existing log
-    if (item.existingUsageId) {
-      const existing = DB.usages.find(u => u.id === item.existingUsageId);
-      if (existing) {
-        if (item.couponCode && (!existing.couponCode || existing.couponCode === 'NA')) {
-          existing.couponCode = item.couponCode;
+    // Check if updating existing log (by ID or matching Booking ID)
+    const existing = (item.existingUsageId ? DB.usages.find(u => u.id === item.existingUsageId) : null) ||
+                     (item.bookingId && item.bookingId.toUpperCase() !== 'NA' && item.bookingId !== '-'
+                       ? DB.usages.find(u => (u.bookingId || '').trim().toLowerCase() === item.bookingId.toLowerCase())
+                       : null);
+
+    if (existing) {
+      const updates = {};
+      if (item.couponCode) updates.couponCode = item.couponCode;
+      if (item.bookingId) updates.bookingId = item.bookingId;
+      if (item.validityDays) updates.validityDays = item.validityDays;
+      if (item.expiryDate) updates.expiryDate = item.expiryDate;
+      if (item.cardId && item.cardId !== existing.cardId) updates.cardId = item.cardId;
+      if (item.benefitId && item.benefitId !== existing.benefitId) updates.benefitId = item.benefitId;
+      if (item.account && item.account !== existing.account) updates.account = item.account;
+      if (item.brand && (!existing.brand || existing.brand === 'Other')) updates.brand = item.brand;
+      if (item.buyer) {
+        updates.buyer = item.buyer;
+        updates.couponUsed = 'SOLD';
+        updates.sellDate = todayISO();
+        if (updates.price === undefined && existing.price === undefined) {
+          updates.price = getBrandPresetPrice(existing.brand || item.brand);
         }
-        if (item.bookingId) existing.bookingId = item.bookingId;
-        if (item.buyer) {
-          existing.buyer = item.buyer;
-          existing.couponUsed = 'SOLD';
-          existing.sellDate = todayISO();
-        }
-        if (typeof syncRedemptionToGSheet === 'function') {
-          syncRedemptionToGSheet(existing);
-        }
-        savedCount++;
-        continue;
       }
+      updateUsage(existing.id, updates, { skipSave: true });
+      savedCount++;
+      continue;
     }
 
     const brand = item.brand || (card ? card.nickname : 'Other');
-    const isDirect = Boolean(item.isDirectActivation || (item.brand === 'Cult.fit' && item.buyer));
+    const isDirect = Boolean(item.isDirectActivation || (brand && brand.toLowerCase().includes('cult')) || isDirectActivationUsage(item));
     const couponUsed = item.buyer ? 'SOLD' : '';
     const sellDate = item.buyer ? todayISO() : '';
     const price = item.buyer ? getBrandPresetPrice(brand) : undefined;
@@ -8476,10 +10746,15 @@ function saveQuickSMSBatch() {
       sellDate: sellDate,
       price: price,
       notes: '',
-      redeemedOnBuyerAccount: isDirect
-    });
+      redeemedOnBuyerAccount: isDirect,
+      validityDays: item.validityDays || getBrandPresetValidity(brand),
+      expiryDate: item.expiryDate || undefined
+    }, { skipSave: true });
     savedCount++;
   }
+
+  // Ensure universal disk and localStorage save completes before closing modal
+  await saveDB();
 
   closeModal('modal-quick-sms-log');
   currentParsedSMSItems = [];
@@ -10812,6 +13087,19 @@ document.addEventListener('DOMContentLoaded', () => {
       if (priceInput && (usedSelect?.value === 'SOLD' || cb?.checked)) {
         priceInput.value = getBrandPresetPrice(brandSel.value);
       }
+
+      // Recompute quota warning when brand changes in modal
+      const cId = document.getElementById('log-card-id')?.value;
+      const bId = document.getElementById('log-benefit-id')?.value;
+      const card = getCardById(cId);
+      const variant = card ? getVariantById(card.variantId) : null;
+      const bBenefit = variant ? resolveVariantBenefit(variant, bId, brandSel.value) : null;
+      if (bBenefit) {
+        const uCount = getUsedCount(cId, bBenefit.id, bBenefit.periodType, undefined, brandSel.value);
+        const rem = bBenefit.quota - uCount;
+        const warnEl = document.getElementById('log-quota-warning');
+        if (warnEl) warnEl.classList.toggle('hidden', rem > 0);
+      }
     });
 
     brandInp.addEventListener('input', () => {
@@ -10945,6 +13233,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const editUsageId = document.getElementById('log-edit-usage-id').value;
+    const validityDaysVal = parseInt(document.getElementById('log-validity-days')?.value, 10);
+    const validityDays = (!isNaN(validityDaysVal) && validityDaysVal > 0) ? validityDaysVal : getBrandPresetValidity(brand);
+    const expiryDate   = (document.getElementById('log-expiry-date')?.value || '').trim();
 
     // Check uniqueness of Booking ID
     if (bookingId && bookingId.toUpperCase() !== 'NA' && bookingId !== '-') {
@@ -10973,12 +13264,20 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    // Auto-remove any previous UNAVAILABLE placeholder for this card/benefit in this cycle
+    const unavIdx = (DB.usages || []).findIndex(u => u.cardId === cardId && u.redeemStatus === 'UNAVAILABLE' && (u.benefitId === benefitId || (u.brand && brand && u.brand.toLowerCase() === brand.toLowerCase())));
+    if (unavIdx !== -1) {
+      DB.usages.splice(unavIdx, 1);
+    }
+
     if (editUsageId) {
       updateUsage(editUsageId, {
         benefitId, date, account, brand, redeemStatus,
         bookingId, couponCode: finalCouponCode, couponUsed: finalCouponUsed, buyer, sellDate, notes,
         price: (price !== undefined && !isNaN(price)) ? price : undefined,
-        redeemedOnBuyerAccount
+        redeemedOnBuyerAccount,
+        validityDays,
+        expiryDate: expiryDate || undefined
       });
       closeModal('modal-log-usage');
       showToast('Redemption updated! ✅', 'success');
@@ -10987,13 +13286,16 @@ document.addEventListener('DOMContentLoaded', () => {
         cardId, benefitId, date, account, brand, redeemStatus,
         bookingId, couponCode: finalCouponCode, couponUsed: finalCouponUsed, buyer, sellDate, notes,
         price: (price !== undefined && !isNaN(price)) ? price : undefined,
-        redeemedOnBuyerAccount
+        redeemedOnBuyerAccount,
+        validityDays,
+        expiryDate: expiryDate || undefined
       });
       closeModal('modal-log-usage');
       showToast('Redemption saved! ✅', 'success');
     }
     renderDashboard();
     renderAccountCooldowns();
+    renderMatrix();
     if (document.getElementById('tab-history').classList.contains('active')) renderHistory();
     if (document.getElementById('tab-vouchers').classList.contains('active')) renderVouchers();
     if (document.getElementById('tab-insights').classList.contains('active')) renderInsights();
@@ -11045,7 +13347,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const logBtn = e.target.closest('.log-use-btn');
     if (logBtn) {
-      openLogUsageModal(logBtn.dataset.cardId, logBtn.dataset.benefitId);
+      openLogUsageModal(logBtn.dataset.cardId, logBtn.dataset.benefitId, logBtn.dataset.brand);
       return;
     }
 
@@ -11117,8 +13419,238 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   
+  /* ── Claim Matrix Event Listeners ── */
+  const matrixCycleSel = document.getElementById('matrix-filter-cycle');
+  if (matrixCycleSel) matrixCycleSel.addEventListener('change', renderMatrix);
+
+  const matrixBankSel = document.getElementById('matrix-filter-bank');
+  if (matrixBankSel) matrixBankSel.addEventListener('change', renderMatrix);
+
+  const matrixStatusSel = document.getElementById('matrix-filter-status');
+  if (matrixStatusSel) matrixStatusSel.addEventListener('change', renderMatrix);
+
+  const matrixSearchInp = document.getElementById('matrix-search');
+  if (matrixSearchInp) matrixSearchInp.addEventListener('input', renderMatrix);
+
+  const matrixInactiveCb = document.getElementById('matrix-include-inactive');
+  if (matrixInactiveCb) matrixInactiveCb.addEventListener('change', renderMatrix);
+
+  const btnMatrixRefresh = document.getElementById('btn-matrix-refresh');
+  if (btnMatrixRefresh) {
+    btnMatrixRefresh.addEventListener('click', () => {
+      renderMatrix();
+      showToast('Claim Matrix refreshed! 🔄', 'info');
+    });
+  }
+
+  const btnMatrixQuickSms = document.getElementById('btn-matrix-quick-sms');
+  if (btnMatrixQuickSms) {
+    btnMatrixQuickSms.addEventListener('click', () => openModal('modal-quick-sms-log'));
+  }
+
+  const btnDashOpenMatrix = document.getElementById('btn-dash-open-matrix');
+  if (btnDashOpenMatrix) {
+    btnDashOpenMatrix.addEventListener('click', () => navigateToTab('matrix'));
+  }
+
+  // Delegated click for Matrix claim, mark unavailable, and restore buttons
+  document.addEventListener('click', e => {
+    const unavBtn = e.target.closest('.btn-matrix-mark-unavailable');
+    if (unavBtn) {
+      e.stopPropagation();
+      const cardId = unavBtn.dataset.cardId;
+      const benefitId = unavBtn.dataset.benefitId;
+      const brand = unavBtn.dataset.brand;
+      if (cardId && benefitId) {
+        markBenefitUnavailable(cardId, benefitId, brand);
+      }
+      return;
+    }
+
+    const restoreBtn = e.target.closest('.btn-matrix-restore-available');
+    if (restoreBtn) {
+      e.stopPropagation();
+      const usageId = restoreBtn.dataset.usageId;
+      if (usageId) {
+        restoreBenefitAvailable(usageId);
+      }
+      return;
+    }
+
+    const claimBtn = e.target.closest('.matrix-claim-btn');
+    if (claimBtn) {
+      const cardId = claimBtn.dataset.cardId;
+      const benefitId = claimBtn.dataset.benefitId;
+      const brand = claimBtn.dataset.brand;
+      if (cardId && benefitId) {
+        if (brand) {
+          smartClaimBenefit(cardId, benefitId, brand);
+        } else {
+          openLogUsageModal(cardId, benefitId);
+        }
+      }
+      return;
+    }
+  });
+
+  /* ── Global Omnisearch Event Listeners ── */
+  const btnOpenOmnisearch = document.getElementById('btn-open-omnisearch');
+  if (btnOpenOmnisearch) {
+    btnOpenOmnisearch.addEventListener('click', openOmnisearch);
+  }
+
+  const omnisearchInp = document.getElementById('omnisearch-input');
+  if (omnisearchInp) {
+    omnisearchInp.addEventListener('input', e => renderOmnisearch(e.target.value));
+  }
+
+  // Omnisearch Category Pills
+  document.addEventListener('click', e => {
+    const pill = e.target.closest('.omnisearch-pill');
+    if (pill) {
+      omnisearchActiveCat = pill.dataset.cat || 'ALL';
+      updateOmnisearchPills();
+      const inp = document.getElementById('omnisearch-input');
+      renderOmnisearch(inp ? inp.value : '');
+    }
+  });
+
+  // Omnisearch Item Clicks
+  document.addEventListener('click', e => {
+    const item = e.target.closest('.omnisearch-item');
+    if (!item) return;
+
+    const action = item.dataset.action;
+    if (action === 'quick-sms') {
+      closeOmnisearch();
+      openModal('modal-quick-sms-log');
+    } else if (action === 'matrix') {
+      closeOmnisearch();
+      navigateToTab('matrix');
+    } else if (action === 'vouchers') {
+      closeOmnisearch();
+      navigateToTab('vouchers');
+    } else if (action === 'presets') {
+      closeOmnisearch();
+      openPricePresetsModal();
+    } else if (action === 'edit-usage') {
+      const usageId = item.dataset.id;
+      closeOmnisearch();
+      if (usageId) openEditUsageModal(usageId);
+    } else if (action === 'card') {
+      const cardId = item.dataset.id;
+      const account = item.dataset.account;
+      closeOmnisearch();
+      if (account) {
+        activeAccountFilter = account;
+        navigateToTab('dashboard');
+      } else {
+        navigateToTab('cards');
+      }
+    } else if (action === 'buyer') {
+      const phone = item.dataset.phone;
+      closeOmnisearch();
+      if (phone) viewBuyerVouchers(phone);
+    } else if (action === 'variant') {
+      const varId = item.dataset.id;
+      closeOmnisearch();
+      if (varId) openEditVariantModal(varId);
+    }
+  });
+
+  // Global Keyboard Shortcuts (Cmd+K / Ctrl+K and arrow navigation)
+  window.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      const modal = document.getElementById('modal-omnisearch');
+      if (modal && modal.classList.contains('open')) {
+        closeOmnisearch();
+      } else {
+        openOmnisearch();
+      }
+      return;
+    }
+
+    const modal = document.getElementById('modal-omnisearch');
+    if (modal && modal.classList.contains('open')) {
+      const items = modal.querySelectorAll('.omnisearch-item');
+      if (items.length > 0) {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          omnisearchSelectedIndex = (omnisearchSelectedIndex + 1) % items.length;
+          items.forEach((it, idx) => it.classList.toggle('selected', idx === omnisearchSelectedIndex));
+          items[omnisearchSelectedIndex].scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          omnisearchSelectedIndex = (omnisearchSelectedIndex - 1 + items.length) % items.length;
+          items.forEach((it, idx) => it.classList.toggle('selected', idx === omnisearchSelectedIndex));
+          items[omnisearchSelectedIndex].scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'Enter') {
+          if (omnisearchSelectedIndex >= 0 && items[omnisearchSelectedIndex]) {
+            e.preventDefault();
+            items[omnisearchSelectedIndex].click();
+          }
+        } else if (e.key === 'Escape') {
+          closeOmnisearch();
+        }
+      }
+    }
+  });
+
   /* ── Vouchers Event Listeners ── */
   document.getElementById('voucher-filter-status').addEventListener('change', renderVouchersTable);
+  const voucherSortEl = document.getElementById('voucher-sort');
+  if (voucherSortEl) voucherSortEl.addEventListener('change', renderVouchersTable);
+  const btnFilterExpiringNow = document.getElementById('btn-filter-expiring-now');
+  if (btnFilterExpiringNow) {
+    btnFilterExpiringNow.addEventListener('click', () => {
+      document.getElementById('voucher-filter-status').value = 'EXPIRING_SOON';
+      renderVouchersTable();
+    });
+  }
+  const btnDashViewExpiring = document.getElementById('btn-dash-view-expiring-vouchers');
+  if (btnDashViewExpiring) {
+    btnDashViewExpiring.addEventListener('click', () => {
+      navigateToTab('vouchers');
+      const statusSelect = document.getElementById('voucher-filter-status');
+      if (statusSelect) {
+        statusSelect.value = 'EXPIRING_SOON';
+        renderVouchersTable();
+      }
+    });
+  }
+
+  // Modal validity & expiry inputs sync
+  const logDateInput = document.getElementById('log-date');
+  if (logDateInput) {
+    logDateInput.addEventListener('input', () => updateLogModalExpirySync('date'));
+  }
+  const logValDaysInput = document.getElementById('log-validity-days');
+  if (logValDaysInput) {
+    logValDaysInput.addEventListener('input', () => updateLogModalExpirySync('days'));
+  }
+  const logExpDateInput = document.getElementById('log-expiry-date');
+  if (logExpDateInput) {
+    logExpDateInput.addEventListener('input', () => updateLogModalExpirySync('expiryDate'));
+  }
+  document.querySelectorAll('.btn-val-days-preset').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const days = parseInt(btn.dataset.days, 10);
+      if (logValDaysInput) logValDaysInput.value = days;
+      updateLogModalExpirySync('days');
+    });
+  });
+  const logBrandSel = document.getElementById('log-brand-select');
+  if (logBrandSel) {
+    logBrandSel.addEventListener('change', () => {
+      const b = logBrandSel.value;
+      if (b && b !== '__CUSTOM__' && logValDaysInput) {
+        logValDaysInput.value = getBrandPresetValidity(b);
+        updateLogModalExpirySync('days');
+      }
+    });
+  }
+
   document.getElementById('voucher-filter-brand').addEventListener('change', e => {
     activeVoucherBrandFilter = e.target.value;
     renderVouchersTable();
@@ -11221,20 +13753,34 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnSavePricePresets = document.getElementById('btn-save-price-presets');
   if (btnSavePricePresets) {
     btnSavePricePresets.addEventListener('click', () => {
-      const inputs = document.querySelectorAll('.preset-price-input');
-      const presets = getBrandPricePresets();
-      inputs.forEach(inp => {
+      const priceInputs = document.querySelectorAll('.preset-price-input');
+      const pricePresets = getBrandPricePresets();
+      priceInputs.forEach(inp => {
         const b = inp.dataset.brand;
         const v = parseFloat(inp.value);
         if (!isNaN(v) && v >= 0) {
-          presets[b] = v;
+          pricePresets[b] = v;
           const norm = normalizeBrandKey(b);
-          presets[norm] = v;
+          pricePresets[norm] = v;
         }
       });
-      saveBrandPricePresets(presets);
+      saveBrandPricePresets(pricePresets);
+
+      const validityInputs = document.querySelectorAll('.preset-validity-input');
+      const validityPresets = getBrandValidityPresets();
+      validityInputs.forEach(inp => {
+        const b = inp.dataset.brand;
+        const v = parseInt(inp.value, 10);
+        if (!isNaN(v) && v > 0) {
+          validityPresets[b] = v;
+          const norm = normalizeBrandKey(b);
+          validityPresets[norm] = v;
+        }
+      });
+      saveBrandValidityPresets(validityPresets);
+
       closeModal('modal-price-presets');
-      showToast('Default brand prices saved! 💰', 'success');
+      showToast('Brand price & validity presets saved! ⚙️', 'success');
       renderInsights();
       renderVouchers();
     });
@@ -11243,14 +13789,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnResetPricePresets = document.getElementById('btn-reset-price-presets');
   if (btnResetPricePresets) {
     btnResetPricePresets.addEventListener('click', () => {
-      const inputs = document.querySelectorAll('.preset-price-input');
-      inputs.forEach(inp => {
+      const priceInputs = document.querySelectorAll('.preset-price-input');
+      priceInputs.forEach(inp => {
         const b = inp.dataset.brand;
         if (DEFAULT_BRAND_PRICES[b] !== undefined) {
           inp.value = DEFAULT_BRAND_PRICES[b];
         }
       });
-      showToast('Prices reset to standard defaults', 'info');
+      const validityInputs = document.querySelectorAll('.preset-validity-input');
+      validityInputs.forEach(inp => {
+        const b = inp.dataset.brand;
+        if (DEFAULT_BRAND_VALIDITY[b] !== undefined) {
+          inp.value = DEFAULT_BRAND_VALIDITY[b];
+        }
+      });
+      showToast('Presets reset to standard defaults', 'info');
     });
   }
 
