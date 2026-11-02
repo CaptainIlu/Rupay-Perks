@@ -13,11 +13,10 @@
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   
-  <!-- Standard Favicons & Web App Manifest -->
+  <!-- Standard Favicons -->
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <link rel="manifest" href="manifest.json" />
   <style>
     /* ===== CSS CUSTOM PROPERTIES ===== */
     :root {
@@ -2313,6 +2312,363 @@
       font-weight: 600;
     }
 
+    /* ===== COOLDOWN MASTER: OPTIMAL DAILY CLAIM SCHEDULER ===== */
+    .claim-scheduler-section {
+      background: var(--card-surface);
+      border: 1px solid rgba(124, 58, 237, 0.3);
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+      position: relative;
+      overflow: hidden;
+    }
+    .claim-scheduler-section::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #7c3aed, #06b6d4, #10b981);
+    }
+    .scheduler-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .scheduler-title-wrap {
+      flex: 1;
+      min-width: 280px;
+    }
+    .scheduler-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.2px;
+    }
+    .scheduler-subtitle {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 3px;
+      line-height: 1.4;
+    }
+    .scheduler-metrics-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 8px 14px;
+    }
+    .sched-metric {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 8px;
+    }
+    .sched-metric:not(:last-child) {
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .sched-metric-num {
+      font-size: 16px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+    .sched-metric-num.primary { color: var(--primary-light); }
+    .sched-metric-num.warning { color: var(--warning); }
+    .sched-metric-num.secondary { color: var(--secondary); }
+    .sched-metric-num.success { color: var(--success); }
+    .sched-metric-label {
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+    }
+
+    .scheduler-nav-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      padding-bottom: 10px;
+    }
+    .scheduler-tab-btns {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .sched-tab-btn {
+      background: var(--elevated);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .sched-tab-btn:hover {
+      color: var(--text-primary);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .sched-tab-btn.active {
+      background: linear-gradient(135deg, #7c3aed, #6366f1);
+      color: #fff;
+      border-color: #a78bfa;
+      box-shadow: 0 2px 10px rgba(124, 58, 237, 0.35);
+    }
+    .sched-select {
+      background: var(--elevated);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      font-size: 12px;
+      padding: 5px 10px;
+      border-radius: var(--radius-sm);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .sched-panel {
+      display: none;
+    }
+    .sched-panel.active {
+      display: block;
+    }
+
+    /* Today's Queue Grid */
+    .sched-today-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      gap: 12px;
+    }
+    .sched-card-item {
+      background: var(--elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 13px 15px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .sched-card-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+    .sched-card-item.ready {
+      border-color: rgba(16, 185, 129, 0.4);
+      background: linear-gradient(180deg, rgba(16, 185, 129, 0.08), var(--elevated));
+    }
+    .sched-card-item.cooling {
+      border-color: rgba(245, 158, 11, 0.35);
+      background: linear-gradient(180deg, rgba(245, 158, 11, 0.06), var(--elevated));
+    }
+    .sched-card-item.direct {
+      border-color: rgba(6, 182, 212, 0.4);
+      background: linear-gradient(180deg, rgba(6, 182, 212, 0.08), var(--elevated));
+    }
+    .sched-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .sched-card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .sched-card-sub {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+    .sched-perk-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(124, 58, 237, 0.15);
+      color: var(--primary-light);
+      border: 1px solid rgba(124, 58, 237, 0.3);
+      padding: 4px 9px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+    .sched-actions-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .sched-btn-claim {
+      flex: 1;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border: none;
+      transition: all 0.2s ease;
+    }
+    .sched-btn-claim.ready {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    }
+    .sched-btn-claim.cooling {
+      background: rgba(245, 158, 11, 0.15);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .sched-btn-claim.direct {
+      background: linear-gradient(135deg, #06b6d4, #0891b2);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(6, 182, 212, 0.3);
+    }
+    .sched-btn-claim:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+    .sched-btn-copy {
+      background: var(--card-surface);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+    }
+    .sched-btn-copy:hover {
+      color: var(--text-primary);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    /* 7-Day Roadmap Timeline */
+    .sched-roadmap-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .sched-day-block {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+    }
+    .sched-day-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .sched-day-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sched-day-items {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 8px;
+    }
+    .sched-mini-card {
+      background: var(--elevated);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 12px;
+      transition: all 0.2s ease;
+    }
+    .sched-mini-card:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Capacity & Bottlenecks Grid */
+    .sched-capacity-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 12px;
+    }
+    .sched-capacity-card {
+      background: var(--elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 13px 15px;
+    }
+    .sched-cap-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .sched-cap-account {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      word-break: break-all;
+    }
+    .sched-cap-bar-wrap {
+      background: rgba(255, 255, 255, 0.08);
+      height: 6px;
+      border-radius: 3px;
+      overflow: hidden;
+      margin: 8px 0;
+    }
+    .sched-cap-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+    .sched-cap-stats {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+    .sched-cap-tip {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 8px;
+      padding-top: 6px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      line-height: 1.4;
+    }
+
     /* ===== BUYER DIRECTORY STYLES ===== */
     .buyer-contact-name {
       font-weight: 700;
@@ -2999,6 +3355,72 @@
       </div>
       <div class="smart-finder-perks" id="smart-finder-perk-pills"></div>
       <div class="smart-finder-results" id="smart-finder-results"></div>
+    </div>
+
+    <!-- Cooldown Master: Optimal Daily Claim Scheduler -->
+    <div class="claim-scheduler-section" id="claim-scheduler-section">
+      <div class="scheduler-header">
+        <div class="scheduler-title-wrap">
+          <div class="scheduler-title">
+            <span>🗓️ Cooldown Master: Optimal Daily Claim Scheduler</span>
+            <span class="badge badge-success" id="scheduler-health-badge">🟢 Optimal</span>
+          </div>
+          <div class="scheduler-subtitle">
+            Smart sequence mapping your cards to independent accounts so you claim 100% of perks before cycle ends without cooldown blocks
+          </div>
+        </div>
+        <div class="scheduler-metrics-row">
+          <div class="sched-metric">
+            <span class="sched-metric-num primary" id="sched-metric-pending">0</span>
+            <span class="sched-metric-label">Claims Left</span>
+          </div>
+          <div class="sched-metric">
+            <span class="sched-metric-num warning" id="sched-metric-days-needed">0d</span>
+            <span class="sched-metric-label">Days Needed</span>
+          </div>
+          <div class="sched-metric">
+            <span class="sched-metric-num secondary" id="sched-metric-cycle-days">0d</span>
+            <span class="sched-metric-label">Cycle Remaining</span>
+          </div>
+          <div class="sched-metric">
+            <span class="sched-metric-num success" id="sched-metric-buffer">+0d</span>
+            <span class="sched-metric-label">Safety Buffer</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scheduler Navigation & Filter Bar -->
+      <div class="scheduler-nav-bar">
+        <div class="scheduler-tab-btns">
+          <button type="button" class="sched-tab-btn active" data-sched-tab="today" id="btn-sched-tab-today">
+            ⚡ Today's Recommended Claims (<span id="sched-today-count">0</span>)
+          </button>
+          <button type="button" class="sched-tab-btn" data-sched-tab="roadmap" id="btn-sched-tab-roadmap">
+            🗓️ 7-Day Claim Roadmap
+          </button>
+          <button type="button" class="sched-tab-btn" data-sched-tab="capacity" id="btn-sched-tab-capacity">
+            📊 Account Capacity & Bottlenecks
+          </button>
+        </div>
+        <div class="scheduler-filters">
+          <select id="sched-filter-account" class="sched-select" title="Filter by Account Email">
+            <option value="">All Accounts (Emails)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Tab Content Panels -->
+      <div class="sched-panel active" id="sched-panel-today">
+        <div class="sched-today-grid" id="sched-today-grid"></div>
+      </div>
+
+      <div class="sched-panel" id="sched-panel-roadmap">
+        <div class="sched-roadmap-wrap" id="sched-roadmap-grid"></div>
+      </div>
+
+      <div class="sched-panel" id="sched-panel-capacity">
+        <div class="sched-capacity-grid" id="sched-capacity-grid"></div>
+      </div>
     </div>
 
     <!-- 24-Hour Account Cooldown Section -->
@@ -4919,8 +5341,8 @@ async function saveDB(skipCloudSync = false) {
     console.warn('localStorage error:', e);
   }
 
-  // Direct disk write to rupay-perks-data.json (non-blocking)
-  persistToLocalDisk({ silent: true });
+  // Direct disk write to rupay-perks-data.json
+  await persistToLocalDisk({ silent: true });
 
   // Post that, push to GitHub Gist via debounced non-blocking sync
   if (!skipCloudSync) {
@@ -4930,52 +5352,73 @@ async function saveDB(skipCloudSync = false) {
 
 /**
  * Intelligently merges disk file data with current DB.
- * NEVER deletes or wipes out newly added redemptions or local voucher details!
+ * NEVER deletes or wipes out newly added redemptions, card customizations, or local voucher details!
  */
 function mergeDatasets(fileData, currentDB) {
   if (!fileData) return currentDB || buildSeedData();
 
   const result = {
-    variants: Array.isArray(fileData.variants) && fileData.variants.length > 0 ? fileData.variants : (currentDB.variants || []),
-    cards:    Array.isArray(fileData.cards)    && fileData.cards.length > 0    ? fileData.cards    : (currentDB.cards || []),
-    perks:    Array.isArray(fileData.perks)    && fileData.perks.length > 0    ? fileData.perks    : (currentDB.perks || []),
+    variants: [],
+    cards: [],
+    perks: [],
     brandPricePresets: fileData.brandPricePresets || (currentDB && currentDB.brandPricePresets) || undefined,
     brandValidityPresets: fileData.brandValidityPresets || (currentDB && currentDB.brandValidityPresets) || undefined,
-    buyers:   { ...(currentDB && currentDB.buyers ? currentDB.buyers : {}), ...(fileData && fileData.buyers ? fileData.buyers : {}) },
-    usages:   []
+    buyers: { ...(currentDB && currentDB.buyers ? currentDB.buyers : {}), ...(fileData && fileData.buyers ? fileData.buyers : {}) },
+    usages: []
   };
 
-  // Merge cards: preserve any local cards that might not be in fileData
+  // 1. Merge cards:
+  // fileData is the base file, but currentDB holds the user's latest in-app edits (variantId, nickname, account, active, etc.)!
+  // Any user edits made in currentDB MUST take precedence over older static fileData!
+  const cardMap = new Map();
+  (fileData.cards || []).forEach(fc => {
+    if (fc && fc.id) cardMap.set(fc.id, { ...fc });
+  });
   if (currentDB && Array.isArray(currentDB.cards)) {
-    const fileCardIds = new Set(result.cards.map(c => c.id));
-    currentDB.cards.forEach(c => {
-      if (c && c.id && !fileCardIds.has(c.id)) {
-        result.cards.push(c);
+    currentDB.cards.forEach(lc => {
+      if (lc && lc.id) {
+        const existing = cardMap.get(lc.id);
+        if (existing) {
+          cardMap.set(lc.id, { ...existing, ...lc });
+        } else {
+          cardMap.set(lc.id, { ...lc });
+        }
       }
     });
   }
+  result.cards = Array.from(cardMap.values());
   (result.cards || []).forEach(normalizeCardObject);
   normalizeBuyersObject(result.buyers);
 
-  // Merge variants: preserve any local variants that might not be in fileData
+  // 2. Merge variants: overlay currentDB variants on top of fileData variants
+  const variantMap = new Map();
+  (fileData.variants || []).forEach(fv => {
+    if (fv && fv.id) variantMap.set(fv.id, { ...fv });
+  });
   if (currentDB && Array.isArray(currentDB.variants)) {
-    const fileVariantIds = new Set(result.variants.map(v => v.id));
-    currentDB.variants.forEach(v => {
-      if (v && v.id && !fileVariantIds.has(v.id)) {
-        result.variants.push(v);
+    currentDB.variants.forEach(lv => {
+      if (lv && lv.id) {
+        const existing = variantMap.get(lv.id);
+        variantMap.set(lv.id, existing ? { ...existing, ...lv } : { ...lv });
       }
     });
   }
+  result.variants = Array.from(variantMap.values());
 
-  // Merge perks: preserve any local perks that might not be in fileData
+  // 3. Merge perks: overlay currentDB perks on top of fileData perks
+  const perkMap = new Map();
+  (fileData.perks || []).forEach(fp => {
+    if (fp && fp.id) perkMap.set(fp.id, { ...fp });
+  });
   if (currentDB && Array.isArray(currentDB.perks)) {
-    const filePerkIds = new Set(result.perks.map(p => p.id));
-    currentDB.perks.forEach(p => {
-      if (p && p.id && !filePerkIds.has(p.id)) {
-        result.perks.push(p);
+    currentDB.perks.forEach(lp => {
+      if (lp && lp.id) {
+        const existing = perkMap.get(lp.id);
+        perkMap.set(lp.id, existing ? { ...existing, ...lp } : { ...lp });
       }
     });
   }
+  result.perks = Array.from(perkMap.values());
 
   // Non-destructive merge of usages
   const fileUsages = Array.isArray(fileData.usages) ? fileData.usages : [];
@@ -5126,7 +5569,9 @@ async function loadExternalJSONIfAvailable(options = { silent: false }) {
     const diskUsagesCount = (fetchedData.usages || []).length;
     const merged = mergeDatasets(fetchedData, DB);
     const hasLocalDifferences = (merged.usages.length !== diskUsagesCount) ||
-      (JSON.stringify(merged.usages) !== JSON.stringify(fetchedData.usages || []));
+      (JSON.stringify(merged.usages) !== JSON.stringify(fetchedData.usages || [])) ||
+      (JSON.stringify(merged.cards) !== JSON.stringify(fetchedData.cards || [])) ||
+      (JSON.stringify(merged.variants) !== JSON.stringify(fetchedData.variants || []));
 
     DB = merged;
     const healed = healUsages({ silent: true, skipSave: true });
@@ -6447,14 +6892,23 @@ function renderSmartRedemptionAssistant() {
     perkCounts[opt.id] = count;
   });
 
-  // Default to first perk with available quota if current active perk is invalid or unset
-  if (!activeSmartFinderPerk || !smartPerkOptions.some(opt => opt.id === activeSmartFinderPerk)) {
-    const firstAvailable = smartPerkOptions.find(opt => (perkCounts[opt.id] || 0) > 0);
-    activeSmartFinderPerk = firstAvailable ? firstAvailable.id : smartPerkOptions[0].id;
+  // Only show benefits with available count > 0
+  const availablePerkOptions = smartPerkOptions.filter(opt => (perkCounts[opt.id] || 0) > 0);
+
+  if (availablePerkOptions.length === 0) {
+    perksWrap.innerHTML = '';
+    container.innerHTML = '<div style="grid-column: 1 / -1; padding: 20px; text-align: center; color: var(--text-secondary); font-size: 13px; background: var(--elevated); border-radius: var(--radius-md);">🎉 All configured benefits have been claimed for this period!</div>';
+    if (badgeEl) badgeEl.textContent = '0 Ready Now';
+    return;
   }
 
-  // 2. Render Perk selector pills
-  perksWrap.innerHTML = smartPerkOptions.map(opt => {
+  // Default to first perk with available quota if current active perk is invalid, unset, or exhausted
+  if (!activeSmartFinderPerk || !availablePerkOptions.some(opt => opt.id === activeSmartFinderPerk)) {
+    activeSmartFinderPerk = availablePerkOptions[0].id;
+  }
+
+  // 2. Render Perk selector pills (only benefits with count > 0)
+  perksWrap.innerHTML = availablePerkOptions.map(opt => {
     const isActive = (activeSmartFinderPerk === opt.id);
     const cnt = perkCounts[opt.id] || 0;
     return `
@@ -6474,7 +6928,7 @@ function renderSmartRedemptionAssistant() {
   });
 
   // 3. For active perk, collect and rank cards
-  const activeOpt = smartPerkOptions.find(opt => opt.id === activeSmartFinderPerk) || smartPerkOptions[0];
+  const activeOpt = availablePerkOptions.find(opt => opt.id === activeSmartFinderPerk) || availablePerkOptions[0];
   const readyCards = [];
   const coolingCards = [];
 
@@ -6564,6 +7018,375 @@ function renderSmartRedemptionAssistant() {
       </div>
     `;
   }).join('');
+}
+
+function scheduleClaimBenefit(cardId, benefitId, brandName) {
+  smartClaimBenefit(cardId, benefitId, brandName);
+}
+
+function copyClaimDetails(cardId, benefitId, brandName) {
+  const card = getCardById(cardId);
+  if (!card) return;
+  const variant = getVariantById(card.variantId);
+  const benefit = variant ? resolveVariantBenefit(variant, benefitId, brandName) : null;
+  const brand = brandName || (benefit ? benefit.brand : '') || 'Perk';
+  const text = `Card: ${card.nickname} (••••${card.last4})\nAccount: ${card.account || 'None'}\nPerk: ${brand}\nBank: ${variant ? variant.bank : ''}`;
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast(`Copied details for ${card.nickname} (••••${card.last4})! 📋`, 'info');
+    }).catch(() => {
+      showToast(`Card ••••${card.last4} (${brand})`, 'info');
+    });
+  } else {
+    showToast(`Account: ${card.account || 'None'} | Card ••••${card.last4}`, 'info');
+  }
+}
+
+let activeSchedulerTab = 'today';
+let activeSchedulerAccountFilter = '';
+
+function renderOptimalClaimScheduler() {
+  const container = document.getElementById('claim-scheduler-section');
+  if (!container) return;
+
+  const now = new Date();
+  const qWindow = getCurrentPeriodWindow('quarterly', now);
+  const msInDay = 86400000;
+  const daysRemainingInCycle = Math.max(1, Math.ceil((qWindow.end.getTime() - now.getTime()) / msInDay));
+
+  const activeCards = (DB.cards || []).filter(c => c.active);
+
+  // 1. Gather all pending claims
+  const allPendingClaims = [];
+  activeCards.forEach(card => {
+    const variant = getVariantById(card.variantId);
+    if (!variant) return;
+
+    (variant.benefits || []).forEach(b => {
+      const isUnav = isPerkUnavailable(card.id, b.id, b.periodType, now, b.brand);
+      if (isUnav) return;
+
+      const used = getUsedCount(card.id, b.id, b.periodType, now, b.brand);
+      const remaining = Math.max(0, b.quota - used);
+      if (remaining <= 0) return;
+
+      const isDirect = isDirectActivationUsage({ brand: b.brand, benefitId: b.id });
+      let priorityScore = 10;
+      if (b.periodType === 'monthly') priorityScore += 50; // Monthly perks reset fast
+      const brandLower = (b.brand || '').toLowerCase();
+      if (brandLower.includes('amazon')) priorityScore += 35;
+      else if (brandLower.includes('myntra')) priorityScore += 30;
+      else if (brandLower.includes('swiggy') || brandLower.includes('zomato')) priorityScore += 25;
+      else if (brandLower.includes('bookmyshow') || brandLower.includes('movie')) priorityScore += 20;
+
+      for (let i = 0; i < remaining; i++) {
+        allPendingClaims.push({
+          card,
+          variant,
+          benefit: b,
+          brand: b.brand || getBenefitDisplayName(b),
+          accountKey: card.account ? card.account.trim().toLowerCase() : ('card_' + card.id),
+          accountDisplay: card.account ? card.account.trim() : (card.nickname || `Card ••••${card.last4}`),
+          isDirect,
+          priorityScore
+        });
+      }
+    });
+  });
+
+  // Group portal claims by account
+  const accountGroups = new Map();
+  allPendingClaims.forEach(claim => {
+    const acc = claim.accountKey;
+    if (!accountGroups.has(acc)) {
+      accountGroups.set(acc, {
+        accountKey: acc,
+        accountDisplay: claim.accountDisplay,
+        cooldown: getAccountCooldownStatus(acc.startsWith('card_') ? '' : acc),
+        claims: []
+      });
+    }
+    accountGroups.get(acc).claims.push(claim);
+  });
+
+  // Sort claims in each account by priorityScore descending
+  accountGroups.forEach(grp => {
+    grp.claims.sort((a, b) => b.priorityScore - a.priorityScore);
+  });
+
+  // Bottleneck calculations
+  const totalPending = allPendingClaims.length;
+  let maxBottleneckDays = 0;
+  accountGroups.forEach(grp => {
+    const portalClaimsCount = grp.claims.filter(c => !c.isDirect).length;
+    if (portalClaimsCount > maxBottleneckDays) {
+      maxBottleneckDays = portalClaimsCount;
+    }
+  });
+
+  const safetyBufferDays = daysRemainingInCycle - maxBottleneckDays;
+
+  // Header badges & metrics
+  const badgeEl = document.getElementById('scheduler-health-badge');
+  if (badgeEl) {
+    if (totalPending === 0) {
+      badgeEl.className = 'badge badge-success';
+      badgeEl.textContent = '🎉 All Benefits Claimed';
+    } else if (safetyBufferDays >= 10) {
+      badgeEl.className = 'badge badge-success';
+      badgeEl.textContent = '🟢 Optimal (Safe)';
+    } else if (safetyBufferDays >= 0) {
+      badgeEl.className = 'badge badge-warning';
+      badgeEl.textContent = `🟡 Tight (${safetyBufferDays}d Buffer)`;
+    } else {
+      badgeEl.className = 'badge badge-danger';
+      badgeEl.textContent = `🔴 Bottleneck Risk (${Math.abs(safetyBufferDays)}d Deficit)`;
+    }
+  }
+
+  const elPending = document.getElementById('sched-metric-pending');
+  const elDaysNeeded = document.getElementById('sched-metric-days-needed');
+  const elCycleDays = document.getElementById('sched-metric-cycle-days');
+  const elBuffer = document.getElementById('sched-metric-buffer');
+
+  if (elPending) elPending.textContent = totalPending;
+  if (elDaysNeeded) elDaysNeeded.textContent = `${maxBottleneckDays}d`;
+  if (elCycleDays) elCycleDays.textContent = `${daysRemainingInCycle}d`;
+  if (elBuffer) {
+    elBuffer.textContent = (safetyBufferDays >= 0 ? '+' : '') + `${safetyBufferDays}d`;
+    elBuffer.className = 'sched-metric-num ' + (safetyBufferDays >= 10 ? 'success' : (safetyBufferDays >= 0 ? 'warning' : 'danger'));
+  }
+
+  // Populate Account Filter dropdown
+  const filterSelect = document.getElementById('sched-filter-account');
+  if (filterSelect) {
+    const currentVal = activeSchedulerAccountFilter;
+    const sortedAccounts = Array.from(accountGroups.values()).sort((a, b) => a.accountDisplay.localeCompare(b.accountDisplay));
+    filterSelect.innerHTML = `<option value="">All Accounts (${sortedAccounts.length})</option>` +
+      sortedAccounts.map(g => `<option value="${esc(g.accountKey)}"${g.accountKey === currentVal ? ' selected' : ''}>${esc(g.accountDisplay)} (${g.claims.length} left)</option>`).join('');
+  }
+
+  // Filter groups if account filter is active
+  const filteredGroups = activeSchedulerAccountFilter
+    ? Array.from(accountGroups.values()).filter(g => g.accountKey === activeSchedulerAccountFilter)
+    : Array.from(accountGroups.values());
+
+  // -------------------------------------------------------------
+  // TAB 1: Today's Claim Queue
+  // -------------------------------------------------------------
+  const todayContainer = document.getElementById('sched-today-grid');
+  const todayCountEl = document.getElementById('sched-today-count');
+  const todayQueue = [];
+
+  filteredGroups.forEach(grp => {
+    // 1. Direct activation claims (available now regardless of cooldown)
+    const directClaims = grp.claims.filter(c => c.isDirect);
+    directClaims.forEach(dc => {
+      todayQueue.push({
+        claim: dc,
+        statusType: 'direct',
+        statusLabel: '⚡ Zero Cooldown',
+        statusBadgeClass: 'badge-secondary',
+        cooldown: grp.cooldown
+      });
+    });
+
+    // 2. RuPay portal claims: pick top claim for this account
+    const portalClaims = grp.claims.filter(c => !c.isDirect);
+    if (portalClaims.length > 0) {
+      const topClaim = portalClaims[0];
+      const isReady = grp.cooldown.isAvailable;
+      todayQueue.push({
+        claim: topClaim,
+        statusType: isReady ? 'ready' : 'cooling',
+        statusLabel: isReady ? '🟢 Ready to Claim' : `⏳ Ready in ${grp.cooldown.formattedTimeLeft}`,
+        statusBadgeClass: isReady ? 'badge-success' : 'badge-warning',
+        cooldown: grp.cooldown
+      });
+    }
+  });
+
+  // Sort today queue: ready first, then direct, then cooling
+  todayQueue.sort((a, b) => {
+    const order = { ready: 0, direct: 1, cooling: 2 };
+    return order[a.statusType] - order[b.statusType];
+  });
+
+  if (todayCountEl) todayCountEl.textContent = todayQueue.filter(x => x.statusType === 'ready' || x.statusType === 'direct').length;
+
+  if (todayContainer) {
+    if (todayQueue.length === 0) {
+      todayContainer.innerHTML = `
+        <div style="grid-column: 1 / -1; padding: 24px; text-align: center; color: var(--text-secondary); background: var(--elevated); border-radius: var(--radius-md);">
+          🎉 No pending claims for ${activeSchedulerAccountFilter ? 'this account' : 'today'}! Everything is up to date.
+        </div>
+      `;
+    } else {
+      todayContainer.innerHTML = todayQueue.map(item => {
+        const { claim, statusType, statusLabel, statusBadgeClass, cooldown } = item;
+        const { card, variant, benefit, brand } = claim;
+        const bankName = card.bank || (variant ? variant.bank : '');
+        const targetBrand = brand || benefit.brand || '';
+
+        return `
+          <div class="sched-card-item ${statusType}">
+            <div class="sched-card-top">
+              <div>
+                <div class="sched-card-title">${esc(card.nickname)}</div>
+                <div class="sched-card-sub">${esc(bankName)} · <span style="font-family:var(--font-mono, monospace);">••••${esc(card.last4)}</span></div>
+              </div>
+              <span class="badge ${statusBadgeClass}" style="font-size:10px;padding:3px 7px;">${statusLabel}</span>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--text-secondary);">
+                📧 <span style="font-family:var(--font-mono, monospace);">${esc(claim.accountDisplay)}</span>
+              </div>
+              <div class="sched-perk-badge">
+                <span>${benefitIcon(benefit.type)}</span>
+                <span>${esc(getBenefitDisplayName(benefit))}${brand ? ': ' + esc(brand) : ''}</span>
+              </div>
+            </div>
+            <div class="sched-actions-row">
+              <button type="button" class="sched-btn-claim ${statusType}" onclick="scheduleClaimBenefit('${card.id}', '${benefit.id}', '${esc(targetBrand)}')">
+                <span>⚡</span> <span>${statusType === 'cooling' ? 'Claim (Override)' : 'Claim Now'}</span>
+              </button>
+              <button type="button" class="sched-btn-copy" onclick="copyClaimDetails('${card.id}', '${benefit.id}', '${esc(targetBrand)}')" title="Copy card & account info for RuPay Portal">
+                <span>📋</span> Copy
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  // -------------------------------------------------------------
+  // TAB 2: 7-Day Claim Roadmap Timeline
+  // -------------------------------------------------------------
+  const roadmapContainer = document.getElementById('sched-roadmap-grid');
+  if (roadmapContainer) {
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const roadmapDays = [];
+
+    for (let dayIdx = 0; dayIdx < 7; dayIdx++) {
+      const targetDate = new Date(now.getTime() + dayIdx * msInDay);
+      const isToday = (dayIdx === 0);
+      const isTomorrow = (dayIdx === 1);
+      const label = isToday ? 'Today' : (isTomorrow ? 'Tomorrow' : `${dayNames[targetDate.getDay()]}, ${targetDate.getDate()} ${monthNames[targetDate.getMonth()]}`);
+
+      const scheduledItems = [];
+      filteredGroups.forEach(grp => {
+        const portalClaims = grp.claims.filter(c => !c.isDirect);
+        const initialOffset = grp.cooldown.isAvailable ? 0 : 1;
+        const claimIndex = dayIdx - initialOffset;
+        if (claimIndex >= 0 && claimIndex < portalClaims.length) {
+          scheduledItems.push({
+            claim: portalClaims[claimIndex],
+            accountDisplay: grp.accountDisplay
+          });
+        }
+      });
+
+      roadmapDays.push({
+        dayIdx,
+        label,
+        isToday,
+        items: scheduledItems
+      });
+    }
+
+    roadmapContainer.innerHTML = roadmapDays.map(rd => {
+      return `
+        <div class="sched-day-block">
+          <div class="sched-day-header">
+            <div class="sched-day-title">
+              <span>📅 ${rd.label}</span>
+              ${rd.isToday ? '<span class="badge badge-primary" style="font-size:10px;padding:2px 6px;">Current Day</span>' : ''}
+            </div>
+            <span style="font-size:11px;color:var(--text-secondary);">${rd.items.length} card claim${rd.items.length === 1 ? '' : 's'} scheduled</span>
+          </div>
+          ${rd.items.length === 0
+            ? '<div style="font-size:12px;color:var(--text-secondary);padding:6px 0;">No portal claims needed on this day.</div>'
+            : `<div class="sched-day-items">
+                ${rd.items.map(item => {
+                  const { card, variant, benefit, brand } = item.claim;
+                  const bankName = card.bank || (variant ? variant.bank : '');
+                  const targetBrand = brand || benefit.brand || '';
+                  return `
+                    <div class="sched-mini-card">
+                      <div>
+                        <strong style="color:var(--text-primary);">${esc(card.nickname)}</strong>
+                        <span style="color:var(--text-secondary);font-size:11px;">(••••${esc(card.last4)})</span>
+                        <div style="font-size:11px;color:var(--primary-light);font-weight:600;margin-top:2px;">
+                          ${benefitIcon(benefit.type)} ${esc(brand || getBenefitDisplayName(benefit))}
+                        </div>
+                      </div>
+                      <button type="button" class="btn btn-secondary btn-xs" onclick="scheduleClaimBenefit('${card.id}', '${benefit.id}', '${esc(targetBrand)}')" style="font-weight:700;padding:3px 8px;font-size:11px;">
+                        ⚡ Claim
+                      </button>
+                    </div>
+                  `;
+                }).join('')}
+              </div>`
+          }
+        </div>
+      `;
+    }).join('');
+  }
+
+  // -------------------------------------------------------------
+  // TAB 3: Account Capacity & Bottlenecks
+  // -------------------------------------------------------------
+  const capacityContainer = document.getElementById('sched-capacity-grid');
+  if (capacityContainer) {
+    if (filteredGroups.length === 0) {
+      capacityContainer.innerHTML = `
+        <div style="grid-column: 1 / -1; padding: 24px; text-align: center; color: var(--text-secondary); background: var(--elevated); border-radius: var(--radius-md);">
+          No accounts found.
+        </div>
+      `;
+    } else {
+      capacityContainer.innerHTML = filteredGroups.map(grp => {
+        const portalCount = grp.claims.filter(c => !c.isDirect).length;
+        const directCount = grp.claims.filter(c => c.isDirect).length;
+        const pctUsed = Math.min(100, Math.round((portalCount / daysRemainingInCycle) * 100));
+        const buffer = daysRemainingInCycle - portalCount;
+        const isCritical = buffer < 0;
+        const isTight = buffer >= 0 && buffer < 10;
+        const barColor = isCritical ? 'var(--danger)' : (isTight ? 'var(--warning)' : 'var(--success)');
+
+        return `
+          <div class="sched-capacity-card">
+            <div class="sched-cap-header">
+              <span class="sched-cap-account">📧 ${esc(grp.accountDisplay)}</span>
+              ${grp.cooldown.isAvailable
+                ? '<span class="badge badge-success" style="font-size:10px;">🟢 Off Cooldown</span>'
+                : `<span class="badge badge-warning" style="font-size:10px;">⏳ ${grp.cooldown.formattedTimeLeft}</span>`
+              }
+            </div>
+            <div class="sched-cap-bar-wrap">
+              <div class="sched-cap-bar-fill" style="width: ${pctUsed}%; background: ${barColor};"></div>
+            </div>
+            <div class="sched-cap-stats">
+              <span>Claims: <strong>${portalCount} portal</strong>${directCount > 0 ? ` + ${directCount} direct` : ''}</span>
+              <span>Capacity: <strong>${pctUsed}%</strong> of cycle</span>
+            </div>
+            <div class="sched-cap-tip">
+              ${isCritical
+                ? `<strong style="color:var(--danger)">⚠️ Bottleneck Warning:</strong> ${portalCount} claims required with only ${daysRemainingInCycle} days left! Reassign some cards to an alternate email.`
+                : (isTight
+                    ? `<strong style="color:var(--warning)">⚠️ Tight Buffer:</strong> Claim regularly to avoid forfeiting benefits before cycle end (${buffer} days margin).`
+                    : `<strong style="color:var(--success)">✅ Safe Margin:</strong> Plenty of time! You have a comfortable ${buffer}-day safety cushion.`
+                  )
+              }
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
 }
 
 function updateDashboardFilterBanner() {
@@ -6956,6 +7779,7 @@ function renderDashboard() {
   renderCycleExpiryWidget();
   renderDashboardVoucherExpiryAlert();
   renderSmartRedemptionAssistant();
+  renderOptimalClaimScheduler();
   renderAccountCooldowns();
   renderUnclaimedBenefits();
   renderBankFilterPills();
@@ -9700,7 +10524,7 @@ function collectBenefitRows() {
 }
 
 
-function saveVariant() {
+async function saveVariant() {
   const editId         = document.getElementById('variant-edit-id').value;
   const bank           = document.getElementById('variant-bank').value.trim();
   const name           = document.getElementById('variant-name').value.trim();
@@ -9719,9 +10543,11 @@ function saveVariant() {
       });
     }
     updateVariant(editId, { bank, name, networkSubtype, benefits });
+    await saveDB();
     showToast('Variant updated ✅', 'success');
   } else {
     addVariant({ bank, name, networkSubtype, benefits });
+    await saveDB();
     showToast('Variant added ✅', 'success');
   }
 
@@ -9777,7 +10603,7 @@ function openEditCardModal(id) {
   openModal('modal-card');
 }
 
-function saveCard() {
+async function saveCard() {
   const editId    = document.getElementById('card-edit-id').value;
   const variantId = document.getElementById('card-variant').value;
   const bank      = (document.getElementById('card-bank').value || '').trim();
@@ -9795,13 +10621,19 @@ function saveCard() {
   if (editId) {
     const existingCard = getCardById(editId);
     const oldVariantId = existingCard ? existingCard.variantId : null;
-    updateCard(editId, { variantId, bank, nickname, last4, account, issueDate, active });
+    const i = DB.cards.findIndex(c => c.id === editId);
+    if (i !== -1) {
+      DB.cards[i] = normalizeCardObject({ ...DB.cards[i], variantId, bank, nickname, last4, account, issueDate, active });
+    }
     if (oldVariantId && oldVariantId !== variantId) {
       healUsages({ silent: true });
     }
+    await saveDB();
     showToast('Card updated ✅', 'success');
   } else {
-    addCard({ variantId, bank, nickname, last4, account, issueDate, active });
+    const c = normalizeCardObject({ id: genId(), variantId, bank, nickname, last4, account, issueDate, active });
+    DB.cards.push(c);
+    await saveDB();
     showToast('Card added ✅', 'success');
   }
 
@@ -13824,6 +14656,30 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target === document.getElementById('confirm-overlay')) closeConfirm();
   });
 
+  /* ── Claim Scheduler Navigation & Account Filter ── */
+  document.querySelectorAll('.sched-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.sched-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const tab = btn.dataset.schedTab;
+      activeSchedulerTab = tab;
+      document.querySelectorAll('.sched-panel').forEach(p => p.classList.remove('active'));
+      const targetPanel = document.getElementById('sched-panel-' + tab);
+      if (targetPanel) targetPanel.classList.add('active');
+    });
+  });
+
+  const schedAccountSelect = document.getElementById('sched-filter-account');
+  if (schedAccountSelect) {
+    schedAccountSelect.addEventListener('change', e => {
+      activeSchedulerAccountFilter = e.target.value;
+      renderOptimalClaimScheduler();
+    });
+  }
+
+  /* ── Ensure All Service Workers & Caches are Purged (No Caching) ── */
+  purgeAllCachesAndServiceWorkers();
+
   /* ── Bootstrap ── */
   loadDB();
   populateCardAccountDatalist();
@@ -13838,11 +14694,31 @@ document.addEventListener('DOMContentLoaded', () => {
       renderAccountCooldowns();
       renderCycleExpiryWidget();
       renderSmartRedemptionAssistant();
+      renderOptimalClaimScheduler();
       renderDashboardCards();
       renderUnclaimedBenefits();
     }
   }, 60000);
 });
+
+/* ==============================================================
+   SECTION 10: CACHE PURGE & SERVICE WORKER REMOVAL
+   ============================================================== */
+
+function purgeAllCachesAndServiceWorkers() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+      for (const reg of registrations) {
+        reg.unregister();
+      }
+    }).catch(() => {});
+  }
+  if ('caches' in window) {
+    caches.keys().then(keys => {
+      keys.forEach(k => caches.delete(k));
+    }).catch(() => {});
+  }
+}
 </script>
 </body>
 </html>
