@@ -1055,7 +1055,9 @@
         gap: 8px;
         margin-bottom: 12px;
       }
-      .history-filters #filter-card {
+      .history-filters #filter-card,
+      .history-filters .history-date-filter-group,
+      .history-filters #history-filter-count-badge {
         grid-column: 1 / -1;
       }
       .filter-select {
@@ -3841,6 +3843,12 @@
         <div class="page-subtitle">All logged RuPay benefits, coupons, used status, and buyers</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-history-copy-tsv" style="display:inline-flex;align-items:center;gap:6px;font-weight:600;background:rgba(16,185,129,0.15);color:#34d399;border-color:rgba(16,185,129,0.35);" title="Copy filtered redemptions to clipboard formatted for pasting directly into Google Sheet columns A:M">
+          <span>📋</span> Copy for Sheet
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-history-export-csv" style="display:inline-flex;align-items:center;gap:6px;font-weight:600;background:rgba(16,185,129,0.1);color:var(--success);border-color:rgba(16,185,129,0.25);" title="Export filtered redemptions as CSV matching Google Sheet columns A:M">
+          <span>⬇</span> Export Sheet CSV
+        </button>
         <button type="button" class="btn btn-secondary btn-sm" id="btn-history-sms-log" style="display:inline-flex;align-items:center;gap:6px;font-weight:600;background:rgba(124,58,237,0.12);color:var(--primary-light);border-color:rgba(124,58,237,0.3);">
           <span>⚡</span> Quick Log from SMS
         </button>
@@ -3849,7 +3857,7 @@
         </button>
       </div>
     </div>
-    <div class="history-filters">
+    <div class="history-filters" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center;">
       <select class="filter-select" id="filter-card"><option value="">All Cards</option></select>
       <select class="filter-select" id="filter-benefit-type"><option value="">All Benefit Types</option></select>
       <select class="filter-select" id="filter-cycle">
@@ -3867,6 +3875,18 @@
         <option value="EMPTY">— Not Used / Available</option>
       </select>
       <select class="filter-select" id="filter-month"><option value="">All Months</option></select>
+
+      <div class="history-date-filter-group" style="display:inline-flex;align-items:center;gap:5px;background:var(--card-surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px 8px;">
+        <span style="font-size:11px;color:var(--text-secondary);font-weight:600;">📅 Date:</span>
+        <input type="date" id="filter-date-from" style="background:var(--elevated);border:1px solid var(--border);border-radius:4px;color:var(--text-primary);font-size:11px;padding:3px 6px;outline:none;" title="Start Date" />
+        <span style="font-size:11px;color:var(--text-secondary);">➔</span>
+        <input type="date" id="filter-date-to" style="background:var(--elevated);border:1px solid var(--border);border-radius:4px;color:var(--text-primary);font-size:11px;padding:3px 6px;outline:none;" title="End Date" />
+        <button type="button" class="btn btn-secondary btn-xs" id="btn-quick-last7" style="padding:2px 6px;font-size:10px;font-weight:600;" title="Filter last 7 days">7D</button>
+        <button type="button" class="btn btn-secondary btn-xs" id="btn-quick-thisweek" style="padding:2px 6px;font-size:10px;font-weight:600;" title="Filter this week">Week</button>
+        <button type="button" class="btn btn-secondary btn-xs" id="btn-quick-cleardates" style="padding:2px 5px;font-size:10px;color:var(--text-secondary);" title="Clear date range">✕</button>
+      </div>
+
+      <div id="history-filter-count-badge" style="font-size:11px;color:var(--text-secondary);margin-left:auto;font-weight:600;padding:4px 0;"></div>
     </div>
     <div class="table-wrap" id="history-table-wrap">
       <table>
@@ -4511,6 +4531,12 @@
             <button type="button" class="btn btn-secondary btn-sm" id="btn-update-all-csv" style="display:none;background:rgba(124,58,237,0.18);color:var(--primary-light);border-color:rgba(124,58,237,0.3);">
               🔄 Apply All Updates (<span id="btn-update-mod-count">0</span>)
             </button>
+            <button type="button" class="btn btn-primary btn-sm" id="btn-copy-merged-fm" style="background:#10b981;border-color:#10b981;font-weight:700;" title="Copy Columns F:M for all rows to clipboard. Paste into cell F2 in Google Sheet with Cmd+Shift+V to preserve 100% of colors, alignments, and conditional formatting!">
+              📋 Copy Merged F:M (Preserves Colors)
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-export-merged-csv" style="background:rgba(16,185,129,0.15);color:var(--success);border-color:rgba(16,185,129,0.35);font-weight:600;" title="Download an updated version of your uploaded sheet CSV with all app redemptions merged into the exact matching card rows">
+              ⬇ Download Merged Sheet CSV
+            </button>
             <button type="button" class="btn btn-secondary btn-sm" id="btn-export-diff-report" title="Export comparison as CSV">
               📥 Export Diff CSV
             </button>
@@ -4753,6 +4779,17 @@ function normalizeBrandKey(brandName) {
     if (clean.includes(alias) || alias.includes(clean)) return target;
   }
   return String(brandName).trim();
+}
+
+function cleanUsageNote(note) {
+  if (!note) return '';
+  let str = String(note).trim();
+  if (/^imported from/i.test(str)) return '';
+  str = str.replace(/\bimported from\s*q[1-4]\b/gi, '').trim();
+  str = str.replace(/\bimported from\s*\d{4}\b/gi, '').trim();
+  str = str.replace(/\(imported from[^\)]*\)/gi, '').trim();
+  str = str.replace(/,\s*,/g, ',').replace(/^,\s*/, '').replace(/,\s*$/, '').trim();
+  return str;
 }
 
 function getBrandPricePresets() {
@@ -5494,9 +5531,9 @@ function mergeDatasets(fileData, currentDB) {
       }
 
       // Priority 4: Benefit metadata edits
-      if (lu.notes && (!existing.notes || existing.notes === 'Imported from Q4')) {
-        merged.notes = lu.notes;
-      }
+      const cleanLuNotes = cleanUsageNote(lu.notes);
+      const cleanExNotes = cleanUsageNote(existing.notes);
+      merged.notes = cleanLuNotes || cleanExNotes || '';
       if (lu.redeemStatus && !existing.redeemStatus) {
         merged.redeemStatus = lu.redeemStatus;
       }
@@ -5959,8 +5996,13 @@ function healDatasetUsages(ds) {
   }
 
   let healedCount = 0;
-  ds.usages.forEach(u => {
-    if (!u || !u.cardId) return;
+  (ds.usages || []).forEach(u => {
+    if (!u) return;
+    if (u.notes && /^imported from/i.test(String(u.notes).trim())) {
+      u.notes = '';
+      healedCount++;
+    }
+    if (!u.cardId) return;
     const card = ds.cards.find(c => c.id === u.cardId);
     if (!card) return;
     const variant = (ds.variants || []).find(v => v.id === card.variantId);
@@ -8072,14 +8114,14 @@ function renderCards() {
 }
 
 /* ---- 4d. History ---- */
-function renderHistory() {
-  populateHistoryFilters();
-
-  const filterCard   = document.getElementById('filter-card').value;
-  const filterType   = document.getElementById('filter-benefit-type').value;
-  const filterCycle  = document.getElementById('filter-cycle').value;
-  const filterCoupon = document.getElementById('filter-coupon-used').value;
-  const filterMonth  = document.getElementById('filter-month').value;
+function getFilteredHistoryUsages() {
+  const filterCard   = document.getElementById('filter-card') ? document.getElementById('filter-card').value : '';
+  const filterType   = document.getElementById('filter-benefit-type') ? document.getElementById('filter-benefit-type').value : '';
+  const filterCycle  = document.getElementById('filter-cycle') ? document.getElementById('filter-cycle').value : '';
+  const filterCoupon = document.getElementById('filter-coupon-used') ? document.getElementById('filter-coupon-used').value : '';
+  const filterMonth  = document.getElementById('filter-month') ? document.getElementById('filter-month').value : '';
+  const filterDateFrom = document.getElementById('filter-date-from') ? document.getElementById('filter-date-from').value : '';
+  const filterDateTo   = document.getElementById('filter-date-to') ? document.getElementById('filter-date-to').value : '';
 
   let usages = [...DB.usages];
 
@@ -8101,8 +8143,121 @@ function renderHistory() {
     }
   }
   if (filterMonth) usages = usages.filter(u => u.date && u.date.startsWith(filterMonth));
+  if (filterDateFrom) usages = usages.filter(u => (u.date || '').slice(0, 10) >= filterDateFrom);
+  if (filterDateTo)   usages = usages.filter(u => (u.date || '').slice(0, 10) <= filterDateTo);
 
   usages.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  return usages;
+}
+
+function formatUsageForGSheet(u) {
+  const card = getCardById(u.cardId);
+  const variant = card ? getVariantById(card.variantId) : null;
+  const benefit = getBenefitForUsage(u);
+
+  let benName = benefit ? getBenefitDisplayName(benefit) : 'Perk';
+  if (benName === 'Online Groceries') benName = 'Groceries';
+
+  const account = u.account || (card && card.account) || '';
+  const variantName = variant ? (variant.networkSubtype || variant.name || '') : '';
+  const cardName = card ? card.nickname : '';
+  const brand = u.brand || (benefit && benefit.brand) || '';
+  const redeemStatus = u.redeemStatus || 'Redeemed';
+  const redeemDate = formatGSheetDate(u.date);
+  const bookingId = u.bookingId || '';
+  const couponCode = u.couponCode || '';
+  const couponUsed = u.couponUsed || '';
+  const buyer = u.buyer || '';
+  const sellDate = formatGSheetDate(u.sellDate);
+  const sellStatus = cleanUsageNote(u.notes);
+
+  return [
+    account,
+    variantName,
+    cardName,
+    benName,
+    brand,
+    redeemStatus,
+    redeemDate,
+    bookingId,
+    couponCode,
+    couponUsed,
+    buyer,
+    sellDate,
+    sellStatus
+  ];
+}
+
+function exportHistoryToGSheetCSV() {
+  const usages = getFilteredHistoryUsages();
+  if (usages.length === 0) {
+    showToast('No redemptions match current filters to export', 'info');
+    return;
+  }
+
+  const headers = ['Account', 'Variant', 'Card', 'Benefit', 'Brand', 'Redeem Status', 'Redeem Date', 'Booking ID', 'Coupon Code', 'Coupon Used', 'Buyer', 'Sell Date', 'Sell Status'];
+  const lines = [headers.map(h => `"${h}"`).join(',')];
+
+  usages.forEach(u => {
+    const row = formatUsageForGSheet(u);
+    lines.push(row.map(val => `"${String(val || '').replace(/"/g, '""')}"`).join(','));
+  });
+
+  const fromVal = document.getElementById('filter-date-from') ? document.getElementById('filter-date-from').value : '';
+  const toVal = document.getElementById('filter-date-to') ? document.getElementById('filter-date-to').value : '';
+  const dateSuffix = fromVal && toVal ? `${fromVal}_to_${toVal}` : (toVal || fromVal || todayISO());
+  const filename = `rupay-redemptions-${dateSuffix}.csv`;
+
+  const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast(`Exported ${usages.length} redemptions to ${filename}! 📥`, 'success');
+}
+
+async function copyHistoryForGSheet() {
+  const usages = getFilteredHistoryUsages();
+  if (usages.length === 0) {
+    showToast('No redemptions match current filters to copy', 'info');
+    return;
+  }
+
+  const rows = usages.map(u => {
+    const row = formatUsageForGSheet(u);
+    return row.map(val => String(val || '').replace(/[\t\r\n]/g, ' ')).join('\t');
+  });
+
+  const tsv = rows.join('\n');
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(tsv);
+      showToast(`Copied ${usages.length} rows! Paste into Column A in Google Sheets 📋`, 'success');
+    } else {
+      fallbackCopy(tsv, () => {
+        showToast(`Copied ${usages.length} rows! Paste into Column A in Google Sheets 📋`, 'success');
+      });
+    }
+  } catch (err) {
+    fallbackCopy(tsv, () => {
+      showToast(`Copied ${usages.length} rows! Paste into Column A in Google Sheets 📋`, 'success');
+    });
+  }
+}
+
+function renderHistory() {
+  populateHistoryFilters();
+
+  const usages = getFilteredHistoryUsages();
+
+  const countBadge = document.getElementById('history-filter-count-badge');
+  if (countBadge) {
+    countBadge.textContent = `${usages.length} item${usages.length === 1 ? '' : 's'}`;
+  }
 
   const tableWrap  = document.getElementById('history-table-wrap');
   const emptyState = document.getElementById('history-empty');
@@ -8175,7 +8330,8 @@ function renderHistory() {
       </td>
       <td>${u.sellDate ? fmtISO(u.sellDate) : '—'}</td>
       <td>
-        <div style="display:flex;gap:4px">
+        <div style="display:flex;gap:4px;align-items:center;">
+          <button type="button" class="btn btn-secondary btn-xs" onclick="copyUsageRowGSheet('${u.id}')" title="Copy Columns F:M (Redeem Status to Sell Status) to paste into Column F of this card in Google Sheet" style="color:#34d399;border-color:rgba(16,185,129,0.3);font-size:10px;font-weight:600;padding:2px 5px;">📋 F:M</button>
           <button class="btn btn-secondary btn-xs edit-usage-btn" data-id="${u.id}" title="Edit / Add Coupon Code">✏️</button>
           <button class="btn btn-danger btn-xs delete-usage-btn" data-id="${u.id}" title="Delete Log">🗑</button>
         </div>
@@ -8183,6 +8339,29 @@ function renderHistory() {
     `;
     tbody.appendChild(tr);
   });
+}
+
+function copyUsageRowGSheet(usageId) {
+  const u = DB.usages.find(x => x.id === usageId);
+  if (!u) return;
+  const redeemStatus = u.redeemStatus || 'Redeemed';
+  const redeemDate = formatGSheetDate(u.date);
+  const bookingId = u.bookingId || '';
+  const couponCode = u.couponCode || '';
+  const couponUsed = u.couponUsed || '';
+  const buyer = u.buyer || '';
+  const sellDate = formatGSheetDate(u.sellDate);
+  const sellStatus = cleanUsageNote(u.notes);
+
+  // 8 tab-separated values matching Columns F through M (Redeem Status to Sell Status)
+  const cols = [redeemStatus, redeemDate, bookingId, couponCode, couponUsed, buyer, sellDate, sellStatus];
+  const tsv = cols.map(c => String(c || '').replace(/[\t\r\n]/g, ' ')).join('\t');
+
+  const card = getCardById(u.cardId);
+  const cardName = card ? card.nickname : 'Card';
+  const brand = u.brand || 'Perk';
+
+  copyText(tsv, `Copied Cols F:M for ${cardName} (${brand})! Click Column F in Google Sheet & paste`);
 }
 
 function copyText(text, label = 'Copied to clipboard!') {
@@ -10167,7 +10346,7 @@ function openEditUsageModal(usageId) {
   if (priceInput) {
     priceInput.value = (u.price !== undefined && u.price !== null) ? u.price : (u.couponUsed === 'SOLD' ? getVoucherPrice(u) : '');
   }
-  document.getElementById('log-notes').value          = u.notes || '';
+  document.getElementById('log-notes').value          = cleanUsageNote(u.notes);
 
   // Voucher Validity & Expiry initialization
   const defaultValDays = getBrandPresetValidity(u.brand);
@@ -12118,14 +12297,58 @@ async function testGSheetConnection(silent = false) {
   }
 }
 
-function normalizeGSheetDate(val, fallbackYear = 2026) {
+function normalizeGSheetDate(val, fallbackYear = null) {
   if (!val || val === 'NA' || val === '-') return '';
   const str = String(val).trim();
   if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str;
-  const m3 = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (m3) return `${m3[3]}-${m3[2].padStart(2, '0')}-${m3[1].padStart(2, '0')}`;
+  const m3 = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if (m3) {
+    let yStr = m3[3];
+    if (yStr.length === 2) yStr = '20' + yStr;
+    return `${yStr}-${m3[2].padStart(2, '0')}-${m3[1].padStart(2, '0')}`;
+  }
   const m2 = str.match(/^(\d{1,2})\/(\d{1,2})$/);
-  if (m2) return `${fallbackYear}-${m2[2].padStart(2, '0')}-${m2[1].padStart(2, '0')}`;
+  if (m2) {
+    const yr = fallbackYear || (currentCSVDiffResult && currentCSVDiffResult.targetYear) || new Date().getFullYear();
+    return `${yr}-${m2[2].padStart(2, '0')}-${m2[1].padStart(2, '0')}`;
+  }
+  return str;
+}
+
+/**
+ * Format date for Google Sheet output in DD/MM (day/month) format without year.
+ * Preserves user's Google Sheet convention (e.g. "3/10", "24/10", "1/8").
+ */
+function formatGSheetDate(val) {
+  if (!val || isNA(val)) return '';
+  const str = String(val).trim();
+
+  // If already in D/M or DD/MM format (e.g. "3/10", "03/10", "24/10")
+  if (/^\d{1,2}\/\d{1,2}$/.test(str)) {
+    return str;
+  }
+
+  // DD/MM/YYYY or D/M/YYYY
+  const m3 = str.match(/^(\d{1,2})\/(\d{1,2})\/\d{2,4}$/);
+  if (m3) {
+    return `${parseInt(m3[1], 10)}/${parseInt(m3[2], 10)}`;
+  }
+
+  // ISO YYYY-MM-DD
+  const mIso = str.match(/^\d{4}-(\d{2})-(\d{2})/);
+  if (mIso) {
+    const month = parseInt(mIso[1], 10);
+    const day = parseInt(mIso[2], 10);
+    return `${day}/${month}`;
+  }
+
+  const d = parseDate(str);
+  if (!isNaN(d.getTime()) && d.getTime() > 0) {
+    const { month } = getISTYearMonth(d);
+    const day = d.getDate();
+    return `${day}/${month + 1}`;
+  }
+
   return str;
 }
 
@@ -12239,8 +12462,8 @@ async function syncRedemptionToGSheet(usage) {
     const variant = card ? getVariantById(card.variantId) : null;
     const benefit = getBenefitForUsage(usage);
 
-    let dateDisplay = usage.date ? usage.date.split('T')[0] : '';
-    let sellDateDisplay = usage.sellDate ? usage.sellDate.split('T')[0] : '';
+    let dateDisplay = formatGSheetDate(usage.date);
+    let sellDateDisplay = formatGSheetDate(usage.sellDate);
 
     const payload = {
       action: 'logRedemption',
@@ -12258,7 +12481,7 @@ async function syncRedemptionToGSheet(usage) {
         couponUsed: usage.couponUsed || '',
         buyer: usage.buyer || '',
         sellDate: sellDateDisplay,
-        sellStatus: usage.notes || ''
+        sellStatus: cleanUsageNote(usage.notes)
       }
     };
 
@@ -12521,7 +12744,7 @@ function parseGoogleSheetCSV(text) {
     parsedRows.push(rowObj);
   }
 
-  return { headers: rawHeaders, normalizedHeaders, rows: parsedRows };
+  return { headers: rawHeaders, normalizedHeaders, rows: parsedRows, rawLines: lines, headerRowIdx };
 }
 
 function resolveCardFromCSV(cardStr, bankStr) {
@@ -12554,11 +12777,116 @@ function resolveCardFromCSV(cardStr, bankStr) {
   return found || null;
 }
 
-function computeCSVDiff(parsedRows, cycleScope = currentCSVDiffCycleScope) {
+function detectCSVTargetQuarterAndYear(fileName = '', parsedRows = [], explicitScope = 'AUTO') {
+  // 1. Explicit scope if selected by user (e.g. "2026-Q4", "2027-Q1", or "Q4")
+  if (explicitScope && explicitScope !== 'AUTO' && explicitScope !== 'ALL') {
+    const scopeMatch = explicitScope.match(/^(?:(\d{4})-)?(Q[1-4])$/i);
+    if (scopeMatch) {
+      const explicitYear = scopeMatch[1] ? parseInt(scopeMatch[1], 10) : null;
+      const explicitQuarter = scopeMatch[2].toUpperCase();
+      if (explicitYear) {
+        return { year: explicitYear, quarter: explicitQuarter, source: 'EXPLICIT' };
+      }
+      const detected = detectCSVTargetQuarterAndYear(fileName, parsedRows, 'AUTO');
+      return { year: detected.year, quarter: explicitQuarter, source: 'EXPLICIT_QUARTER' };
+    }
+  }
+
+  let year = null;
+  let quarter = null;
+
+  // 2. Detect from filename (e.g. "RuPay Benefits - 2026 - Q4.csv", "2027-Q1.csv", "Q3 2026.csv")
+  if (fileName) {
+    const yMatch = fileName.match(/\b(20\d\d)\b/);
+    if (yMatch) year = parseInt(yMatch[1], 10);
+
+    const qMatch = fileName.match(/\b[Qq]([1-4])\b/);
+    if (qMatch) quarter = 'Q' + qMatch[1];
+  }
+
+  // 3. Detect from parsed rows
+  if (parsedRows && parsedRows.length > 0) {
+    if (!quarter) {
+      for (const row of parsedRows) {
+        if (row.cycle && /^Q[1-4]$/i.test(row.cycle.trim())) {
+          quarter = row.cycle.trim().toUpperCase();
+          break;
+        }
+      }
+    }
+
+    const dateCounts = {};
+    for (const row of parsedRows) {
+      const rawDate = row.redeemDate || row.date;
+      if (!rawDate || isNA(rawDate)) continue;
+
+      const fullDateMatch = String(rawDate).match(/\b(20\d\d)\b/);
+      const rowYear = fullDateMatch ? parseInt(fullDateMatch[1], 10) : null;
+
+      const norm = normalizeGSheetDate(rawDate, year || new Date().getFullYear());
+      const q = getCycleFromDate(norm);
+      if (q && q !== '—') {
+        const dObj = parseDate(norm);
+        if (!isNaN(dObj.getTime()) && dObj.getTime() > 0) {
+          const y = rowYear || getISTYearMonth(dObj).year;
+          const key = `${y}-${q}`;
+          dateCounts[key] = (dateCounts[key] || 0) + 1;
+        }
+      }
+    }
+
+    const sortedKeys = Object.keys(dateCounts).sort((a, b) => dateCounts[b] - dateCounts[a]);
+    if (sortedKeys.length > 0) {
+      const [bestYear, bestQ] = sortedKeys[0].split('-');
+      if (!year) year = parseInt(bestYear, 10);
+      if (!quarter) quarter = bestQ;
+    }
+  }
+
+  // 4. Default fallback: current year & current quarter
+  const now = new Date();
+  const currentQ = getCycleFromDate(now);
+  const currentY = now.getFullYear();
+
+  return {
+    year: year || currentY,
+    quarter: quarter || currentQ,
+    source: (year && quarter) ? 'DETECTED' : 'FALLBACK'
+  };
+}
+
+function getScopedUsagesForCSV(targetYear, targetQuarter) {
+  const allUsages = DB.usages || [];
+  if (!targetQuarter && !targetYear) return allUsages;
+
+  return allUsages.filter(u => {
+    if (!u.date) return false;
+    const d = parseDate(u.date);
+    if (isNaN(d.getTime()) || d.getTime() === 0) return false;
+    const { year, month } = getISTYearMonth(d);
+    const q = 'Q' + (Math.floor(month / 3) + 1);
+
+    if (targetYear && year !== targetYear) return false;
+    if (targetQuarter && targetQuarter !== 'ALL' && q !== targetQuarter) return false;
+    return true;
+  });
+}
+
+function computeCSVDiff(parsedRows, cycleScope = currentCSVDiffCycleScope, fileName = '') {
   const cards = DB.cards || [];
-  const usages = DB.usages || [];
+  const allUsages = DB.usages || [];
   const matchedUsageIds = new Set();
   const diffItems = [];
+
+  // Detect target year and quarter for this CSV
+  const targetScope = detectCSVTargetQuarterAndYear(fileName, parsedRows, cycleScope);
+  const targetYear = targetScope.year;
+  const targetQuarter = targetScope.quarter;
+
+  // Filter candidate usages strictly to target scope unless explicit 'ALL' requested
+  const scopedUsages = (cycleScope === 'ALL')
+    ? allUsages
+    : getScopedUsagesForCSV(targetYear, targetQuarter);
 
   const redeemedRows = [];
   const skippedRows = [];
@@ -12571,8 +12899,11 @@ function computeCSVDiff(parsedRows, cycleScope = currentCSVDiffCycleScope) {
   });
 
   const detectedCycles = new Set();
+  if (targetQuarter && targetQuarter !== 'ALL') {
+    detectedCycles.add(targetQuarter);
+  }
   redeemedRows.forEach(row => {
-    const normDate = normalizeGSheetDate(row.redeemDate);
+    const normDate = normalizeGSheetDate(row.redeemDate, targetYear);
     const q = getCycleFromDate(normDate);
     if (q && q !== '—') detectedCycles.add(q);
   });
@@ -12580,27 +12911,43 @@ function computeCSVDiff(parsedRows, cycleScope = currentCSVDiffCycleScope) {
   redeemedRows.forEach((row, idx) => {
     const card = resolveCardFromCSV(row.card, row.bank);
     const bookingId = (row.bookingId || '').trim();
-    const rowDate = normalizeGSheetDate(row.redeemDate);
+    const rowDate = normalizeGSheetDate(row.redeemDate, targetYear);
     const rowBrandNorm = normalizeBrandKey(row.brand);
 
     let matchedUsage = null;
+    // 1. By Booking ID within scopedUsages first
     if (bookingId && !isNA(bookingId)) {
-      matchedUsage = usages.find(u => u.bookingId && u.bookingId.trim().toLowerCase() === bookingId.toLowerCase());
+      const bLower = bookingId.toLowerCase();
+      matchedUsage = scopedUsages.find(u => u.bookingId && u.bookingId.trim().toLowerCase() === bLower);
+      if (!matchedUsage && cycleScope === 'ALL') {
+        matchedUsage = allUsages.find(u => u.bookingId && u.bookingId.trim().toLowerCase() === bLower);
+      }
     }
 
+    // 2. By card and exact date within scopedUsages
     if (!matchedUsage && card && rowDate) {
-      matchedUsage = usages.find(u => {
+      matchedUsage = scopedUsages.find(u => {
         if (matchedUsageIds.has(u.id)) return false;
         if (u.cardId !== card.id) return false;
-        const uDate = normalizeGSheetDate(u.date);
+        const uDate = normalizeGSheetDate(u.date, targetYear);
         if (!uDate.startsWith(rowDate.slice(0, 10))) return false;
-        return normalizeBrandKey(u.brand) === rowBrandNorm;
+        return !rowBrandNorm || normalizeBrandKey(u.brand) === rowBrandNorm;
       });
     }
 
+    // 3. By coupon code within scopedUsages
     if (!matchedUsage && row.couponCode && !isNA(row.couponCode)) {
       const codeNorm = row.couponCode.trim().toLowerCase();
-      matchedUsage = usages.find(u => u.couponCode && u.couponCode.trim().toLowerCase() === codeNorm);
+      matchedUsage = scopedUsages.find(u => u.couponCode && u.couponCode.trim().toLowerCase() === codeNorm);
+    }
+
+    // 4. By card + brand within scopedUsages (strict quarter + year scope)
+    if (!matchedUsage && card && rowBrandNorm) {
+      matchedUsage = scopedUsages.find(u => {
+        if (matchedUsageIds.has(u.id)) return false;
+        if (u.cardId !== card.id) return false;
+        return normalizeBrandKey(u.brand) === rowBrandNorm;
+      });
     }
 
     if (!matchedUsage) {
@@ -12612,8 +12959,9 @@ function computeCSVDiff(parsedRows, cycleScope = currentCSVDiffCycleScope) {
         cardName: card ? card.nickname : (row.card || 'Unknown Card'),
         brand: row.brand || '',
         benefit: row.benefit || '',
-        date: rowDate,
+        date: formatGSheetDate(rowDate),
         bookingId: bookingId,
+        targetYear: targetYear,
         diffs: []
       });
     } else {
@@ -12639,14 +12987,14 @@ function computeCSVDiff(parsedRows, cycleScope = currentCSVDiffCycleScope) {
         fieldDiffs.push({ field: 'buyer', label: 'Buyer', appVal: appBuyer || '—', csvVal: csvBuyer });
       }
 
-      const appSellDate = normalizeGSheetDate(matchedUsage.sellDate);
-      const csvSellDate = normalizeGSheetDate(row.sellDate);
+      const appSellDate = normalizeGSheetDate(matchedUsage.sellDate, targetYear);
+      const csvSellDate = normalizeGSheetDate(row.sellDate, targetYear);
       if (csvSellDate && csvSellDate !== appSellDate) {
-        fieldDiffs.push({ field: 'sellDate', label: 'Sell Date', appVal: appSellDate || '—', csvVal: csvSellDate });
+        fieldDiffs.push({ field: 'sellDate', label: 'Sell Date', appVal: formatGSheetDate(matchedUsage.sellDate) || '—', csvVal: formatGSheetDate(row.sellDate) || csvSellDate });
       }
 
-      const appNotes = (matchedUsage.notes || '').trim();
-      const csvNotes = (row.notes || '').trim();
+      const appNotes = cleanUsageNote(matchedUsage.notes);
+      const csvNotes = cleanUsageNote(row.notes);
       if (!isNA(csvNotes) && csvNotes !== appNotes && !appNotes.includes(csvNotes)) {
         fieldDiffs.push({ field: 'notes', label: 'Notes', appVal: appNotes || '—', csvVal: csvNotes });
       }
@@ -12667,8 +13015,9 @@ function computeCSVDiff(parsedRows, cycleScope = currentCSVDiffCycleScope) {
           cardName: card ? card.nickname : (row.card || 'Card'),
           brand: matchedUsage.brand || row.brand || '',
           benefit: row.benefit || '',
-          date: normalizeGSheetDate(matchedUsage.date || row.redeemDate),
+          date: formatGSheetDate(matchedUsage.date || row.redeemDate),
           bookingId: bookingId || matchedUsage.bookingId || '',
+          targetYear: targetYear,
           diffs: fieldDiffs
         });
       } else {
@@ -12682,25 +13031,17 @@ function computeCSVDiff(parsedRows, cycleScope = currentCSVDiffCycleScope) {
           cardName: card ? card.nickname : (row.card || 'Card'),
           brand: matchedUsage.brand || '',
           benefit: row.benefit || '',
-          date: normalizeGSheetDate(matchedUsage.date),
+          date: formatGSheetDate(matchedUsage.date),
           bookingId: matchedUsage.bookingId || '',
+          targetYear: targetYear,
           diffs: []
         });
       }
     }
   });
 
-  // Cycle Scope for ONLY_IN_APP
-  let usagesToScope = usages;
-  if (cycleScope === 'AUTO') {
-    if (detectedCycles.size > 0) {
-      usagesToScope = usages.filter(u => detectedCycles.has(getCycleFromDate(u.date)));
-    }
-  } else if (cycleScope !== 'ALL') {
-    usagesToScope = usages.filter(u => getCycleFromDate(u.date) === cycleScope);
-  }
-
-  usagesToScope.forEach(u => {
+  // Scope ONLY_IN_APP strictly to candidate scopedUsages
+  scopedUsages.forEach(u => {
     if (!matchedUsageIds.has(u.id)) {
       const card = cards.find(c => c.id === u.cardId);
       diffItems.push({
@@ -12712,8 +13053,9 @@ function computeCSVDiff(parsedRows, cycleScope = currentCSVDiffCycleScope) {
         cardName: card ? card.nickname : 'Card',
         brand: u.brand || '',
         benefit: '',
-        date: normalizeGSheetDate(u.date),
+        date: formatGSheetDate(u.date),
         bookingId: u.bookingId || '',
+        targetYear: targetYear,
         diffs: []
       });
     }
@@ -12723,6 +13065,9 @@ function computeCSVDiff(parsedRows, cycleScope = currentCSVDiffCycleScope) {
     items: diffItems,
     skippedRows: skippedRows,
     detectedCycles: Array.from(detectedCycles),
+    targetYear: targetYear,
+    targetQuarter: targetQuarter,
+    targetScope: targetScope,
     summary: {
       totalCSVRows: parsedRows.length,
       redeemedRows: redeemedRows.length,
@@ -12743,7 +13088,7 @@ function processUploadedCSV(csvText, fileName = 'uploaded.csv') {
       return;
     }
 
-    currentCSVDiffResult = computeCSVDiff(parsed.rows, currentCSVDiffCycleScope);
+    currentCSVDiffResult = computeCSVDiff(parsed.rows, currentCSVDiffCycleScope, fileName);
     currentCSVDiffResult.rawParsed = parsed;
     currentCSVDiffResult.fileName = fileName;
     currentCSVDiffFilter = 'DIFFS';
@@ -12760,11 +13105,21 @@ function processUploadedCSV(csvText, fileName = 'uploaded.csv') {
     if (fileNameEl) fileNameEl.textContent = fileName;
     if (summaryWrap) summaryWrap.classList.remove('hidden');
 
-    if (cycleSelect && currentCSVDiffResult.detectedCycles.length > 0) {
+    if (cycleSelect) {
+      const yr = currentCSVDiffResult.targetYear || new Date().getFullYear();
+      const q = currentCSVDiffResult.targetQuarter;
       const optAuto = cycleSelect.querySelector('option[value="AUTO"]');
       if (optAuto) {
-        optAuto.textContent = `Auto (${currentCSVDiffResult.detectedCycles.join(', ')})`;
+        optAuto.textContent = `Auto (${yr} ${q || ''})`.trim();
       }
+      const optQ4 = cycleSelect.querySelector('option[value="Q4"]');
+      const optQ3 = cycleSelect.querySelector('option[value="Q3"]');
+      const optQ2 = cycleSelect.querySelector('option[value="Q2"]');
+      const optQ1 = cycleSelect.querySelector('option[value="Q1"]');
+      if (optQ4) optQ4.textContent = `${yr} Q4 Only`;
+      if (optQ3) optQ3.textContent = `${yr} Q3 Only`;
+      if (optQ2) optQ2.textContent = `${yr} Q2 Only`;
+      if (optQ1) optQ1.textContent = `${yr} Q1 Only`;
     }
 
     renderCSVDiffSummary();
@@ -12794,6 +13149,22 @@ function resetCSVDiffModal() {
   if (fileInput) fileInput.value = '';
   if (pasteInput) pasteInput.value = '';
   if (pasteWrap) pasteWrap.classList.add('hidden');
+
+  const cycleSelect = document.getElementById('csv-diff-cycle-select');
+  if (cycleSelect) {
+    const optAuto = cycleSelect.querySelector('option[value="AUTO"]');
+    if (optAuto) optAuto.textContent = 'Auto (Sheet Cycle)';
+    const optQ4 = cycleSelect.querySelector('option[value="Q4"]');
+    const optQ3 = cycleSelect.querySelector('option[value="Q3"]');
+    const optQ2 = cycleSelect.querySelector('option[value="Q2"]');
+    const optQ1 = cycleSelect.querySelector('option[value="Q1"]');
+    if (optQ4) optQ4.textContent = 'Q4 Only';
+    if (optQ3) optQ3.textContent = 'Q3 Only';
+    if (optQ2) optQ2.textContent = 'Q2 Only';
+    if (optQ1) optQ1.textContent = 'Q1 Only';
+    cycleSelect.value = 'AUTO';
+  }
+  currentCSVDiffCycleScope = 'AUTO';
 }
 
 function renderSkippedRowsList() {
@@ -12883,8 +13254,10 @@ function renderCSVDiffSummary() {
 
   const fileDetailsEl = document.getElementById('csv-file-details');
   if (fileDetailsEl) {
-    const cyclesLabel = (currentCSVDiffResult.detectedCycles || []).join(', ') || 'All';
-    fileDetailsEl.textContent = `(${s.redeemedRows} redemptions · Cycle: ${cyclesLabel}${s.skippedRows > 0 ? ` · ${s.skippedRows} NA skipped` : ''})`;
+    const yr = currentCSVDiffResult.targetYear || '';
+    const q = currentCSVDiffResult.targetQuarter || '';
+    const scopeLabel = `${yr} ${q}`.trim() || 'All Cycles';
+    fileDetailsEl.textContent = `(${s.redeemedRows} redemptions · Scope: ${scopeLabel}${s.skippedRows > 0 ? ` · ${s.skippedRows} NA unredeemed` : ''})`;
   }
 }
 
@@ -13036,6 +13409,7 @@ function applyCSVImportRow(diffItem) {
     }
   }
 
+  const targetYear = diffItem.targetYear || (currentCSVDiffResult && currentCSVDiffResult.targetYear) || new Date().getFullYear();
   const newUsage = {
     id: genId(),
     cardId: card.id,
@@ -13043,13 +13417,13 @@ function applyCSVImportRow(diffItem) {
     account: row.account || card.account || '',
     brand: row.brand || '',
     redeemStatus: row.redeemStatus || 'Redeemed',
-    date: normalizeGSheetDate(row.redeemDate) || nowLocalISO(),
+    date: normalizeGSheetDate(row.redeemDate, targetYear) || nowLocalISO(),
     bookingId: (row.bookingId || '').trim(),
     couponCode: (row.couponCode || '').trim(),
     couponUsed: (row.couponUsed || '').trim().toUpperCase(),
     buyer: (row.buyer || '').trim(),
-    sellDate: normalizeGSheetDate(row.sellDate),
-    notes: (row.notes || '').trim()
+    sellDate: normalizeGSheetDate(row.sellDate, targetYear),
+    notes: cleanUsageNote(row.notes)
   };
 
   DB.usages.push(newUsage);
@@ -13077,12 +13451,13 @@ function applyCSVUpdateRow(diffItem) {
   const row = diffItem.csvRow;
   if (!row) return false;
 
+  const targetYear = diffItem.targetYear || (currentCSVDiffResult && currentCSVDiffResult.targetYear) || new Date().getFullYear();
   diffItem.diffs.forEach(d => {
     if (d.field === 'couponCode' && row.couponCode) usage.couponCode = row.couponCode;
     if (d.field === 'couponUsed') usage.couponUsed = row.couponUsed === 'NA' ? '' : (row.couponUsed || '').toUpperCase();
     if (d.field === 'buyer') usage.buyer = row.buyer === 'NA' ? '' : (row.buyer || '');
-    if (d.field === 'sellDate') usage.sellDate = normalizeGSheetDate(row.sellDate);
-    if (d.field === 'notes' && row.notes) usage.notes = row.notes;
+    if (d.field === 'sellDate') usage.sellDate = normalizeGSheetDate(row.sellDate, targetYear);
+    if (d.field === 'notes' && row.notes) usage.notes = cleanUsageNote(row.notes);
     if (d.field === 'bookingId' && row.bookingId) usage.bookingId = row.bookingId;
     if (d.field === 'account' && row.account) usage.account = row.account;
   });
@@ -13173,6 +13548,292 @@ function exportCSVDiffReport() {
   link.click();
   document.body.removeChild(link);
   showToast('Diff report exported! 📥', 'success');
+}
+
+function downloadMergedGSheetCSV() {
+  if (!currentCSVDiffResult || !currentCSVDiffResult.rawParsed || !currentCSVDiffResult.rawParsed.rawLines) {
+    showToast('Please upload your Google Sheet CSV export first', 'info');
+    return;
+  }
+
+  const { rawLines, headerRowIdx, normalizedHeaders } = currentCSVDiffResult.rawParsed;
+  const cards = DB.cards || [];
+  const allUsages = DB.usages || [];
+
+  const targetYear = currentCSVDiffResult.targetYear || new Date().getFullYear();
+  const targetQuarter = currentCSVDiffResult.targetQuarter || getCycleFromDate(new Date());
+
+  // Strictly scope candidate redemptions to target year and quarter
+  const scopedUsages = (currentCSVDiffCycleScope === 'ALL')
+    ? allUsages
+    : getScopedUsagesForCSV(targetYear, targetQuarter);
+
+  // Deep clone rawLines so we preserve exact rows, spacer rows, and all columns beyond M
+  const newLines = rawLines.map(r => [...r]);
+
+  const colCard = normalizedHeaders.indexOf('card');
+  const colBenefit = normalizedHeaders.indexOf('benefit');
+  const colBrand = normalizedHeaders.indexOf('brand');
+  const colRedeemStatus = normalizedHeaders.indexOf('redeemStatus');
+  const colRedeemDate = normalizedHeaders.indexOf('redeemDate');
+  const colBookingId = normalizedHeaders.indexOf('bookingId');
+  const colCouponCode = normalizedHeaders.indexOf('couponCode');
+  const colCouponUsed = normalizedHeaders.indexOf('couponUsed');
+  const colBuyer = normalizedHeaders.indexOf('buyer');
+  const colSellDate = normalizedHeaders.indexOf('sellDate');
+  const colNotes = normalizedHeaders.indexOf('notes');
+
+  let updatedCount = 0;
+  const usedUsageIds = new Set();
+
+  for (let r = headerRowIdx + 1; r < newLines.length; r++) {
+    const row = newLines[r];
+    if (!row || row.length < 5) continue;
+
+    const cardStr = colCard !== -1 ? String(row[colCard] || '').trim() : '';
+    const brandStr = colBrand !== -1 ? String(row[colBrand] || '').trim() : '';
+    const bookingIdStr = colBookingId !== -1 ? String(row[colBookingId] || '').trim() : '';
+    const dateStr = colRedeemDate !== -1 ? String(row[colRedeemDate] || '').trim() : '';
+
+    // Always sanitize legacy "Imported from Q4" notes
+    if (colNotes !== -1 && row[colNotes]) {
+      row[colNotes] = cleanUsageNote(row[colNotes]);
+    }
+
+    if (!cardStr) continue;
+
+    const card = resolveCardFromCSV(cardStr);
+    if (!card) continue;
+
+    let matchedUsage = null;
+    // 1. By booking ID within scopedUsages
+    if (bookingIdStr && !isNA(bookingIdStr)) {
+      const bLower = bookingIdStr.toLowerCase();
+      matchedUsage = scopedUsages.find(u => u.bookingId && u.bookingId.trim().toLowerCase() === bLower);
+      if (!matchedUsage && currentCSVDiffCycleScope === 'ALL') {
+        matchedUsage = allUsages.find(u => u.bookingId && u.bookingId.trim().toLowerCase() === bLower);
+      }
+    }
+
+    // 2. By card and exact date within scopedUsages
+    if (!matchedUsage && dateStr && !isNA(dateStr)) {
+      const rowBrandNorm = normalizeBrandKey(brandStr);
+      const normDate = normalizeGSheetDate(dateStr, targetYear);
+      matchedUsage = scopedUsages.find(u => {
+        if (usedUsageIds.has(u.id)) return false;
+        if (u.cardId !== card.id) return false;
+        const uDate = normalizeGSheetDate(u.date, targetYear);
+        if (!uDate.startsWith(normDate.slice(0, 10))) return false;
+        return !rowBrandNorm || normalizeBrandKey(u.brand) === rowBrandNorm;
+      });
+    }
+
+    // 3. By card and brand strictly within scopedUsages
+    if (!matchedUsage) {
+      const rowBrandNorm = normalizeBrandKey(brandStr);
+      if (rowBrandNorm) {
+        matchedUsage = scopedUsages.find(u => {
+          if (usedUsageIds.has(u.id)) return false;
+          if (u.cardId !== card.id) return false;
+          return normalizeBrandKey(u.brand) === rowBrandNorm;
+        });
+      }
+    }
+
+    if (matchedUsage) {
+      usedUsageIds.add(matchedUsage.id);
+      if (colRedeemStatus !== -1) row[colRedeemStatus] = matchedUsage.redeemStatus || 'Redeemed';
+      if (colRedeemDate !== -1) {
+        const existingDate = String(row[colRedeemDate] || '').trim();
+        if (existingDate && !isNA(existingDate) && normalizeGSheetDate(existingDate, targetYear) === normalizeGSheetDate(matchedUsage.date, targetYear)) {
+          // Keep existing sheet date format intact
+        } else {
+          row[colRedeemDate] = formatGSheetDate(matchedUsage.date);
+        }
+      }
+      if (colBookingId !== -1) row[colBookingId] = matchedUsage.bookingId || '';
+      if (colCouponCode !== -1) row[colCouponCode] = matchedUsage.couponCode || '';
+      if (colCouponUsed !== -1) row[colCouponUsed] = matchedUsage.couponUsed || '';
+      if (colBuyer !== -1) row[colBuyer] = matchedUsage.buyer || '';
+      if (colSellDate !== -1) {
+        const existingSell = String(row[colSellDate] || '').trim();
+        if (existingSell && !isNA(existingSell) && matchedUsage.sellDate && normalizeGSheetDate(existingSell, targetYear) === normalizeGSheetDate(matchedUsage.sellDate, targetYear)) {
+          // Keep existing sheet sell date format intact
+        } else if (matchedUsage.sellDate) {
+          row[colSellDate] = formatGSheetDate(matchedUsage.sellDate);
+        }
+      }
+      if (colNotes !== -1) {
+        row[colNotes] = cleanUsageNote(matchedUsage.notes);
+      }
+      updatedCount++;
+    }
+  }
+
+  // Generate CSV text preserving all columns, rows, quotes, and commas
+  const csvLines = newLines.map(r => r.map(val => {
+    const s = String(val === undefined || val === null ? '' : val);
+    if (s.includes(',') || s.includes('"') || s.includes('\n') || s.includes('\r')) {
+      return `"${s.replace(/"/g, '""')}"`;
+    }
+    return s;
+  }).join(','));
+
+  const blob = new Blob([csvLines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const originalName = currentCSVDiffResult.fileName || 'RuPay-Sheet.csv';
+  const outName = originalName.replace(/\.csv$/i, '') + '-Merged.csv';
+  a.download = outName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  showToast(`Merged ${updatedCount} ${targetYear} ${targetQuarter} redemptions into ${outName}! 📥`, 'success');
+}
+
+async function copyMergedGSheetFM() {
+  if (!currentCSVDiffResult || !currentCSVDiffResult.rawParsed || !currentCSVDiffResult.rawParsed.rawLines) {
+    showToast('Please upload your Google Sheet CSV export first', 'info');
+    return;
+  }
+
+  const { rawLines, headerRowIdx, normalizedHeaders } = currentCSVDiffResult.rawParsed;
+  const cards = DB.cards || [];
+  const allUsages = DB.usages || [];
+
+  const targetYear = currentCSVDiffResult.targetYear || new Date().getFullYear();
+  const targetQuarter = currentCSVDiffResult.targetQuarter || getCycleFromDate(new Date());
+
+  // Strictly scope candidate redemptions to target year and quarter
+  const scopedUsages = (currentCSVDiffCycleScope === 'ALL')
+    ? allUsages
+    : getScopedUsagesForCSV(targetYear, targetQuarter);
+
+  const newLines = rawLines.map(r => [...r]);
+
+  const colCard = normalizedHeaders.indexOf('card');
+  const colBrand = normalizedHeaders.indexOf('brand');
+  const colRedeemStatus = normalizedHeaders.indexOf('redeemStatus');
+  const colRedeemDate = normalizedHeaders.indexOf('redeemDate');
+  const colBookingId = normalizedHeaders.indexOf('bookingId');
+  const colCouponCode = normalizedHeaders.indexOf('couponCode');
+  const colCouponUsed = normalizedHeaders.indexOf('couponUsed');
+  const colBuyer = normalizedHeaders.indexOf('buyer');
+  const colSellDate = normalizedHeaders.indexOf('sellDate');
+  const colNotes = normalizedHeaders.indexOf('notes');
+
+  let updatedCount = 0;
+  const usedUsageIds = new Set();
+
+  for (let r = headerRowIdx + 1; r < newLines.length; r++) {
+    const row = newLines[r];
+    if (!row || row.length < 5) continue;
+
+    const cardStr = colCard !== -1 ? String(row[colCard] || '').trim() : '';
+    const brandStr = colBrand !== -1 ? String(row[colBrand] || '').trim() : '';
+    const bookingIdStr = colBookingId !== -1 ? String(row[colBookingId] || '').trim() : '';
+    const dateStr = colRedeemDate !== -1 ? String(row[colRedeemDate] || '').trim() : '';
+
+    // Always sanitize legacy "Imported from Q4" notes
+    if (colNotes !== -1 && row[colNotes]) {
+      row[colNotes] = cleanUsageNote(row[colNotes]);
+    }
+
+    if (!cardStr) continue;
+
+    const card = resolveCardFromCSV(cardStr);
+    if (!card) continue;
+
+    let matchedUsage = null;
+    // 1. By booking ID within scopedUsages
+    if (bookingIdStr && !isNA(bookingIdStr)) {
+      const bLower = bookingIdStr.toLowerCase();
+      matchedUsage = scopedUsages.find(u => u.bookingId && u.bookingId.trim().toLowerCase() === bLower);
+      if (!matchedUsage && currentCSVDiffCycleScope === 'ALL') {
+        matchedUsage = allUsages.find(u => u.bookingId && u.bookingId.trim().toLowerCase() === bLower);
+      }
+    }
+
+    // 2. By card and exact date within scopedUsages
+    if (!matchedUsage && dateStr && !isNA(dateStr)) {
+      const rowBrandNorm = normalizeBrandKey(brandStr);
+      const normDate = normalizeGSheetDate(dateStr, targetYear);
+      matchedUsage = scopedUsages.find(u => {
+        if (usedUsageIds.has(u.id)) return false;
+        if (u.cardId !== card.id) return false;
+        const uDate = normalizeGSheetDate(u.date, targetYear);
+        if (!uDate.startsWith(normDate.slice(0, 10))) return false;
+        return !rowBrandNorm || normalizeBrandKey(u.brand) === rowBrandNorm;
+      });
+    }
+
+    // 3. By card and brand strictly within scopedUsages
+    if (!matchedUsage) {
+      const rowBrandNorm = normalizeBrandKey(brandStr);
+      if (rowBrandNorm) {
+        matchedUsage = scopedUsages.find(u => {
+          if (usedUsageIds.has(u.id)) return false;
+          if (u.cardId !== card.id) return false;
+          return normalizeBrandKey(u.brand) === rowBrandNorm;
+        });
+      }
+    }
+
+    if (matchedUsage) {
+      usedUsageIds.add(matchedUsage.id);
+      if (colRedeemStatus !== -1) row[colRedeemStatus] = matchedUsage.redeemStatus || 'Redeemed';
+      if (colRedeemDate !== -1) {
+        const existingDate = String(row[colRedeemDate] || '').trim();
+        if (existingDate && !isNA(existingDate) && normalizeGSheetDate(existingDate, targetYear) === normalizeGSheetDate(matchedUsage.date, targetYear)) {
+          // Keep existing sheet date format intact
+        } else {
+          row[colRedeemDate] = formatGSheetDate(matchedUsage.date);
+        }
+      }
+      if (colBookingId !== -1) row[colBookingId] = matchedUsage.bookingId || '';
+      if (colCouponCode !== -1) row[colCouponCode] = matchedUsage.couponCode || '';
+      if (colCouponUsed !== -1) row[colCouponUsed] = matchedUsage.couponUsed || '';
+      if (colBuyer !== -1) row[colBuyer] = matchedUsage.buyer || '';
+      if (colSellDate !== -1) {
+        const existingSell = String(row[colSellDate] || '').trim();
+        if (existingSell && !isNA(existingSell) && matchedUsage.sellDate && normalizeGSheetDate(existingSell, targetYear) === normalizeGSheetDate(matchedUsage.sellDate, targetYear)) {
+          // Keep existing sheet sell date format intact
+        } else if (matchedUsage.sellDate) {
+          row[colSellDate] = formatGSheetDate(matchedUsage.sellDate);
+        }
+      }
+      if (colNotes !== -1) {
+        row[colNotes] = cleanUsageNote(matchedUsage.notes);
+      }
+      updatedCount++;
+    }
+  }
+
+  // Determine start and end columns dynamically (defaults to F:M, i.e. 5:12)
+  const startCol = colRedeemStatus !== -1 ? colRedeemStatus : 5;
+  const endCol = colNotes !== -1 ? colNotes : (startCol + 7);
+  const startLetter = String.fromCharCode(65 + startCol);
+  const endLetter = String.fromCharCode(65 + endCol);
+
+  // Extract Columns (F:M or startCol:endCol) for all data rows
+  const tsvRows = [];
+  for (let r = headerRowIdx + 1; r < newLines.length; r++) {
+    const row = newLines[r];
+    const colsFM = [];
+    for (let c = startCol; c <= endCol; c++) {
+      const val = row[c] === undefined || row[c] === null ? '' : String(row[c]);
+      colsFM.push(val.replace(/[\t\r\n]/g, ' '));
+    }
+    tsvRows.push(colsFM.join('\t'));
+  }
+
+  const tsvText = tsvRows.join('\n');
+  const targetCell = `${startLetter}${headerRowIdx + 2}`;
+
+  copyText(tsvText, `Copied Columns ${startLetter}:${endLetter} for ${tsvRows.length} rows (${updatedCount} ${targetYear} ${targetQuarter} redemptions merged)! In Google Sheet, select cell ${targetCell} and press Cmd+Shift+V (Paste values only)`);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -13505,6 +14166,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  const btnCopyMergedFM = document.getElementById('btn-copy-merged-fm');
+  if (btnCopyMergedFM) {
+    btnCopyMergedFM.addEventListener('click', () => {
+      copyMergedGSheetFM();
+    });
+  }
+
+  const btnExportMergedCSV = document.getElementById('btn-export-merged-csv');
+  if (btnExportMergedCSV) {
+    btnExportMergedCSV.addEventListener('click', () => {
+      downloadMergedGSheetCSV();
+    });
+  }
+
   // Table row action click delegation
   const csvTbody = document.getElementById('csv-diff-tbody');
   if (csvTbody) {
@@ -13548,7 +14223,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (currentCSVDiffResult && currentCSVDiffResult.rawParsed) {
         const rawParsed = currentCSVDiffResult.rawParsed;
         const fn = currentCSVDiffResult.fileName;
-        currentCSVDiffResult = computeCSVDiff(rawParsed.rows, currentCSVDiffCycleScope);
+        currentCSVDiffResult = computeCSVDiff(rawParsed.rows, currentCSVDiffCycleScope, fn);
         currentCSVDiffResult.rawParsed = rawParsed;
         currentCSVDiffResult.fileName = fn;
         renderCSVDiffSummary();
@@ -14645,6 +15320,50 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('filter-cycle').addEventListener('change', renderHistory);
   document.getElementById('filter-coupon-used').addEventListener('change', renderHistory);
   document.getElementById('filter-month').addEventListener('change', renderHistory);
+
+  const filterDateFrom = document.getElementById('filter-date-from');
+  const filterDateTo = document.getElementById('filter-date-to');
+  if (filterDateFrom) filterDateFrom.addEventListener('change', renderHistory);
+  if (filterDateTo) filterDateTo.addEventListener('change', renderHistory);
+
+  const btnQuick7D = document.getElementById('btn-quick-last7');
+  if (btnQuick7D) {
+    btnQuick7D.addEventListener('click', () => {
+      const end = new Date();
+      const start = new Date(end.getTime() - 6 * 86400000);
+      if (filterDateFrom) filterDateFrom.value = start.toISOString().split('T')[0];
+      if (filterDateTo) filterDateTo.value = end.toISOString().split('T')[0];
+      renderHistory();
+    });
+  }
+
+  const btnQuickWeek = document.getElementById('btn-quick-thisweek');
+  if (btnQuickWeek) {
+    btnQuickWeek.addEventListener('click', () => {
+      const now = new Date();
+      const day = now.getDay() || 7;
+      const monday = new Date(now);
+      monday.setDate(now.getDate() - day + 1);
+      if (filterDateFrom) filterDateFrom.value = monday.toISOString().split('T')[0];
+      if (filterDateTo) filterDateTo.value = now.toISOString().split('T')[0];
+      renderHistory();
+    });
+  }
+
+  const btnQuickClear = document.getElementById('btn-quick-cleardates');
+  if (btnQuickClear) {
+    btnQuickClear.addEventListener('click', () => {
+      if (filterDateFrom) filterDateFrom.value = '';
+      if (filterDateTo) filterDateTo.value = '';
+      renderHistory();
+    });
+  }
+
+  const btnHistExport = document.getElementById('btn-history-export-csv');
+  if (btnHistExport) btnHistExport.addEventListener('click', exportHistoryToGSheetCSV);
+
+  const btnHistCopy = document.getElementById('btn-history-copy-tsv');
+  if (btnHistCopy) btnHistCopy.addEventListener('click', copyHistoryForGSheet);
 
   /* ── Confirm dialog ── */
   document.getElementById('confirm-cancel').addEventListener('click', closeConfirm);
