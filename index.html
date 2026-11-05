@@ -6002,6 +6002,10 @@ function healDatasetUsages(ds) {
       u.notes = '';
       healedCount++;
     }
+    if ((u.redeemStatus === 'UNAVAILABLE' || u.bookingId === 'NOT_ON_PORTAL') && u.redeemedOnBuyerAccount) {
+      delete u.redeemedOnBuyerAccount;
+      healedCount++;
+    }
     if (!u.cardId) return;
     const card = ds.cards.find(c => c.id === u.cardId);
     if (!card) return;
@@ -6277,6 +6281,7 @@ function fmtTimestamp(str) {
  */
 function isDirectActivationUsage(u) {
   if (!u) return false;
+  if (u.redeemStatus === 'UNAVAILABLE' || u.bookingId === 'NOT_ON_PORTAL') return false;
   if (u.redeemedOnBuyerAccount === true || u.redeemedOnBuyerAccount === 'true') return true;
   const brand = (u.brand || '').trim().toLowerCase();
   if (brand.includes('cult') || brand === 'cult.fit' || brand === 'cultpass') return true;
@@ -6308,8 +6313,11 @@ function getAccountCooldownStatus(email) {
     // If explicitly marked as redeemed on buyer's account or direct activation, it did NOT use the card owner's RuPay account!
     if (isDirectActivationUsage(u)) return false;
 
+    // Exclude UNAVAILABLE or NOT_ON_PORTAL entries — nothing was redeemed, so NO cooldown!
+    if (u.redeemStatus === 'UNAVAILABLE' || u.bookingId === 'NOT_ON_PORTAL') return false;
+
     return u.account && u.account.trim().toLowerCase() === normalizedEmail && 
-      (u.redeemStatus === 'Redeemed' || u.bookingId || u.couponCode);
+      (u.redeemStatus === 'Redeemed' || (u.bookingId && u.bookingId !== 'NOT_ON_PORTAL') || u.couponCode);
   });
 
   let lastRedeemDate = null;
@@ -8279,8 +8287,12 @@ function renderHistory() {
     const benefit = getBenefitForUsage(u);
     const cycle   = getCycleFromDate(u.date);
 
+    const isUnav  = u.redeemStatus === 'UNAVAILABLE' || u.bookingId === 'NOT_ON_PORTAL';
+
     let couponUsedBadge = '—';
-    if (u.couponUsed === 'SOLD') {
+    if (isUnav) {
+      couponUsedBadge = '<span class="badge" style="background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);font-size:10px;">Unavailable</span>';
+    } else if (u.couponUsed === 'SOLD') {
       couponUsedBadge = '<span class="badge badge-sold">SOLD</span>';
     } else if (u.couponUsed === 'USED') {
       couponUsedBadge = '<span class="badge badge-used">USED</span>';
@@ -8292,7 +8304,7 @@ function renderHistory() {
     tr.innerHTML = `
       <td style="color:var(--text-secondary);font-size:11px">
         ${esc(u.account || (card && card.account) || '—')}
-        ${(u.redeemedOnBuyerAccount || ((u.brand||'').toLowerCase().includes('cult') && u.buyer)) ? `<div style="font-size:10px;color:#10b981;font-weight:600;margin-top:2px;">⚡ Buyer's Account</div>` : ''}
+        ${(!isUnav && (u.redeemedOnBuyerAccount || ((u.brand||'').toLowerCase().includes('cult') && u.buyer))) ? `<div style="font-size:10px;color:#10b981;font-weight:600;margin-top:2px;">⚡ Buyer's Account</div>` : ''}
       </td>
       <td><span class="badge badge-primary">${cycle}</span></td>
       <td>
@@ -8303,7 +8315,9 @@ function renderHistory() {
       <td style="color:var(--secondary);font-weight:500">${esc(u.brand || (benefit && benefit.brand) || '—')}</td>
       <td>${fmtTimestamp(u.date)}</td>
       <td>
-        ${u.bookingId ? `
+        ${isUnav ? `
+          <span class="badge" style="background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);font-size:10px;" title="Marked Not Available on Portal">🚫 Not on Portal</span>
+        ` : u.bookingId ? `
           <span class="code-pill">
             <span>${esc(u.bookingId)}</span>
             <button class="btn-copy" onclick="copyBookingId('${esc(u.bookingId)}')" title="Copy Booking ID">📋</button>
@@ -8311,7 +8325,9 @@ function renderHistory() {
         ` : '—'}
       </td>
       <td>
-        ${(u.couponCode && u.couponCode !== 'NA' && u.couponCode !== 'Direct Activation') ? `
+        ${isUnav ? `
+          <span style="color:var(--text-secondary);font-size:11px">—</span>
+        ` : (u.couponCode && u.couponCode !== 'NA' && u.couponCode !== 'Direct Activation') ? `
           <span class="code-pill">
             <span>${esc(u.couponCode)}</span>
             <button class="btn-copy" onclick="copyCode('${esc(u.couponCode)}')" title="Copy Coupon Code">📋</button>
@@ -8518,8 +8534,7 @@ function markBenefitUnavailable(cardId, benefitId, brandName) {
     couponCode: '',
     couponUsed: '',
     buyer: '',
-    notes: `Marked Not Available on RuPay portal for ${cycleFilter === 'ALL' ? '2026' : cycleFilter}`,
-    redeemedOnBuyerAccount: true
+    notes: `Marked Not Available on RuPay portal for ${cycleFilter === 'ALL' ? '2026' : cycleFilter}`
   });
 
   renderMatrix();
@@ -9073,7 +9088,7 @@ function hasVoucherCode(u) {
 
 function getPendingCodeUsages() {
   if (!DB || !Array.isArray(DB.usages)) return [];
-  return DB.usages.filter(u => !hasVoucherCode(u) && !u.redeemedOnBuyerAccount && !(u.couponUsed === 'SOLD' || u.couponUsed === 'USED'));
+  return DB.usages.filter(u => u.redeemStatus !== 'UNAVAILABLE' && u.bookingId !== 'NOT_ON_PORTAL' && !hasVoucherCode(u) && !u.redeemedOnBuyerAccount && !(u.couponUsed === 'SOLD' || u.couponUsed === 'USED'));
 }
 
 function isVoucherAvailable(u) {
@@ -12590,13 +12605,13 @@ function isRedeemedCSVRow(row) {
   const buyer = (row.buyer || '').trim();
   const date = (row.redeemDate || row.date || '').trim();
 
-  const hasValidBookingId = bookingId && !isNA(bookingId);
+  const hasValidBookingId = bookingId && !isNA(bookingId) && bookingId.toUpperCase() !== 'NOT_ON_PORTAL';
   const hasValidCode = couponCode && !isNA(couponCode);
   const hasValidBuyer = buyer && !isNA(buyer);
   const hasValidDate = date && !isNA(date);
 
   const unredeemedStatuses = [
-    'na', 'n/a', 'not available', 'unused', 'yet to claim', 'pending',
+    'na', 'n/a', 'not available', 'unavailable', 'not on portal', 'unused', 'yet to claim', 'pending',
     'already claimed', 'claimed earlier', 'exhausted', '-', '--', 'no', 'nil', 'none'
   ];
 
