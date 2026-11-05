@@ -649,6 +649,46 @@
       padding: 12px 14px;
       margin-bottom: 0;
     }
+    .settings-accordion {
+      background: var(--elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      margin-bottom: 0;
+      overflow: hidden;
+    }
+    .settings-accordion summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 14px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+      transition: background 0.15s ease;
+    }
+    .settings-accordion summary::-webkit-details-marker {
+      display: none;
+    }
+    .settings-accordion summary:hover {
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-primary);
+    }
+    .settings-accordion[open] summary {
+      border-bottom: 1px solid var(--border);
+      color: var(--primary-light);
+    }
+    .settings-accordion-body {
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: rgba(0, 0, 0, 0.12);
+    }
     .settings-section-title {
       font-size: 11px;
       font-weight: 700;
@@ -3086,6 +3126,38 @@
       -webkit-tap-highlight-color: transparent;
       padding: 0;
     }
+    .btn-quick-bio {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: #38bdf8;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 7px 15px;
+      border-radius: 999px;
+      cursor: pointer;
+      margin-bottom: 16px;
+      transition: all 0.18s ease;
+      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.15);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-quick-bio:hover, .btn-quick-bio:active {
+      background: rgba(56, 189, 248, 0.22);
+      transform: scale(1.02);
+      box-shadow: 0 6px 20px rgba(56, 189, 248, 0.28);
+    }
+    .bio-icon-glow {
+      display: flex;
+      align-items: center;
+      animation: pulseBio 2s infinite ease-in-out;
+    }
+    @keyframes pulseBio {
+      0%, 100% { opacity: 0.85; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.1); filter: drop-shadow(0 0 5px rgba(56, 189, 248, 0.7)); }
+    }
     .keypad-btn:hover {
       background: rgba(255, 255, 255, 0.12);
       border-color: rgba(255, 255, 255, 0.2);
@@ -3144,6 +3216,15 @@
     
     <div class="app-lock-title">RuPay Perks Vault</div>
     <div class="app-lock-subtitle" id="lock-screen-subtitle">Enter Master PIN to access your vouchers</div>
+    
+    <button type="button" id="lock-btn-quick-bio" class="btn-quick-bio" style="display:none;" title="Unlock with Face ID / Touch ID">
+      <span class="bio-icon-glow">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 004 11m0 0a8 8 0 00.12 1.378"></path>
+        </svg>
+      </span>
+      <span id="lock-bio-label">Unlock with Face ID / Touch ID</span>
+    </button>
     
     <!-- PIN Dots indicator -->
     <div class="pin-dots-container" id="lock-pin-dots">
@@ -3313,36 +3394,7 @@
     <button class="modal-close" id="btn-close-settings" title="Close Settings" style="width:28px;height:28px;font-size:14px;">✕</button>
   </div>
   <div class="settings-body">
-    <!-- Section 0: Local JSON File (rupay-perks-data.json) -->
-    <div class="settings-section" id="section-disk-storage">
-      <div class="settings-section-title">
-        <span>📁 Local JSON File</span>
-        <span class="badge badge-success" id="disk-badge-pill" style="font-size:10px;text-transform:none;">Direct File Write</span>
-      </div>
-
-      <div id="disk-status-box" style="background:var(--card-surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;margin-bottom:8px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-          <span id="disk-status-badge" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-primary);">
-            <span id="disk-status-dot" style="width:8px;height:8px;border-radius:50%;background:#10b981;"></span>
-            <span id="disk-status-text">rupay-perks-data.json</span>
-          </span>
-          <span id="disk-last-time" style="font-size:10px;color:var(--text-secondary);">—</span>
-        </div>
-        <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;" id="disk-status-subtext">
-          Target: rupay-perks-data.json (auto-saved on every change)
-        </div>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">
-        <button type="button" class="settings-btn" id="btn-disk-save-now" style="margin-bottom:0;justify-content:center;font-size:11px;padding:7px 4px;">💾 Save Now</button>
-        <button type="button" class="settings-btn" id="btn-disk-reload-now" style="margin-bottom:0;justify-content:center;font-size:11px;padding:7px 4px;">🔄 Reload File</button>
-      </div>
-      <button type="button" class="settings-btn" id="btn-link-file-handle" style="width:100%;justify-content:center;font-size:11px;padding:6px;background:rgba(99,102,241,0.08);color:var(--primary-light);border:1px solid rgba(99,102,241,0.2);">
-        📁 Select / Change rupay-perks-data.json
-      </button>
-    </div>
-
-    <!-- Section: Security & App Lock -->
+    <!-- Section 1: Security & App Lock -->
     <div class="settings-section" id="section-app-security">
       <div class="settings-section-title">
         <span>🔒 Security & App Lock</span>
@@ -3351,7 +3403,7 @@
 
       <div style="background:var(--card-surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:10px;">
         <div style="font-size:12px;color:var(--text-secondary);line-height:1.4;margin-bottom:8px;">
-          Lock the app with a Master PIN and Biometrics (Touch ID / Face ID) to prevent unauthorized access to your vouchers.
+          Protect your vouchers with a Master PIN and Biometrics (Face ID / Touch ID).
         </div>
         <div id="sec-pin-actions" style="display:flex;gap:6px;flex-wrap:wrap;">
           <button type="button" class="btn btn-primary btn-xs" id="btn-sec-setup-pin" style="padding:6px 12px;font-size:11px;">🔐 Set Master PIN</button>
@@ -3364,7 +3416,7 @@
       <div id="sec-bio-row" style="display:flex;align-items:center;justify-content:space-between;padding:6px 0 8px;border-bottom:1px solid var(--border);">
         <div>
           <div style="font-size:12px;color:var(--text-primary);font-weight:500;">Touch ID / Face ID Unlock</div>
-          <div style="font-size:10px;color:var(--text-secondary);">Unlock instantly with fingerprint or facial scan</div>
+          <div style="font-size:10px;color:var(--text-secondary);">Instant biometric unlock without typing PIN</div>
         </div>
         <label class="toggle-switch">
           <input type="checkbox" id="setting-sec-biometrics" />
@@ -3400,90 +3452,7 @@
       </div>
     </div>
 
-    <!-- Section 1: Display Preferences -->
-    <div class="settings-section">
-      <div class="settings-section-title">Display Preferences</div>
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:2px 0;">
-        <span style="font-size:12px;color:var(--text-primary)">Show SOLD / USED tags on cards</span>
-        <label class="toggle-switch">
-          <input type="checkbox" id="setting-show-card-status" />
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
-    </div>
-
-    <!-- Section 2: Google Sheets Live Sync -->
-    <div class="settings-section">
-      <div class="settings-section-title">
-        <span>📊 Google Sheets Live Sync</span>
-        <span class="badge badge-success" style="font-size:10px;text-transform:none;">Two-Way</span>
-      </div>
-
-      <div id="gsheet-status-box" style="background:var(--card-surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;margin-bottom:10px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-          <span id="gsheet-status-badge" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-secondary);">
-            <span id="gsheet-status-dot" style="width:8px;height:8px;border-radius:50%;background:#64748b;"></span>
-            <span id="gsheet-status-text">Disabled (Local Mode)</span>
-          </span>
-          <span id="gsheet-last-time" style="font-size:10px;color:var(--text-secondary);">—</span>
-        </div>
-      </div>
-
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:2px 0 8px;">
-        <span style="font-size:12px;color:var(--text-primary);font-weight:600;">Enable Google Sheets Mode</span>
-        <label class="toggle-switch">
-          <input type="checkbox" id="setting-gsheet-enabled" />
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
-
-      <div id="gsheet-controls" class="hidden" style="margin-top:6px;padding-top:10px;border-top:1px solid var(--border);">
-        <div class="form-group" style="margin-bottom:8px;">
-          <label class="form-label" style="font-size:11px;margin-bottom:4px;display:flex;justify-content:space-between;">
-            <span>Apps Script Web App URL</span>
-            <button type="button" id="btn-show-gsheet-help" style="background:none;border:none;color:var(--primary-light);font-size:10px;cursor:pointer;text-decoration:underline;padding:0;">Instructions ↗</button>
-          </label>
-          <input type="url" class="form-control" id="setting-gsheet-url" placeholder="https://script.google.com/macros/s/.../exec" style="font-size:12px;padding:6px 10px;" />
-        </div>
-
-        <div class="form-group" style="margin-bottom:10px;">
-          <label class="form-label" style="font-size:11px;margin-bottom:4px;">Active Sheet Tab</label>
-          <input type="text" class="form-control" id="setting-gsheet-tab" placeholder="Q4" value="Q4" style="font-size:12px;padding:6px 10px;" />
-        </div>
-
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-          <span style="font-size:12px;color:var(--text-primary)">Auto-sync on save / edit</span>
-          <label class="toggle-switch">
-            <input type="checkbox" id="setting-gsheet-auto-sync" checked />
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">
-          <button class="settings-btn" id="btn-gsheet-pull" style="margin-bottom:0;justify-content:center;font-size:11px;padding:7px 4px;">📥 Pull from Sheet</button>
-          <button class="settings-btn" id="btn-gsheet-push" style="margin-bottom:0;justify-content:center;font-size:11px;padding:7px 4px;">📤 Push to Sheet</button>
-        </div>
-        <button class="settings-btn" id="btn-gsheet-test" style="width:100%;justify-content:center;background:rgba(16,185,129,0.15);color:var(--success);border:1px solid rgba(16,185,129,0.3);font-size:12px;font-weight:600;padding:8px 10px;">
-          🔗 Test Connection
-        </button>
-      </div>
-    </div>
-
-    <!-- Section 2b: Google Sheet CSV Diff & Reconciliation -->
-    <div class="settings-section">
-      <div class="settings-section-title">
-        <span>📊 Google Sheet CSV Diff</span>
-        <span class="badge badge-success" style="font-size:10px;text-transform:none;">Reconciliation</span>
-      </div>
-      <div style="font-size:11px;color:var(--text-secondary);margin-bottom:8px;line-height:1.4;">
-        Upload your downloaded Google Sheet CSV export to detect missing redemptions, compare voucher codes & statuses, and reconcile diffs.
-      </div>
-      <button type="button" class="settings-btn" id="btn-open-csv-diff" style="width:100%;justify-content:center;background:rgba(6,182,212,0.12);color:var(--secondary);border:1px solid rgba(6,182,212,0.3);font-size:12px;font-weight:600;padding:8px 10px;">
-        📊 Open CSV Diff & Sync Tool
-      </button>
-    </div>
-
-    <!-- Section 2c: Vercel Cloud Storage (Blob) -->
+    <!-- Section 2: Vercel Cloud Database -->
     <div class="settings-section" id="section-vercel-blob-storage">
       <div class="settings-section-title">
         <span>☁️ Vercel Cloud Database</span>
@@ -3537,72 +3506,15 @@
       </div>
     </div>
 
-    <!-- Section 3: GitHub Cloud Sync -->
+    <!-- Section 3: Display Preferences -->
     <div class="settings-section">
-      <div class="settings-section-title">
-        <span>☁️ GitHub Cloud Sync</span>
-        <button type="button" id="btn-toggle-github-details" style="background:none;border:none;color:var(--primary-light);font-size:11px;cursor:pointer;padding:0;font-weight:600;">Configure ▾</button>
-      </div>
-
-      <div id="sync-status-box" style="background:var(--card-surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;margin-bottom:6px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-          <span id="sync-status-badge" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-secondary);">
-            <span id="sync-status-dot" style="width:8px;height:8px;border-radius:50%;background:#64748b;"></span>
-            <span id="sync-status-text">Local Only</span>
-          </span>
-          <span id="sync-last-time" style="font-size:10px;color:var(--text-secondary);">—</span>
-        </div>
-      </div>
-
-      <div id="github-sync-controls" class="hidden" style="margin-top:6px;padding-top:10px;border-top:1px solid var(--border);">
-        <div class="form-group" style="margin-bottom:8px;">
-          <label class="form-label" style="font-size:11px;margin-bottom:4px;display:flex;justify-content:space-between;">
-            <span>Personal Access Token (classic)</span>
-            <a href="https://github.com/settings/tokens/new?scopes=gist&description=RuPay+Perks+Sync" target="_blank" rel="noopener" style="color:var(--primary-light);font-size:10px;text-decoration:underline;">Create Token ↗</a>
-          </label>
-          <div style="display:flex;gap:4px;">
-            <input type="password" class="form-control" id="sync-github-token" placeholder="ghp_xxxxxxxxxxxx" style="font-size:12px;padding:6px 10px;" />
-            <button type="button" class="btn btn-secondary btn-xs" id="btn-toggle-token-mask" title="Show/Hide Token" style="padding:6px 9px;">👁️</button>
-          </div>
-        </div>
-
-        <div class="form-group" style="margin-bottom:8px;">
-          <label class="form-label" style="font-size:11px;margin-bottom:4px;display:flex;justify-content:space-between;">
-            <span>Secret Gist ID</span>
-            <a href="https://gist.github.com" target="_blank" rel="noopener" style="color:var(--primary-light);font-size:10px;text-decoration:underline;">Open Gist ↗</a>
-          </label>
-          <input type="text" class="form-control" id="sync-github-gist-id" placeholder="e.g. 7a8b9c0d1e2f3a4b..." style="font-size:12px;padding:6px 10px;" />
-        </div>
-
-        <div class="form-group" style="margin-bottom:10px;">
-          <label class="form-label" style="font-size:11px;margin-bottom:4px;display:flex;justify-content:space-between;">
-            <span>🔐 Master Passphrase (AES-256)</span>
-            <span style="font-size:10px;color:var(--success);font-weight:600;">Zero-Knowledge</span>
-          </label>
-          <div style="display:flex;gap:4px;">
-            <input type="password" class="form-control" id="sync-crypto-passphrase" placeholder="Set private passphrase to encrypt data..." style="font-size:12px;padding:6px 10px;" />
-            <button type="button" class="btn btn-secondary btn-xs" id="btn-toggle-pass-mask" title="Show/Hide Passphrase" style="padding:6px 9px;">👁️</button>
-          </div>
-          <div style="font-size:10px;color:var(--text-secondary);margin-top:3px;line-height:1.3;">
-            Encrypts voucher codes & card data on your device with AES-GCM before uploading.
-          </div>
-        </div>
-
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-          <span style="font-size:12px;color:var(--text-primary)">Auto-sync on changes</span>
-          <label class="toggle-switch">
-            <input type="checkbox" id="setting-auto-sync" checked />
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">
-          <button class="settings-btn" id="btn-sync-pull" style="margin-bottom:0;justify-content:center;font-size:11px;padding:7px 4px;">⬇ Pull Cloud</button>
-          <button class="settings-btn" id="btn-sync-push" style="margin-bottom:0;justify-content:center;font-size:11px;padding:7px 4px;">⬆ Push Cloud</button>
-        </div>
-        <button class="settings-btn" id="btn-sync-now" style="width:100%;justify-content:center;background:rgba(16,185,129,0.15);color:var(--success);border:1px solid rgba(16,185,129,0.3);font-size:12px;font-weight:600;padding:8px 10px;">
-          🔄 Connect & Sync Now
-        </button>
+      <div class="settings-section-title">Display Preferences</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:2px 0;">
+        <span style="font-size:12px;color:var(--text-primary)">Show SOLD / USED tags on cards</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="setting-show-card-status" />
+          <span class="toggle-slider"></span>
+        </label>
       </div>
     </div>
 
@@ -3623,7 +3535,185 @@
       <input type="file" id="import-file-input" accept=".json,application/json" />
     </div>
 
-    <!-- Section 6: Danger Zone -->
+    <!-- Section 6: Alternate Sync Options (Collapsible Accordion) -->
+    <details class="settings-accordion">
+      <summary>
+        <span>⚙️ Alternate Sync Options</span>
+        <span style="font-size:10px;color:var(--text-secondary);font-weight:400;text-transform:none;">GSheet, Gist, File ▾</span>
+      </summary>
+      <div class="settings-accordion-body">
+        <!-- Local JSON File (rupay-perks-data.json) -->
+        <div class="settings-section" id="section-disk-storage" style="background:var(--card-surface);">
+          <div class="settings-section-title">
+            <span>📁 Local JSON File</span>
+            <span class="badge badge-success" id="disk-badge-pill" style="font-size:10px;text-transform:none;">Direct File Write</span>
+          </div>
+
+          <div id="disk-status-box" style="background:var(--elevated);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;margin-bottom:8px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+              <span id="disk-status-badge" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-primary);">
+                <span id="disk-status-dot" style="width:8px;height:8px;border-radius:50%;background:#10b981;"></span>
+                <span id="disk-status-text">rupay-perks-data.json</span>
+              </span>
+              <span id="disk-last-time" style="font-size:10px;color:var(--text-secondary);">—</span>
+            </div>
+            <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;" id="disk-status-subtext">
+              Target: rupay-perks-data.json (auto-saved on every change)
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">
+            <button type="button" class="settings-btn" id="btn-disk-save-now" style="margin-bottom:0;justify-content:center;font-size:11px;padding:7px 4px;">💾 Save Now</button>
+            <button type="button" class="settings-btn" id="btn-disk-reload-now" style="margin-bottom:0;justify-content:center;font-size:11px;padding:7px 4px;">🔄 Reload File</button>
+          </div>
+          <button type="button" class="settings-btn" id="btn-link-file-handle" style="width:100%;justify-content:center;font-size:11px;padding:6px;background:rgba(99,102,241,0.08);color:var(--primary-light);border:1px solid rgba(99,102,241,0.2);">
+            📁 Select / Change rupay-perks-data.json
+          </button>
+        </div>
+
+        <!-- Google Sheets Live Sync -->
+        <div class="settings-section" style="background:var(--card-surface);">
+          <div class="settings-section-title">
+            <span>📊 Google Sheets Live Sync</span>
+            <span class="badge badge-success" style="font-size:10px;text-transform:none;">Two-Way</span>
+          </div>
+
+          <div id="gsheet-status-box" style="background:var(--elevated);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;margin-bottom:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+              <span id="gsheet-status-badge" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-secondary);">
+                <span id="gsheet-status-dot" style="width:8px;height:8px;border-radius:50%;background:#64748b;"></span>
+                <span id="gsheet-status-text">Disabled (Local Mode)</span>
+              </span>
+              <span id="gsheet-last-time" style="font-size:10px;color:var(--text-secondary);">—</span>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:2px 0 8px;">
+            <span style="font-size:12px;color:var(--text-primary);font-weight:600;">Enable Google Sheets Mode</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="setting-gsheet-enabled" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div id="gsheet-controls" class="hidden" style="margin-top:6px;padding-top:10px;border-top:1px solid var(--border);">
+            <div class="form-group" style="margin-bottom:8px;">
+              <label class="form-label" style="font-size:11px;margin-bottom:4px;display:flex;justify-content:space-between;">
+                <span>Apps Script Web App URL</span>
+                <button type="button" id="btn-show-gsheet-help" style="background:none;border:none;color:var(--primary-light);font-size:10px;cursor:pointer;text-decoration:underline;padding:0;">Instructions ↗</button>
+              </label>
+              <input type="url" class="form-control" id="setting-gsheet-url" placeholder="https://script.google.com/macros/s/.../exec" style="font-size:12px;padding:6px 10px;" />
+            </div>
+
+            <div class="form-group" style="margin-bottom:10px;">
+              <label class="form-label" style="font-size:11px;margin-bottom:4px;">Active Sheet Tab</label>
+              <input type="text" class="form-control" id="setting-gsheet-tab" placeholder="Q4" value="Q4" style="font-size:12px;padding:6px 10px;" />
+            </div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <span style="font-size:12px;color:var(--text-primary)">Auto-sync on save / edit</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="setting-gsheet-auto-sync" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">
+              <button class="settings-btn" id="btn-gsheet-pull" style="margin-bottom:0;justify-content:center;font-size:11px;padding:7px 4px;">📥 Pull from Sheet</button>
+              <button class="settings-btn" id="btn-gsheet-push" style="margin-bottom:0;justify-content:center;font-size:11px;padding:7px 4px;">📤 Push to Sheet</button>
+            </div>
+            <button class="settings-btn" id="btn-gsheet-test" style="width:100%;justify-content:center;background:rgba(16,185,129,0.15);color:var(--success);border:1px solid rgba(16,185,129,0.3);font-size:12px;font-weight:600;padding:8px 10px;">
+              🔗 Test Connection
+            </button>
+          </div>
+        </div>
+
+        <!-- Google Sheet CSV Diff -->
+        <div class="settings-section" style="background:var(--card-surface);">
+          <div class="settings-section-title">
+            <span>📊 Google Sheet CSV Diff</span>
+            <span class="badge badge-success" style="font-size:10px;text-transform:none;">Reconciliation</span>
+          </div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-bottom:8px;line-height:1.4;">
+            Upload your downloaded Google Sheet CSV export to detect missing redemptions, compare voucher codes & statuses, and reconcile diffs.
+          </div>
+          <button type="button" class="settings-btn" id="btn-open-csv-diff" style="width:100%;justify-content:center;background:rgba(6,182,212,0.12);color:var(--secondary);border:1px solid rgba(6,182,212,0.3);font-size:12px;font-weight:600;padding:8px 10px;">
+            📊 Open CSV Diff & Sync Tool
+          </button>
+        </div>
+
+        <!-- GitHub Cloud Sync -->
+        <div class="settings-section" style="background:var(--card-surface);">
+          <div class="settings-section-title">
+            <span>☁️ GitHub Cloud Sync</span>
+            <button type="button" id="btn-toggle-github-details" style="background:none;border:none;color:var(--primary-light);font-size:11px;cursor:pointer;padding:0;font-weight:600;">Configure ▾</button>
+          </div>
+
+          <div id="sync-status-box" style="background:var(--elevated);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;margin-bottom:6px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+              <span id="sync-status-badge" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-secondary);">
+                <span id="sync-status-dot" style="width:8px;height:8px;border-radius:50%;background:#64748b;"></span>
+                <span id="sync-status-text">Local Only</span>
+              </span>
+              <span id="sync-last-time" style="font-size:10px;color:var(--text-secondary);">—</span>
+            </div>
+          </div>
+
+          <div id="github-sync-controls" class="hidden" style="margin-top:6px;padding-top:10px;border-top:1px solid var(--border);">
+            <div class="form-group" style="margin-bottom:8px;">
+              <label class="form-label" style="font-size:11px;margin-bottom:4px;display:flex;justify-content:space-between;">
+                <span>Personal Access Token (classic)</span>
+                <a href="https://github.com/settings/tokens/new?scopes=gist&description=RuPay+Perks+Sync" target="_blank" rel="noopener" style="color:var(--primary-light);font-size:10px;text-decoration:underline;">Create Token ↗</a>
+              </label>
+              <div style="display:flex;gap:4px;">
+                <input type="password" class="form-control" id="sync-github-token" placeholder="ghp_xxxxxxxxxxxx" style="font-size:12px;padding:6px 10px;" />
+                <button type="button" class="btn btn-secondary btn-xs" id="btn-toggle-token-mask" title="Show/Hide Token" style="padding:6px 9px;">👁️</button>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom:8px;">
+              <label class="form-label" style="font-size:11px;margin-bottom:4px;display:flex;justify-content:space-between;">
+                <span>Secret Gist ID</span>
+                <a href="https://gist.github.com" target="_blank" rel="noopener" style="color:var(--primary-light);font-size:10px;text-decoration:underline;">Open Gist ↗</a>
+              </label>
+              <input type="text" class="form-control" id="sync-github-gist-id" placeholder="e.g. 7a8b9c0d1e2f3a4b..." style="font-size:12px;padding:6px 10px;" />
+            </div>
+
+            <div class="form-group" style="margin-bottom:10px;">
+              <label class="form-label" style="font-size:11px;margin-bottom:4px;display:flex;justify-content:space-between;">
+                <span>🔐 Master Passphrase (AES-256)</span>
+                <span style="font-size:10px;color:var(--success);font-weight:600;">Zero-Knowledge</span>
+              </label>
+              <div style="display:flex;gap:4px;">
+                <input type="password" class="form-control" id="sync-crypto-passphrase" placeholder="Set private passphrase to encrypt data..." style="font-size:12px;padding:6px 10px;" />
+                <button type="button" class="btn btn-secondary btn-xs" id="btn-toggle-pass-mask" title="Show/Hide Passphrase" style="padding:6px 9px;">👁️</button>
+              </div>
+              <div style="font-size:10px;color:var(--text-secondary);margin-top:3px;line-height:1.3;">
+                Encrypts voucher codes & card data on your device with AES-GCM before uploading.
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <span style="font-size:12px;color:var(--text-primary)">Auto-sync on changes</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="setting-auto-sync" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">
+              <button class="settings-btn" id="btn-sync-pull" style="margin-bottom:0;justify-content:center;font-size:11px;padding:7px 4px;">⬇ Pull Cloud</button>
+              <button class="settings-btn" id="btn-sync-push" style="margin-bottom:0;justify-content:center;font-size:11px;padding:7px 4px;">⬆ Push Cloud</button>
+            </div>
+            <button class="settings-btn" id="btn-sync-now" style="width:100%;justify-content:center;background:rgba(16,185,129,0.15);color:var(--success);border:1px solid rgba(16,185,129,0.3);font-size:12px;font-weight:600;padding:8px 10px;">
+              🔄 Connect & Sync Now
+            </button>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <!-- Section 7: Danger Zone -->
     <div class="settings-section">
       <div class="settings-section-title" style="color:var(--danger);">Danger Zone</div>
       <button class="settings-btn clear" id="btn-clear">🗑 Clear All Data</button>
@@ -5643,6 +5733,11 @@ function lockApp(reason) {
     }
   }
 
+  const quickBioBtn = document.getElementById('lock-btn-quick-bio');
+  if (quickBioBtn) {
+    quickBioBtn.style.display = isBiometricsEnabled() ? 'inline-flex' : 'none';
+  }
+
   const bioBtn = document.getElementById('lock-btn-bio');
   if (bioBtn) {
     bioBtn.style.visibility = isBiometricsEnabled() ? 'visible' : 'hidden';
@@ -5788,24 +5883,40 @@ async function handleLockKeyInput(key) {
 }
 
 async function tryBiometricUnlock() {
-  if (!isBiometricsEnabled() || !window.PublicKeyCredential) return;
+  if (!isBiometricsEnabled() || !window.PublicKeyCredential) return false;
   try {
     const challenge = new Uint8Array(32);
     window.crypto.getRandomValues(challenge);
     
+    const getOptions = {
+      challenge,
+      userVerification: 'required',
+      timeout: 60000
+    };
+
+    const savedCredId = localStorage.getItem('rupay_sec_cred_id');
+    if (savedCredId) {
+      try {
+        getOptions.allowCredentials = [{
+          id: base64ToBuf(savedCredId),
+          type: 'public-key',
+          transports: ['internal']
+        }];
+      } catch (_) {}
+    }
+
     const assertion = await navigator.credentials.get({
-      publicKey: {
-        challenge,
-        userVerification: 'required',
-        timeout: 60000
-      }
+      publicKey: getOptions
     });
     if (assertion) {
       unlockApp();
+      return true;
     }
   } catch (err) {
     console.log('Biometric unlock cancelled or skipped', err);
+    return false;
   }
+  return false;
 }
 
 async function registerBiometrics() {
@@ -5839,6 +5950,7 @@ async function registerBiometrics() {
         ],
         authenticatorSelection: {
           authenticatorAttachment: 'platform',
+          residentKey: 'preferred',
           userVerification: 'required'
         },
         timeout: 60000
@@ -5846,13 +5958,16 @@ async function registerBiometrics() {
     });
     if (credential) {
       localStorage.setItem(SECURITY_STORAGE_KEYS.BIOMETRICS_ENABLED, 'true');
-      showToast('Touch ID / Face ID registered successfully!', 'success');
+      if (credential.rawId) {
+        localStorage.setItem('rupay_sec_cred_id', bufToBase64(credential.rawId));
+      }
+      showToast('Touch ID / Face ID enabled successfully!', 'success');
       updateSecuritySettingsUI();
       return true;
     }
   } catch (err) {
     console.warn('Biometrics setup error', err);
-    showToast('Biometrics setup cancelled or failed: ' + (err.message || ''), 'warning');
+    showToast('Biometrics setup cancelled or failed', 'warning');
     return false;
   }
   return false;
@@ -16611,7 +16726,12 @@ document.addEventListener('DOMContentLoaded', () => {
     navLockBtn.addEventListener('click', () => lockApp('user_clicked'));
   }
 
-  // Lock Screen Keypad
+  const quickBioBtn = document.getElementById('lock-btn-quick-bio');
+  if (quickBioBtn) {
+    quickBioBtn.addEventListener('click', () => {
+      tryBiometricUnlock();
+    });
+  }
   const lockKeypad = document.getElementById('lock-keypad');
   if (lockKeypad) {
     lockKeypad.addEventListener('click', e => {
