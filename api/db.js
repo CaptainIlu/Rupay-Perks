@@ -1,4 +1,4 @@
-import { put, list, del } from '@vercel/blob';
+import { put, get, list } from '@vercel/blob';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -25,31 +25,50 @@ export default async function handler(req, res) {
   // GET: Fetch the latest database from Vercel Blob
   if (req.method === 'GET') {
     try {
-      const { blobs } = await list({ prefix: BLOB_FILENAME, token });
-      const matched = blobs.find(b => b.pathname === BLOB_FILENAME) || blobs[0];
+      let text = null;
+      let updatedAt = null;
+      let size = 0;
 
-      if (!matched) {
+      // 1. Try modern get() for private access
+      try {
+        const getRes = await get(BLOB_FILENAME, { access: 'private', useCache: false, token });
+        if (getRes && getRes.stream) {
+          text = await new Response(getRes.stream).text();
+          updatedAt = getRes.blob?.uploadedAt || new Date().toISOString();
+          size = getRes.blob?.size || text.length;
+        }
+      } catch (getErr) {
+        // Fallback to list() + authenticated fetch
+        const { blobs } = await list({ prefix: BLOB_FILENAME, token });
+        const matched = blobs.find(b => b.pathname === BLOB_FILENAME) || blobs[0];
+
+        if (!matched) {
+          return res.status(404).json({
+            error: 'No database found in Blob storage yet.',
+            empty: true
+          });
+        }
+
+        const blobHeaders = {};
+        if (token) blobHeaders['Authorization'] = `Bearer ${token}`;
+        const targetUrl = matched.downloadUrl || matched.url;
+        const blobRes = await fetch(targetUrl + (targetUrl.includes('?') ? '&' : '?') + 't=' + Date.now(), {
+          headers: blobHeaders,
+          cache: 'no-store'
+        });
+        if (!blobRes.ok) throw new Error(`Failed to fetch blob content: ${blobRes.status} ${blobRes.statusText}`);
+        text = await blobRes.text();
+        updatedAt = matched.uploadedAt;
+        size = matched.size;
+      }
+
+      if (!text) {
         return res.status(404).json({
           error: 'No database found in Blob storage yet.',
           empty: true
         });
       }
 
-      const blobHeaders = {};
-      if (token) {
-        blobHeaders['Authorization'] = `Bearer ${token}`;
-      }
-
-      const targetUrl = matched.downloadUrl || matched.url;
-      const blobRes = await fetch(targetUrl + (targetUrl.includes('?') ? '&' : '?') + 't=' + Date.now(), {
-        headers: blobHeaders,
-        cache: 'no-store'
-      });
-      if (!blobRes.ok) {
-        throw new Error(`Failed to fetch blob content: ${blobRes.status} ${blobRes.statusText}`);
-      }
-
-      const text = await blobRes.text();
       let parsed;
       try {
         parsed = JSON.parse(text);
@@ -59,8 +78,8 @@ export default async function handler(req, res) {
 
       return res.status(200).json({
         data: parsed,
-        updatedAt: matched.uploadedAt,
-        size: matched.size
+        updatedAt,
+        size
       });
     } catch (err) {
       console.error('Blob GET error:', err);
@@ -83,20 +102,24 @@ export default async function handler(req, res) {
         content = JSON.stringify(body, null, 2);
       }
 
-      // Support private stores (default for security), fallback to public if store requires public
+      // Upload with access: 'private' and allowOverwrite: true
       let blob;
       try {
         blob = await put(BLOB_FILENAME, content, {
           access: 'private',
           addRandomSuffix: false,
+          allowOverwrite: true,
           contentType: 'application/json',
           token
         });
       } catch (err) {
-        if (err.message && err.message.toLowerCase().includes('public')) {
+        // Fallback to access: 'public' ONLY if store is specifically configured as a public store
+        const msg = (err.message || '').toLowerCase();
+        if (msg.includes('public store') || msg.includes('cannot use private access on a public store')) {
           blob = await put(BLOB_FILENAME, content, {
             access: 'public',
             addRandomSuffix: false,
+            allowOverwrite: true,
             contentType: 'application/json',
             token
           });
