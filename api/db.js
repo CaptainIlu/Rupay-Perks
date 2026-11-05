@@ -3,7 +3,7 @@ import { put, get, list } from '@vercel/blob';
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-vault-passphrase, x-pin-hash');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-vault-passphrase, x-pin-hash, x-pin-salt, x-pin-len, x-pin-disable');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -22,47 +22,47 @@ export default async function handler(req, res) {
 
   const BLOB_FILENAME = 'rupay-perks-data.json';
 
+  // Helper to read blob text and metadata
+  async function readBlobContent() {
+    // 1. Try modern get() for private access
+    try {
+      const getRes = await get(BLOB_FILENAME, { access: 'private', useCache: false, token });
+      if (getRes && getRes.stream) {
+        const text = await new Response(getRes.stream).text();
+        return {
+          text,
+          updatedAt: getRes.blob?.uploadedAt || new Date().toISOString(),
+          size: getRes.blob?.size || text.length
+        };
+      }
+    } catch (_) {}
+
+    // Fallback to list() + authenticated fetch
+    const { blobs } = await list({ prefix: BLOB_FILENAME, token });
+    const matched = blobs.find(b => b.pathname === BLOB_FILENAME) || blobs[0];
+    if (!matched) return null;
+
+    const blobHeaders = {};
+    if (token) blobHeaders['Authorization'] = `Bearer ${token}`;
+    const targetUrl = matched.downloadUrl || matched.url;
+    const blobRes = await fetch(targetUrl + (targetUrl.includes('?') ? '&' : '?') + 't=' + Date.now(), {
+      headers: blobHeaders,
+      cache: 'no-store'
+    });
+    if (!blobRes.ok) throw new Error(`Failed to fetch blob content: ${blobRes.status} ${blobRes.statusText}`);
+    const text = await blobRes.text();
+    return {
+      text,
+      updatedAt: matched.uploadedAt,
+      size: matched.size
+    };
+  }
+
   // GET: Fetch the latest database from Vercel Blob
   if (req.method === 'GET') {
     try {
-      let text = null;
-      let updatedAt = null;
-      let size = 0;
-
-      // 1. Try modern get() for private access
-      try {
-        const getRes = await get(BLOB_FILENAME, { access: 'private', useCache: false, token });
-        if (getRes && getRes.stream) {
-          text = await new Response(getRes.stream).text();
-          updatedAt = getRes.blob?.uploadedAt || new Date().toISOString();
-          size = getRes.blob?.size || text.length;
-        }
-      } catch (getErr) {
-        // Fallback to list() + authenticated fetch
-        const { blobs } = await list({ prefix: BLOB_FILENAME, token });
-        const matched = blobs.find(b => b.pathname === BLOB_FILENAME) || blobs[0];
-
-        if (!matched) {
-          return res.status(404).json({
-            error: 'No database found in Blob storage yet.',
-            empty: true
-          });
-        }
-
-        const blobHeaders = {};
-        if (token) blobHeaders['Authorization'] = `Bearer ${token}`;
-        const targetUrl = matched.downloadUrl || matched.url;
-        const blobRes = await fetch(targetUrl + (targetUrl.includes('?') ? '&' : '?') + 't=' + Date.now(), {
-          headers: blobHeaders,
-          cache: 'no-store'
-        });
-        if (!blobRes.ok) throw new Error(`Failed to fetch blob content: ${blobRes.status} ${blobRes.statusText}`);
-        text = await blobRes.text();
-        updatedAt = matched.uploadedAt;
-        size = matched.size;
-      }
-
-      if (!text) {
+      const blobResult = await readBlobContent();
+      if (!blobResult || !blobResult.text) {
         return res.status(404).json({
           error: 'No database found in Blob storage yet.',
           empty: true
@@ -71,15 +71,38 @@ export default async function handler(req, res) {
 
       let parsed;
       try {
-        parsed = JSON.parse(text);
+        parsed = JSON.parse(blobResult.text);
       } catch (_) {
-        parsed = text;
+        parsed = blobResult.text;
       }
 
+      // Check if store is wrapped in a Master PIN security envelope
+      const hasSecurity = parsed && typeof parsed === 'object' && parsed._security && parsed._security.pinHash;
+      if (hasSecurity) {
+        const clientPinHash = req.headers['x-pin-hash'];
+        if (!clientPinHash || clientPinHash !== parsed._security.pinHash) {
+          // Reject with requiresPin so the client can prompt the user for their PIN
+          return res.status(200).json({
+            requiresPin: true,
+            pinSalt: parsed._security.pinSalt,
+            pinLen: parsed._security.pinLen || 4
+          });
+        }
+        // Verified PIN: return actual database
+        return res.status(200).json({
+          data: parsed.data,
+          updatedAt: blobResult.updatedAt,
+          size: blobResult.size,
+          isSealed: true
+        });
+      }
+
+      // Plain un-enveloped database (legacy format)
       return res.status(200).json({
         data: parsed,
-        updatedAt,
-        size
+        updatedAt: blobResult.updatedAt,
+        size: blobResult.size,
+        _legacyPlain: true
       });
     } catch (err) {
       console.error('Blob GET error:', err);
@@ -95,44 +118,54 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Request body is required.' });
       }
 
-      let content;
-      if (typeof body === 'string') {
-        content = body;
+      let parsedBody = typeof body === 'string' ? JSON.parse(body) : body;
+
+      // Extract PIN security headers if provided by client
+      const pinHash = req.headers['x-pin-hash'];
+      const pinSalt = req.headers['x-pin-salt'];
+      const pinLen = parseInt(req.headers['x-pin-len'] || '4', 10);
+      const isPinDisable = req.headers['x-pin-disable'] === 'true';
+
+      // Verify authorization if existing blob is protected
+      try {
+        const existing = await readBlobContent();
+        if (existing && existing.text) {
+          let existingParsed = JSON.parse(existing.text);
+          if (existingParsed && existingParsed._security && existingParsed._security.pinHash) {
+            if (existingParsed._security.pinHash !== pinHash) {
+              return res.status(401).json({ error: 'Unauthorized: Valid Master PIN is required to update database.' });
+            }
+          }
+        }
+      } catch (_) {}
+
+      let contentToSave;
+      if (!isPinDisable && pinHash && pinSalt) {
+        contentToSave = JSON.stringify({
+          _security: {
+            pinHash,
+            pinSalt,
+            pinLen
+          },
+          data: parsedBody.data || parsedBody
+        }, null, 2);
       } else {
-        content = JSON.stringify(body, null, 2);
+        contentToSave = JSON.stringify(parsedBody.data || parsedBody, null, 2);
       }
 
-      // Upload with access: 'private' and allowOverwrite: true
-      let blob;
-      try {
-        blob = await put(BLOB_FILENAME, content, {
-          access: 'private',
-          addRandomSuffix: false,
-          allowOverwrite: true,
-          contentType: 'application/json',
-          token
-        });
-      } catch (err) {
-        // Fallback to access: 'public' ONLY if store is specifically configured as a public store
-        const msg = (err.message || '').toLowerCase();
-        if (msg.includes('public store') || msg.includes('cannot use private access on a public store')) {
-          blob = await put(BLOB_FILENAME, content, {
-            access: 'public',
-            addRandomSuffix: false,
-            allowOverwrite: true,
-            contentType: 'application/json',
-            token
-          });
-        } else {
-          throw err;
-        }
-      }
+      let blob = await put(BLOB_FILENAME, contentToSave, {
+        access: 'private',
+        addRandomSuffix: false,
+        allowOverwrite: true,
+        contentType: 'application/json',
+        token
+      });
 
       return res.status(200).json({
         success: true,
         url: blob.url,
         updatedAt: blob.uploadedAt,
-        size: content.length
+        size: contentToSave.length
       });
     } catch (err) {
       console.error('Blob POST error:', err);

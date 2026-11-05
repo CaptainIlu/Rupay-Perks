@@ -5538,6 +5538,11 @@ function isMasterPinSet() {
 }
 
 function getMasterPinLength() {
+  const cloudLen = sessionStorage.getItem('rupay_cloud_pin_len');
+  if (cloudLen) {
+    const parsed = parseInt(cloudLen, 10);
+    if (parsed >= 4 && parsed <= 8) return parsed;
+  }
   const len = parseInt(localStorage.getItem(SECURITY_STORAGE_KEYS.PIN_LEN) || '4', 10);
   return (len >= 4 && len <= 8) ? len : 4;
 }
@@ -5612,7 +5617,8 @@ function toggleRevealCode(btn, fullCode) {
 }
 
 function lockApp(reason) {
-  if (!isMasterPinSet()) return;
+  const hasCloudSalt = !!sessionStorage.getItem('rupay_cloud_pin_salt');
+  if (!isMasterPinSet() && !hasCloudSalt) return;
   isAppLocked = true;
   sessionStorage.removeItem('rupay_sec_unlocked');
   enteredLockPin = '';
@@ -5624,7 +5630,11 @@ function lockApp(reason) {
     const err = document.getElementById('lock-screen-error');
     if (err) err.style.display = 'none';
     const sub = document.getElementById('lock-screen-subtitle');
-    if (sub) sub.textContent = 'Enter Master PIN to access your vouchers';
+    if (sub) {
+      sub.textContent = (reason === 'cloud_pin_required' || !isMasterPinSet())
+        ? 'Enter Master PIN to unlock your vault on this device'
+        : 'Enter Master PIN to access your vouchers';
+    }
     
     const hiddenInp = document.getElementById('lock-screen-hidden-input');
     if (hiddenInp) {
@@ -5685,27 +5695,91 @@ async function handleLockKeyInput(key) {
       if (enteredLockPin.length === expectedLen) {
         const salt = localStorage.getItem(SECURITY_STORAGE_KEYS.PIN_SALT);
         const storedHash = localStorage.getItem(SECURITY_STORAGE_KEYS.PIN_HASH);
-        const enteredHash = await hashMasterPin(enteredLockPin, salt);
-        
-        if (enteredHash === storedHash) {
+        const cloudSalt = sessionStorage.getItem('rupay_cloud_pin_salt');
+        const activeSalt = salt || cloudSalt;
+
+        if (!activeSalt) {
           unlockApp();
-        } else {
+          return;
+        }
+
+        const enteredHash = await hashMasterPin(enteredLockPin, activeSalt);
+
+        // Case A: Local PIN already set on this device
+        if (storedHash && enteredHash === storedHash) {
+          unlockApp();
+          return;
+        }
+
+        // Case B: Brand new device verifying against cloud vault
+        if (!storedHash && cloudSalt) {
           const dotsBox = document.getElementById('lock-pin-dots');
           const err = document.getElementById('lock-screen-error');
           if (err) {
-            err.textContent = 'Incorrect PIN. Try again.';
+            err.textContent = 'Verifying PIN with cloud vault...';
+            err.style.color = '#38bdf8';
             err.style.display = 'block';
           }
-          if (dotsBox) {
-            dotsBox.classList.add('shake');
-            setTimeout(() => {
-              dotsBox.classList.remove('shake');
-              enteredLockPin = '';
-              updateLockDots(0);
-              const hiddenInp = document.getElementById('lock-screen-hidden-input');
-              if (hiddenInp) hiddenInp.value = '';
-            }, 500);
+
+          try {
+            const headers = { 'x-pin-hash': enteredHash };
+            const token = getVercelBlobToken();
+            if (token) headers['Authorization'] = 'Bearer ' + token;
+
+            const res = await fetch('/api/db?t=' + Date.now(), { method: 'GET', headers, cache: 'no-store' });
+            if (res.ok) {
+              const json = await res.json();
+              if (json.data) {
+                // PIN is valid! Save credentials locally
+                const cloudPinLen = parseInt(sessionStorage.getItem('rupay_cloud_pin_len') || '4', 10);
+                localStorage.setItem(SECURITY_STORAGE_KEYS.PIN_HASH, enteredHash);
+                localStorage.setItem(SECURITY_STORAGE_KEYS.PIN_SALT, cloudSalt);
+                localStorage.setItem(SECURITY_STORAGE_KEYS.PIN_LEN, String(cloudPinLen));
+                sessionStorage.removeItem('rupay_cloud_pin_salt');
+                sessionStorage.removeItem('rupay_cloud_pin_len');
+
+                const merged = mergeDatasets(json.data, DB);
+                DB = merged;
+                healUsages({ silent: true, skipSave: true });
+                try { localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); } catch (_) {}
+
+                unlockApp();
+                renderAll();
+                showToast('Vault unlocked & synced on this device!', 'success');
+
+                // Offer biometrics setup on this device if supported
+                if (window.PublicKeyCredential && !isBiometricsEnabled()) {
+                  setTimeout(async () => {
+                    if (confirm('Enable Touch ID / Face ID on this device for quick unlock?')) {
+                      await registerBiometrics();
+                    }
+                  }, 600);
+                }
+                return;
+              }
+            }
+          } catch (fetchErr) {
+            console.error('Cloud PIN check error:', fetchErr);
           }
+        }
+
+        // Failed attempt
+        const dotsBox = document.getElementById('lock-pin-dots');
+        const err = document.getElementById('lock-screen-error');
+        if (err) {
+          err.textContent = 'Incorrect PIN. Try again.';
+          err.style.color = '#f87171';
+          err.style.display = 'block';
+        }
+        if (dotsBox) {
+          dotsBox.classList.add('shake');
+          setTimeout(() => {
+            dotsBox.classList.remove('shake');
+            enteredLockPin = '';
+            updateLockDots(0);
+            const hiddenInp = document.getElementById('lock-screen-hidden-input');
+            if (hiddenInp) hiddenInp.value = '';
+          }, 500);
         }
       }
     }
@@ -5873,6 +5947,7 @@ async function handleSetupPinKeyInput(key) {
               closeModal('modal-setup-pin');
               showToast('Master PIN disabled', 'info');
               updateSecuritySettingsUI();
+              pushToVercelBlob({ silent: true });
             } else {
               // Proceed to choose new PIN
               setupPinStep = 1;
@@ -5902,6 +5977,7 @@ async function handleSetupPinKeyInput(key) {
             closeModal('modal-setup-pin');
             showToast('Master PIN set successfully!', 'success');
             updateSecuritySettingsUI();
+            pushToVercelBlob({ silent: true });
 
             // Ask if biometrics is available
             if (window.PublicKeyCredential && typeof window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable === 'function') {
@@ -12803,6 +12879,9 @@ async function pullFromVercelBlob(options = { silent: false }) {
     const headers = {};
     const token = getVercelBlobToken();
     if (token) headers['Authorization'] = 'Bearer ' + token;
+    if (isMasterPinSet()) {
+      headers['x-pin-hash'] = localStorage.getItem(SECURITY_STORAGE_KEYS.PIN_HASH) || '';
+    }
     const res = await fetch('/api/db?t=' + Date.now(), { method: 'GET', headers, cache: 'no-store' });
     if (res.status === 404) {
       updateVercelBlobStatusUI('unlinked', 'Cloud store is empty');
@@ -12817,6 +12896,18 @@ async function pullFromVercelBlob(options = { silent: false }) {
     }
 
     const json = await res.json();
+
+    // Check if cloud requires Master PIN
+    if (json.requiresPin) {
+      sessionStorage.setItem('rupay_cloud_pin_salt', json.pinSalt);
+      sessionStorage.setItem('rupay_cloud_pin_len', String(json.pinLen || 4));
+      lockApp('cloud_pin_required');
+      const sub = document.getElementById('lock-screen-subtitle');
+      if (sub) sub.textContent = 'Enter Master PIN to unlock your vault on this device';
+      updateVercelBlobStatusUI('syncing', 'Master PIN required to unlock');
+      return false;
+    }
+
     let cloudData = json.data;
 
     // Check if cloudData is encrypted with passphrase
@@ -12833,6 +12924,13 @@ async function pullFromVercelBlob(options = { silent: false }) {
     DB = merged;
     healUsages({ silent: true, skipSave: true });
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); } catch (_) {}
+
+    // If cloud was legacy plain, auto-seal with Master PIN if set on this device
+    if (json._legacyPlain && isMasterPinSet()) {
+      setTimeout(() => {
+        pushToVercelBlob({ silent: true });
+      }, 1000);
+    }
 
     const now = new Date();
     const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
@@ -12866,6 +12964,15 @@ async function pushToVercelBlob(options = { silent: false }) {
     const headers = { 'Content-Type': 'application/json' };
     const token = getVercelBlobToken();
     if (token) headers['Authorization'] = 'Bearer ' + token;
+
+    if (isMasterPinSet()) {
+      headers['x-pin-hash'] = localStorage.getItem(SECURITY_STORAGE_KEYS.PIN_HASH) || '';
+      headers['x-pin-salt'] = localStorage.getItem(SECURITY_STORAGE_KEYS.PIN_SALT) || '';
+      headers['x-pin-len'] = localStorage.getItem(SECURITY_STORAGE_KEYS.PIN_LEN) || '4';
+    } else {
+      headers['x-pin-disable'] = 'true';
+    }
+
     const res = await fetch('/api/db', {
       method: 'POST',
       headers,
