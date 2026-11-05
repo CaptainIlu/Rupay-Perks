@@ -1,6 +1,7 @@
 *.csv
 *.json
 !manifest.json
+!vercel.json
 .DS_Store
 *.js
 !sw.js
