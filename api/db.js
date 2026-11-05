@@ -35,7 +35,16 @@ export default async function handler(req, res) {
         });
       }
 
-      const blobRes = await fetch(matched.url + '?t=' + Date.now(), { cache: 'no-store' });
+      const blobHeaders = {};
+      if (token) {
+        blobHeaders['Authorization'] = `Bearer ${token}`;
+      }
+
+      const targetUrl = matched.downloadUrl || matched.url;
+      const blobRes = await fetch(targetUrl + (targetUrl.includes('?') ? '&' : '?') + 't=' + Date.now(), {
+        headers: blobHeaders,
+        cache: 'no-store'
+      });
       if (!blobRes.ok) {
         throw new Error(`Failed to fetch blob content: ${blobRes.status} ${blobRes.statusText}`);
       }
@@ -74,12 +83,27 @@ export default async function handler(req, res) {
         content = JSON.stringify(body, null, 2);
       }
 
-      const blob = await put(BLOB_FILENAME, content, {
-        access: 'public',
-        addRandomSuffix: false,
-        contentType: 'application/json',
-        token
-      });
+      // Support private stores (default for security), fallback to public if store requires public
+      let blob;
+      try {
+        blob = await put(BLOB_FILENAME, content, {
+          access: 'private',
+          addRandomSuffix: false,
+          contentType: 'application/json',
+          token
+        });
+      } catch (err) {
+        if (err.message && err.message.toLowerCase().includes('public')) {
+          blob = await put(BLOB_FILENAME, content, {
+            access: 'public',
+            addRandomSuffix: false,
+            contentType: 'application/json',
+            token
+          });
+        } else {
+          throw err;
+        }
+      }
 
       return res.status(200).json({
         success: true,
