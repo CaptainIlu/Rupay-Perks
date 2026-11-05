@@ -9,10 +9,14 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  const token = process.env.BLOB_READ_WRITE_TOKEN;
+  const authHeader = req.headers.authorization || req.headers['x-blob-token'];
+  const clientToken = (authHeader && typeof authHeader === 'string')
+    ? (authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : authHeader.trim())
+    : null;
+  const token = process.env.BLOB_READ_WRITE_TOKEN || clientToken;
   if (!token) {
     return res.status(500).json({
-      error: 'Vercel Blob storage is not connected. Missing BLOB_READ_WRITE_TOKEN in environment.'
+      error: 'Vercel Blob storage is not connected. Either connect your Blob store to project in Vercel & redeploy, or paste the Blob Token in Settings.'
     });
   }
 

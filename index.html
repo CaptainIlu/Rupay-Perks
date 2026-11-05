@@ -3518,6 +3518,23 @@
       <button type="button" class="settings-btn" id="btn-vercel-sync-now" style="width:100%;justify-content:center;font-size:11px;padding:6px;background:rgba(99,102,241,0.08);color:var(--primary-light);border:1px solid rgba(99,102,241,0.2);">
         🔄 Sync Now with Cloud
       </button>
+
+      <div style="margin-top:6px;text-align:right;">
+        <button type="button" id="btn-toggle-vercel-details" style="background:none;border:none;color:var(--primary-light);font-size:10.5px;cursor:pointer;padding:0;text-decoration:underline;">Token / Manual Config ▾</button>
+      </div>
+      <div id="vercel-token-controls" class="hidden" style="margin-top:6px;padding-top:8px;border-top:1px solid var(--border);">
+        <label class="form-label" style="font-size:11px;margin-bottom:4px;display:flex;justify-content:space-between;">
+          <span>Blob Read/Write Token</span>
+          <span style="font-size:10px;color:var(--text-secondary);">vercel_blob_rw_...</span>
+        </label>
+        <div style="display:flex;gap:4px;">
+          <input type="password" class="form-control" id="sync-vercel-blob-token" placeholder="vercel_blob_rw_xxxxxxxx" style="font-size:12px;padding:6px 10px;" />
+          <button type="button" class="btn btn-secondary btn-xs" id="btn-toggle-vercel-token-mask" title="Show/Hide Token" style="padding:6px 9px;">👁️</button>
+        </div>
+        <div style="font-size:10px;color:var(--text-secondary);margin-top:3px;line-height:1.3;">
+          Copy from Vercel Dashboard &gt; Storage &gt; Settings if not auto-injected.
+        </div>
+      </div>
     </div>
 
     <!-- Section 3: GitHub Cloud Sync -->
@@ -12748,8 +12765,13 @@ function closeConfirm() {
 
 const VERCEL_STORAGE_KEYS = {
   AUTO_SYNC: 'rupay_vercel_auto_sync',
-  LAST_SYNC: 'rupay_vercel_last_sync'
+  LAST_SYNC: 'rupay_vercel_last_sync',
+  TOKEN: 'rupay_vercel_blob_token'
 };
+
+function getVercelBlobToken() {
+  return (localStorage.getItem(VERCEL_STORAGE_KEYS.TOKEN) || '').trim();
+}
 
 function isVercelAutoSyncEnabled() {
   const val = localStorage.getItem(VERCEL_STORAGE_KEYS.AUTO_SYNC);
@@ -12778,7 +12800,10 @@ function updateVercelBlobStatusUI(status, message) {
 async function pullFromVercelBlob(options = { silent: false }) {
   updateVercelBlobStatusUI('syncing', 'Connecting to Vercel Cloud...');
   try {
-    const res = await fetch('/api/db?t=' + Date.now(), { cache: 'no-store' });
+    const headers = {};
+    const token = getVercelBlobToken();
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    const res = await fetch('/api/db?t=' + Date.now(), { method: 'GET', headers, cache: 'no-store' });
     if (res.status === 404) {
       updateVercelBlobStatusUI('unlinked', 'Cloud store is empty');
       if (!options.silent) {
@@ -12838,11 +12863,12 @@ async function pushToVercelBlob(options = { silent: false }) {
       payload = await encryptWithPassphrase(JSON.stringify(DB), passphrase);
     }
 
+    const headers = { 'Content-Type': 'application/json' };
+    const token = getVercelBlobToken();
+    if (token) headers['Authorization'] = 'Bearer ' + token;
     const res = await fetch('/api/db', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers,
       body: JSON.stringify(payload)
     });
 
@@ -16610,6 +16636,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (btnVercelSyncNow) {
     btnVercelSyncNow.addEventListener('click', () => pullFromVercelBlob({ silent: false }));
+  }
+
+  const vercelTokenInput = document.getElementById('sync-vercel-blob-token');
+  const btnToggleVercelDetails = document.getElementById('btn-toggle-vercel-details');
+  const vercelTokenControls = document.getElementById('vercel-token-controls');
+  const btnToggleVercelMask = document.getElementById('btn-toggle-vercel-token-mask');
+
+  if (vercelTokenInput) {
+    vercelTokenInput.value = getVercelBlobToken();
+    vercelTokenInput.addEventListener('change', e => {
+      localStorage.setItem(VERCEL_STORAGE_KEYS.TOKEN, e.target.value.trim());
+      showToast('Vercel Blob token saved', 'info');
+    });
+  }
+
+  if (btnToggleVercelDetails && vercelTokenControls) {
+    btnToggleVercelDetails.addEventListener('click', () => {
+      const isHidden = vercelTokenControls.classList.toggle('hidden');
+      btnToggleVercelDetails.textContent = isHidden ? 'Token / Manual Config ▾' : 'Hide Config ▴';
+    });
+  }
+
+  if (btnToggleVercelMask && vercelTokenInput) {
+    btnToggleVercelMask.addEventListener('click', () => {
+      const isPass = vercelTokenInput.type === 'password';
+      vercelTokenInput.type = isPass ? 'text' : 'password';
+      btnToggleVercelMask.textContent = isPass ? '🔒' : '👁️';
+    });
   }
 
   // Auto-connect to Vercel Blob on startup
