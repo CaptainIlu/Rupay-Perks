@@ -5665,6 +5665,7 @@ function unlockApp() {
   if (overlay) {
     overlay.style.display = 'none';
   }
+  updateSecuritySettingsUI();
   showToast('Vault unlocked', 'success');
 }
 
@@ -15563,6 +15564,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   settingsToggle.addEventListener('click', e => {
     e.stopPropagation();
+    updateSecuritySettingsUI();
     settingsPanel.classList.toggle('open');
   });
 
