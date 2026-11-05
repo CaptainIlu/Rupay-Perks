@@ -3483,6 +3483,43 @@
       </button>
     </div>
 
+    <!-- Section 2c: Vercel Cloud Storage (Blob) -->
+    <div class="settings-section" id="section-vercel-blob-storage">
+      <div class="settings-section-title">
+        <span>☁️ Vercel Cloud Database</span>
+        <span class="badge badge-success" id="vercel-blob-badge" style="font-size:10px;text-transform:none;">Connected</span>
+      </div>
+
+      <div id="vercel-sync-status-box" style="background:var(--card-surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <span id="vercel-sync-status-badge" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-secondary);">
+            <span id="vercel-sync-status-dot" style="width:8px;height:8px;border-radius:50%;background:#10b981;"></span>
+            <span id="vercel-sync-status-text">Cloud Storage Active</span>
+          </span>
+          <span id="vercel-sync-last-time" style="font-size:10px;color:var(--text-secondary);">—</span>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:2px 0 8px;">
+        <div>
+          <div style="font-size:12px;color:var(--text-primary);font-weight:500;">Auto-sync on changes</div>
+          <div style="font-size:10px;color:var(--text-secondary);">Syncs phone and laptop automatically</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="setting-vercel-auto-sync" checked />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">
+        <button type="button" class="settings-btn" id="btn-vercel-pull" style="margin-bottom:0;justify-content:center;font-size:11px;padding:7px 4px;">⬇ Pull Cloud DB</button>
+        <button type="button" class="settings-btn" id="btn-vercel-push" style="margin-bottom:0;justify-content:center;font-size:11px;padding:7px 4px;">⬆ Push to Cloud</button>
+      </div>
+      <button type="button" class="settings-btn" id="btn-vercel-sync-now" style="width:100%;justify-content:center;font-size:11px;padding:6px;background:rgba(99,102,241,0.08);color:var(--primary-light);border:1px solid rgba(99,102,241,0.2);">
+        🔄 Sync Now with Cloud
+      </button>
+    </div>
+
     <!-- Section 3: GitHub Cloud Sync -->
     <div class="settings-section">
       <div class="settings-section-title">
@@ -6254,6 +6291,7 @@ async function saveDB(skipCloudSync = false) {
 
   // Post that, push to GitHub Gist via debounced non-blocking sync
   if (!skipCloudSync) {
+    triggerDebouncedVercelBlobPush();
     triggerDebouncedCloudPush();
   }
 }
@@ -12703,6 +12741,144 @@ function closeConfirm() {
   _confirmCb = null;
 }
 
+
+/* ==============================================================
+   SECTION 7c: VERCEL BLOB CLOUD DATABASE SYNC
+   ============================================================== */
+
+const VERCEL_STORAGE_KEYS = {
+  AUTO_SYNC: 'rupay_vercel_auto_sync',
+  LAST_SYNC: 'rupay_vercel_last_sync'
+};
+
+function isVercelAutoSyncEnabled() {
+  const val = localStorage.getItem(VERCEL_STORAGE_KEYS.AUTO_SYNC);
+  return val === null ? true : val === 'true';
+}
+
+function updateVercelBlobStatusUI(status, message) {
+  const dot = document.getElementById('vercel-sync-status-dot');
+  const text = document.getElementById('vercel-sync-status-text');
+  const lastTime = document.getElementById('vercel-sync-last-time');
+  const navDot = document.getElementById('nav-sync-indicator');
+
+  if (dot) {
+    if (status === 'synced') dot.style.background = '#10b981';
+    else if (status === 'syncing') dot.style.background = '#38bdf8';
+    else if (status === 'error') dot.style.background = '#ef4444';
+    else dot.style.background = '#64748b';
+  }
+
+  if (text) text.textContent = message || (status === 'synced' ? 'Synced with Cloud' : 'Ready');
+  const storedLast = localStorage.getItem(VERCEL_STORAGE_KEYS.LAST_SYNC);
+  if (lastTime && storedLast) lastTime.textContent = storedLast;
+  if (navDot && status === 'synced') navDot.style.background = '#10b981';
+}
+
+async function pullFromVercelBlob(options = { silent: false }) {
+  updateVercelBlobStatusUI('syncing', 'Connecting to Vercel Cloud...');
+  try {
+    const res = await fetch('/api/db?t=' + Date.now(), { cache: 'no-store' });
+    if (res.status === 404) {
+      updateVercelBlobStatusUI('unlinked', 'Cloud store is empty');
+      if (!options.silent) {
+        showToast('Vercel Blob store is empty. Push your local data first!', 'warning');
+      }
+      return false;
+    }
+    if (!res.ok) {
+      const errJson = await res.json().catch(() => ({}));
+      throw new Error(errJson.error || ('Server error ' + res.status));
+    }
+
+    const json = await res.json();
+    let cloudData = json.data;
+
+    // Check if cloudData is encrypted with passphrase
+    const passphrase = typeof getSyncPassphrase === 'function' ? getSyncPassphrase() : '';
+    if (cloudData && typeof cloudData === 'object' && cloudData.ciphertext) {
+      cloudData = await decryptWithPassphrase(cloudData, passphrase);
+    }
+
+    if (!cloudData || (!Array.isArray(cloudData.usages) && !Array.isArray(cloudData.cards))) {
+      throw new Error('Invalid data format received from cloud');
+    }
+
+    const merged = mergeDatasets(cloudData, DB);
+    DB = merged;
+    healUsages({ silent: true, skipSave: true });
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); } catch (_) {}
+
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    localStorage.setItem(VERCEL_STORAGE_KEYS.LAST_SYNC, timeStr);
+    updateVercelBlobStatusUI('synced', `Synced (${DB.usages.length} redemptions)`);
+    renderAll();
+
+    if (!options.silent) {
+      showToast(`Pulled ${DB.usages.length} redemptions & ${DB.cards.length} cards from Vercel Cloud!`, 'success');
+    }
+    return true;
+  } catch (err) {
+    console.warn('Vercel Blob pull error:', err);
+    updateVercelBlobStatusUI('error', 'Sync error: ' + (err.message || 'network error'));
+    if (!options.silent) {
+      showToast('Cloud pull failed: ' + err.message, 'error');
+    }
+    return false;
+  }
+}
+
+async function pushToVercelBlob(options = { silent: false }) {
+  updateVercelBlobStatusUI('syncing', 'Uploading to Vercel Cloud...');
+  try {
+    let payload = DB;
+    const passphrase = typeof getSyncPassphrase === 'function' ? getSyncPassphrase() : '';
+    if (passphrase) {
+      payload = await encryptWithPassphrase(JSON.stringify(DB), passphrase);
+    }
+
+    const res = await fetch('/api/db', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      const errJson = await res.json().catch(() => ({}));
+      throw new Error(errJson.error || ('Server error ' + res.status));
+    }
+
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    localStorage.setItem(VERCEL_STORAGE_KEYS.LAST_SYNC, timeStr);
+    updateVercelBlobStatusUI('synced', `Saved at ${timeStr}`);
+
+    if (!options.silent) {
+      showToast(`Pushed ${DB.usages.length} redemptions to Vercel Cloud!`, 'success');
+    }
+    return true;
+  } catch (err) {
+    console.warn('Vercel Blob push error:', err);
+    updateVercelBlobStatusUI('error', 'Push error: ' + (err.message || 'network error'));
+    if (!options.silent) {
+      showToast('Cloud push failed: ' + err.message, 'error');
+    }
+    return false;
+  }
+}
+
+let vercelPushTimeout = null;
+function triggerDebouncedVercelBlobPush() {
+  if (!isVercelAutoSyncEnabled()) return;
+  if (vercelPushTimeout) clearTimeout(vercelPushTimeout);
+  vercelPushTimeout = setTimeout(() => {
+    pushToVercelBlob({ silent: true });
+  }, 2500);
+}
+
 /* ==============================================================
    SECTION 8: IMPORT / EXPORT / CLEAR
    ============================================================== */
@@ -16408,6 +16584,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initSecurityAutoLock();
   checkStartupLock();
+
+
+  /* ── Vercel Blob Cloud Sync UI wiring ── */
+  const vercelAutoSyncCb = document.getElementById('setting-vercel-auto-sync');
+  const btnVercelPull = document.getElementById('btn-vercel-pull');
+  const btnVercelPush = document.getElementById('btn-vercel-push');
+  const btnVercelSyncNow = document.getElementById('btn-vercel-sync-now');
+
+  if (vercelAutoSyncCb) {
+    vercelAutoSyncCb.checked = isVercelAutoSyncEnabled();
+    vercelAutoSyncCb.addEventListener('change', e => {
+      localStorage.setItem(VERCEL_STORAGE_KEYS.AUTO_SYNC, e.target.checked ? 'true' : 'false');
+      showToast(e.target.checked ? 'Vercel Cloud auto-sync enabled' : 'Vercel Cloud auto-sync disabled', 'info');
+    });
+  }
+
+  if (btnVercelPull) {
+    btnVercelPull.addEventListener('click', () => pullFromVercelBlob({ silent: false }));
+  }
+
+  if (btnVercelPush) {
+    btnVercelPush.addEventListener('click', () => pushToVercelBlob({ silent: false }));
+  }
+
+  if (btnVercelSyncNow) {
+    btnVercelSyncNow.addEventListener('click', () => pullFromVercelBlob({ silent: false }));
+  }
+
+  // Auto-connect to Vercel Blob on startup
+  if (isVercelAutoSyncEnabled()) {
+    pullFromVercelBlob({ silent: true }).then(success => {
+      if (!success && DB && Array.isArray(DB.cards) && DB.cards.length > 0) {
+        pushToVercelBlob({ silent: true });
+      }
+    });
+  }
 
   /* ── Bootstrap ── */
   loadDB();
