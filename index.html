@@ -3774,6 +3774,10 @@
           </span>
           <span id="vercel-sync-last-time" style="font-size:10px;color:var(--text-secondary);">—</span>
         </div>
+        <div id="vercel-sync-diff-row" style="font-size:11px;color:var(--text-secondary);margin-top:4px;display:flex;align-items:center;justify-content:space-between;">
+          <span id="vercel-sync-updated-at">Cloud: —</span>
+          <span id="vercel-sync-diff-pill" class="badge" style="display:none;font-size:9.5px;padding:2px 6px;">In Sync</span>
+        </div>
       </div>
 
       <div style="display:flex;align-items:center;justify-content:space-between;padding:2px 0 8px;">
@@ -3864,8 +3868,9 @@
               </span>
               <span id="disk-last-time" style="font-size:10px;color:var(--text-secondary);">—</span>
             </div>
-            <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;" id="disk-status-subtext">
-              Target: rupay-perks-data.json (auto-saved on every change)
+            <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;display:flex;align-items:center;justify-content:space-between;">
+              <span id="disk-status-subtext">Target: rupay-perks-data.json (auto-saved on every change)</span>
+              <span id="disk-updated-at-text" style="font-size:10px;color:var(--text-secondary);">Updated: —</span>
             </div>
           </div>
 
@@ -6551,7 +6556,85 @@ function checkStartupLock() {
    SECTION 2: DATA LAYER — load / save / CRUD
    ============================================================== */
 
-let DB = { variants: [], cards: [], usages: [], buyers: {} };
+/**
+ * Safely extracts or infers a timestamp in milliseconds from a dataset or usage object.
+ */
+function getDatasetTimestamp(dataset, fallbackDate = null) {
+  if (!dataset) return 0;
+  if (dataset.updatedAt) {
+    const t = new Date(dataset.updatedAt).getTime();
+    if (!isNaN(t) && t > 0) return t;
+  }
+  if (dataset._updatedAt) {
+    const t = new Date(dataset._updatedAt).getTime();
+    if (!isNaN(t) && t > 0) return t;
+  }
+  if (Array.isArray(dataset.usages) && dataset.usages.length > 0) {
+    let maxT = 0;
+    for (const u of dataset.usages) {
+      if (!u) continue;
+      if (u.updatedAt) {
+        const ut = new Date(u.updatedAt).getTime();
+        if (!isNaN(ut) && ut > maxT) maxT = ut;
+      }
+      if (u.date) {
+        const dt = new Date(u.date).getTime();
+        if (!isNaN(dt) && dt > maxT) maxT = dt;
+      }
+      if (u.sellDate) {
+        const st = new Date(u.sellDate).getTime();
+        if (!isNaN(st) && st > maxT) maxT = st;
+      }
+    }
+    if (maxT > 0) return maxT;
+  }
+  if (fallbackDate) {
+    const fb = new Date(fallbackDate).getTime();
+    if (!isNaN(fb) && fb > 0) return fb;
+  }
+  return 0;
+}
+
+/**
+ * Returns human-friendly formatted timestamp e.g. "Today 09:15 PM" or "06 Nov, 21:15"
+ */
+function formatTimestampDisplay(isoString) {
+  if (!isoString) return '—';
+  const d = new Date(isoString);
+  if (isNaN(d.getTime())) return '—';
+  const now = new Date();
+  const isToday = d.toDateString() === now.toDateString();
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const isYesterday = d.toDateString() === yesterday.toDateString();
+
+  const timeStr = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+  if (isToday) {
+    return `Today at ${timeStr}`;
+  } else if (isYesterday) {
+    return `Yesterday at ${timeStr}`;
+  } else {
+    const dateStr = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+    return `${dateStr}, ${timeStr}`;
+  }
+}
+
+/**
+ * Compares two timestamps (in ms or ISO string) with a 2-second tolerance window for clock skew.
+ * Returns: 'equal' | 'newer' (t1 > t2) | 'older' (t1 < t2)
+ */
+function compareSyncTimestamps(t1, t2, toleranceMs = 2000) {
+  const m1 = typeof t1 === 'number' ? t1 : (t1 ? new Date(t1).getTime() : 0);
+  const m2 = typeof t2 === 'number' ? t2 : (t2 ? new Date(t2).getTime() : 0);
+  if (!m1 && !m2) return 'equal';
+  if (m1 && !m2) return 'newer';
+  if (!m1 && m2) return 'older';
+  const diff = m1 - m2;
+  if (Math.abs(diff) <= toleranceMs) return 'equal';
+  return diff > 0 ? 'newer' : 'older';
+}
+
+let DB = { updatedAt: new Date().toISOString(), variants: [], cards: [], usages: [], buyers: {} };
 
 const CURRENT_SCHEMA_VER = '7.4';
 
@@ -6593,6 +6676,7 @@ function loadDB() {
 
       // PRESERVE ALL USER SETTINGS: Never replace existing variants, perks, or cards with seed!
       DB = {
+        updatedAt: parsed.updatedAt || (getDatasetTimestamp(parsed) ? new Date(getDatasetTimestamp(parsed)).toISOString() : new Date().toISOString()),
         variants: (Array.isArray(parsed.variants) && parsed.variants.length > 0) ? parsed.variants : seed.variants,
         cards:    Array.isArray(parsed.cards)                                     ? parsed.cards    : (seed.cards || []),
         usages:   Array.isArray(parsed.usages)                                    ? cleanedUsages   : (seed.usages || []),
@@ -6610,12 +6694,14 @@ function loadDB() {
       // Do NOT call saveDB() unconditionally during initial load.
     } else {
       DB = seed;
+      if (!DB.updatedAt) DB.updatedAt = new Date().toISOString();
       localStorage.setItem('rupay_schema_ver', CURRENT_SCHEMA_VER);
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); } catch (_) {}
     }
   } catch (e) {
     console.warn('loadDB error, using seed data', e);
     DB = buildSeedData();
+    if (!DB.updatedAt) DB.updatedAt = new Date().toISOString();
     localStorage.setItem('rupay_schema_ver', CURRENT_SCHEMA_VER);
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); } catch (_) {}
   }
@@ -6702,6 +6788,10 @@ function updateDiskStatusUI(status, label, subtext) {
       const d = new Date(last);
       timeEl.textContent = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false });
     }
+  }
+  const updatedEl = document.getElementById('disk-updated-at-text');
+  if (updatedEl) {
+    updatedEl.textContent = DB.updatedAt ? `Updated: ${formatTimestampDisplay(DB.updatedAt)}` : 'Updated: —';
   }
   if (pill) {
     if (status === 'synced') {
@@ -6802,9 +6892,10 @@ async function persistToLocalDisk(options = { silent: true }) {
  * Universal Database Save:
  * 1. Synchronous localStorage backup (instant safety net)
  * 2. Asynchronous direct disk write to linked rupay-perks-data.json
- * 3. Non-blocking debounced push to GitHub Gist post-save
+ * 3. Non-blocking debounced push to Vercel Cloud & GitHub Gist post-save
  */
 async function saveDB(skipCloudSync = false) {
+  DB.updatedAt = new Date().toISOString();
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
   } catch (e) {
@@ -6814,7 +6905,7 @@ async function saveDB(skipCloudSync = false) {
   // Direct disk write to rupay-perks-data.json
   await persistToLocalDisk({ silent: true });
 
-  // Post that, push to GitHub Gist via debounced non-blocking sync
+  // Post that, push to Vercel Cloud & GitHub Gist via debounced non-blocking sync
   if (!skipCloudSync) {
     triggerDebouncedVercelBlobPush();
     triggerDebouncedCloudPush();
@@ -6822,37 +6913,59 @@ async function saveDB(skipCloudSync = false) {
 }
 
 /**
- * Intelligently merges disk file data with current DB.
+ * Intelligently merges external dataset (from disk or cloud) with current DB.
+ * Uses Last-Write-Wins (LWW) conflict resolution with dataset-level and record-level timestamps.
  * NEVER deletes or wipes out newly added redemptions, card customizations, or local voucher details!
  */
-function mergeDatasets(fileData, currentDB) {
+function mergeDatasets(fileData, currentDB, options = {}) {
   if (!fileData) return currentDB || buildSeedData();
 
+  const fileTime = getDatasetTimestamp(fileData);
+  const currTime = getDatasetTimestamp(currentDB);
+  const incomingIsNewer = fileTime > currTime + 2000;
+  const currentIsNewer = currTime > fileTime + 2000;
+
   const result = {
+    updatedAt: new Date(Math.max(fileTime || 0, currTime || 0, Date.now())).toISOString(),
     variants: [],
     cards: [],
     perks: [],
-    brandPricePresets: fileData.brandPricePresets || (currentDB && currentDB.brandPricePresets) || undefined,
-    brandValidityPresets: fileData.brandValidityPresets || (currentDB && currentDB.brandValidityPresets) || undefined,
-    buyers: { ...(currentDB && currentDB.buyers ? currentDB.buyers : {}), ...(fileData && fileData.buyers ? fileData.buyers : {}) },
+    brandPricePresets: (incomingIsNewer && fileData.brandPricePresets)
+      ? fileData.brandPricePresets
+      : ((currentDB && currentDB.brandPricePresets) || fileData.brandPricePresets || undefined),
+    brandValidityPresets: (incomingIsNewer && fileData.brandValidityPresets)
+      ? fileData.brandValidityPresets
+      : ((currentDB && currentDB.brandValidityPresets) || fileData.brandValidityPresets || undefined),
+    buyers: {
+      ...(currentDB && currentDB.buyers ? currentDB.buyers : {}),
+      ...(fileData && fileData.buyers ? fileData.buyers : {})
+    },
     usages: []
   };
 
-  // 1. Merge cards:
-  // fileData is the base file, but currentDB holds the user's latest in-app edits (variantId, nickname, account, active, etc.)!
-  // Any user edits made in currentDB MUST take precedence over older static fileData!
+  // 1. Merge cards with LWW conflict resolution:
   const cardMap = new Map();
   (fileData.cards || []).forEach(fc => {
     if (fc && fc.id) cardMap.set(fc.id, { ...fc });
   });
+
   if (currentDB && Array.isArray(currentDB.cards)) {
     currentDB.cards.forEach(lc => {
-      if (lc && lc.id) {
-        const existing = cardMap.get(lc.id);
-        if (existing) {
-          cardMap.set(lc.id, { ...existing, ...lc });
+      if (!lc || !lc.id) return;
+      const fc = cardMap.get(lc.id);
+      if (!fc) {
+        cardMap.set(lc.id, { ...lc });
+      } else {
+        const fcTime = fc.updatedAt ? new Date(fc.updatedAt).getTime() : 0;
+        const lcTime = lc.updatedAt ? new Date(lc.updatedAt).getTime() : 0;
+
+        if (fcTime > lcTime + 2000) {
+          cardMap.set(lc.id, { ...lc, ...fc });
+        } else if (lcTime > fcTime + 2000) {
+          cardMap.set(lc.id, { ...fc, ...lc });
         } else {
-          cardMap.set(lc.id, { ...lc });
+          // Timestamps tie: current user edits take precedence
+          cardMap.set(lc.id, { ...fc, ...lc });
         }
       }
     });
@@ -6891,7 +7004,7 @@ function mergeDatasets(fileData, currentDB) {
   }
   result.perks = Array.from(perkMap.values());
 
-  // Non-destructive merge of usages
+  // 4. Non-destructive LWW merge of usages
   const fileUsages = Array.isArray(fileData.usages) ? fileData.usages : [];
   const localUsages = (currentDB && Array.isArray(currentDB.usages)) ? currentDB.usages : [];
 
@@ -6922,72 +7035,83 @@ function mergeDatasets(fileData, currentDB) {
     }
 
     if (targetId && mergedMap.has(targetId)) {
-      // Exists in both: preserve populated local edits over empty file values
-      const existing = mergedMap.get(targetId);
-      const merged = { ...existing };
+      const fu = mergedMap.get(targetId);
+      const fuTime = fu.updatedAt ? new Date(fu.updatedAt).getTime() : 0;
+      const luTime = lu.updatedAt ? new Date(lu.updatedAt).getTime() : 0;
 
-      // Priority 1: Coupon Code / Voucher Code
-      const luHasRealCode = Boolean(lu.couponCode && lu.couponCode.trim() && lu.couponCode.trim() !== '—' && lu.couponCode.trim() !== '-');
-      const fuHasRealCode = Boolean(existing.couponCode && existing.couponCode.trim() && existing.couponCode.trim() !== '—' && existing.couponCode.trim() !== '-' && existing.couponCode.toUpperCase() !== 'NA' && existing.couponCode.toUpperCase() !== 'DIRECT ACTIVATION');
+      let merged;
+      if (fuTime > luTime + 2000) {
+        // Incoming is newer
+        merged = { ...lu, ...fu };
+        if (!fu.couponCode && lu.couponCode) merged.couponCode = lu.couponCode;
+        if (!fu.voucherPin && lu.voucherPin) merged.voucherPin = lu.voucherPin;
+        if (!fu.buyer && lu.buyer) merged.buyer = lu.buyer;
+        if ((fu.price === undefined || fu.price === null) && lu.price !== undefined) merged.price = lu.price;
+        if (!fu.sellDate && lu.sellDate) merged.sellDate = lu.sellDate;
+        if (!fu.notes && lu.notes) merged.notes = lu.notes;
+        merged.updatedAt = fu.updatedAt;
+      } else if (luTime > fuTime + 2000) {
+        // Local is newer
+        merged = { ...fu, ...lu };
+        if (!lu.couponCode && fu.couponCode) merged.couponCode = fu.couponCode;
+        if (!lu.voucherPin && fu.voucherPin) merged.voucherPin = fu.voucherPin;
+        if (!lu.buyer && fu.buyer) merged.buyer = fu.buyer;
+        if ((lu.price === undefined || lu.price === null) && fu.price !== undefined) merged.price = fu.price;
+        if (!lu.sellDate && fu.sellDate) merged.sellDate = fu.sellDate;
+        if (!lu.notes && fu.notes) merged.notes = fu.notes;
+        merged.updatedAt = lu.updatedAt;
+      } else {
+        // Timestamps tie or missing: use field-level priority heuristic
+        merged = { ...fu, ...lu };
 
-      if (luHasRealCode) {
-        if (!fuHasRealCode || lu.couponCode.length >= (existing.couponCode || '').length) {
-          merged.couponCode = lu.couponCode;
+        // Priority 1: Coupon Code / Voucher Code
+        const luHasRealCode = Boolean(lu.couponCode && lu.couponCode.trim() && lu.couponCode.trim() !== '—' && lu.couponCode.trim() !== '-');
+        const fuHasRealCode = Boolean(fu.couponCode && fu.couponCode.trim() && fu.couponCode.trim() !== '—' && fu.couponCode.trim() !== '-' && fu.couponCode.toUpperCase() !== 'NA' && fu.couponCode.toUpperCase() !== 'DIRECT ACTIVATION');
+
+        if (luHasRealCode) {
+          if (!fuHasRealCode || lu.couponCode.length >= (fu.couponCode || '').length) {
+            merged.couponCode = lu.couponCode;
+          } else {
+            merged.couponCode = fu.couponCode;
+          }
+        } else if (fuHasRealCode) {
+          merged.couponCode = fu.couponCode;
         }
-      }
 
-      // Priority 2: Voucher validity & expiry
-      if (lu.validityDays !== undefined && lu.validityDays !== null) {
-        merged.validityDays = lu.validityDays;
-      }
-      if (lu.expiryDate) {
-        merged.expiryDate = lu.expiryDate;
-      }
-      if (lu.voucherPin) {
-        merged.voucherPin = lu.voucherPin;
-      }
+        // Priority 2: Voucher validity & expiry & PIN
+        if (lu.voucherPin || fu.voucherPin) merged.voucherPin = lu.voucherPin || fu.voucherPin;
+        if (lu.validityDays !== undefined && lu.validityDays !== null) merged.validityDays = lu.validityDays;
+        else if (fu.validityDays !== undefined && fu.validityDays !== null) merged.validityDays = fu.validityDays;
+        if (lu.expiryDate || fu.expiryDate) merged.expiryDate = lu.expiryDate || fu.expiryDate;
 
-      // Priority 3: Selling & status info
-      if (lu.couponUsed && (!existing.couponUsed || lu.couponUsed === 'SOLD' || lu.couponUsed === 'USED')) {
-        merged.couponUsed = lu.couponUsed;
-      }
-      if (lu.buyer && !existing.buyer) {
-        merged.buyer = lu.buyer;
-      }
-      if (lu.sellDate && !existing.sellDate) {
-        merged.sellDate = lu.sellDate;
-      }
-      if (lu.price !== undefined && existing.price === undefined) {
-        merged.price = lu.price;
-      }
-      if (lu.redeemedOnBuyerAccount !== undefined) {
-        merged.redeemedOnBuyerAccount = lu.redeemedOnBuyerAccount;
-      }
+        // Priority 3: Selling & status info
+        if (lu.couponUsed && (!fu.couponUsed || lu.couponUsed === 'SOLD' || lu.couponUsed === 'USED')) {
+          merged.couponUsed = lu.couponUsed;
+        } else if (fu.couponUsed) {
+          merged.couponUsed = fu.couponUsed;
+        }
+        if (lu.buyer || fu.buyer) merged.buyer = lu.buyer || fu.buyer;
+        if (lu.sellDate || fu.sellDate) merged.sellDate = lu.sellDate || fu.sellDate;
+        if (lu.price !== undefined) merged.price = lu.price;
+        else if (fu.price !== undefined) merged.price = fu.price;
+        if (lu.redeemedOnBuyerAccount !== undefined) merged.redeemedOnBuyerAccount = lu.redeemedOnBuyerAccount;
+        else if (fu.redeemedOnBuyerAccount !== undefined) merged.redeemedOnBuyerAccount = fu.redeemedOnBuyerAccount;
 
-      // Priority 4: Benefit metadata edits
-      const cleanLuNotes = cleanUsageNote(lu.notes);
-      const cleanExNotes = cleanUsageNote(existing.notes);
-      merged.notes = cleanLuNotes || cleanExNotes || '';
-      if (lu.redeemStatus && !existing.redeemStatus) {
-        merged.redeemStatus = lu.redeemStatus;
-      }
-      if (lu.brand && (!existing.brand || existing.brand === 'Other')) {
-        merged.brand = lu.brand;
-      }
-      if (lu.benefitId && !existing.benefitId) {
-        merged.benefitId = lu.benefitId;
-      }
-      if (lu.cardId && !existing.cardId) {
-        merged.cardId = lu.cardId;
-      }
-      if (lu.account && !existing.account) {
-        merged.account = lu.account;
+        // Priority 4: Benefit metadata edits & notes
+        const cleanLuNotes = cleanUsageNote(lu.notes);
+        const cleanFuNotes = cleanUsageNote(fu.notes);
+        merged.notes = cleanLuNotes || cleanFuNotes || '';
+        if (lu.redeemStatus || fu.redeemStatus) merged.redeemStatus = lu.redeemStatus || fu.redeemStatus;
+        if (lu.brand && (!fu.brand || fu.brand === 'Other')) merged.brand = lu.brand;
+        else if (fu.brand) merged.brand = fu.brand;
+        if (lu.benefitId || fu.benefitId) merged.benefitId = lu.benefitId || fu.benefitId;
+        if (lu.cardId || fu.cardId) merged.cardId = lu.cardId || fu.cardId;
+        if (lu.account || fu.account) merged.account = lu.account || fu.account;
       }
 
       mergedMap.set(targetId, merged);
     } else {
       // Local usage NOT present in disk file (e.g. newly added redemptions!)
-      // PRESERVE IT!
       const newId = lu.id || genId();
       mergedMap.set(newId, { ...lu, id: newId });
     }
@@ -7002,6 +7126,7 @@ function mergeDatasets(fileData, currentDB) {
 async function loadExternalJSONIfAvailable(options = { silent: false }) {
   updateDiskStatusUI('syncing', 'Reading rupay-perks-data.json...');
   let fetchedData = null;
+  let fileModDate = null;
 
   // 1. Try reading directly from linked File System Handle
   if (!localFileHandle) {
@@ -7012,10 +7137,16 @@ async function loadExternalJSONIfAvailable(options = { silent: false }) {
       let perm = await localFileHandle.queryPermission({ mode: 'read' });
       if (perm === 'granted') {
         const file = await localFileHandle.getFile();
+        if (file.lastModified) {
+          fileModDate = new Date(file.lastModified).toISOString();
+        }
         const text = await file.text();
         const parsed = JSON.parse(text);
         if (parsed && (Array.isArray(parsed.usages) || Array.isArray(parsed.cards))) {
           fetchedData = parsed;
+          if (!fetchedData.updatedAt && fileModDate) {
+            fetchedData.updatedAt = fileModDate;
+          }
         }
       }
     } catch (e) {
@@ -7028,24 +7159,31 @@ async function loadExternalJSONIfAvailable(options = { silent: false }) {
     try {
       const res = await fetch('./rupay-perks-data.json?t=' + Date.now(), { cache: 'no-store' });
       if (res.ok) {
+        const lastMod = res.headers.get('last-modified');
+        if (lastMod) fileModDate = new Date(lastMod).toISOString();
         const data = await res.json();
         if (data && (Array.isArray(data.usages) || Array.isArray(data.cards))) {
           fetchedData = data;
+          if (!fetchedData.updatedAt && fileModDate) {
+            fetchedData.updatedAt = fileModDate;
+          }
         }
       }
     } catch (_) {}
   }
 
   if (fetchedData) {
-    const diskUsagesCount = (fetchedData.usages || []).length;
-    const merged = mergeDatasets(fetchedData, DB);
-    const hasLocalDifferences = (merged.usages.length !== diskUsagesCount) ||
-      (JSON.stringify(merged.usages) !== JSON.stringify(fetchedData.usages || [])) ||
-      (JSON.stringify(merged.cards) !== JSON.stringify(fetchedData.cards || [])) ||
-      (JSON.stringify(merged.variants) !== JSON.stringify(fetchedData.variants || []));
+    const fileTime = getDatasetTimestamp(fetchedData, fileModDate);
+    const localTime = getDatasetTimestamp(DB);
+    const timeComparison = compareSyncTimestamps(fileTime, localTime);
+
+    const merged = mergeDatasets(fetchedData, DB, { sourceLabel: 'disk' });
+    const hasLocalDifferences = (merged.usages.length !== (DB.usages || []).length) ||
+      (JSON.stringify(merged.usages) !== JSON.stringify(DB.usages || [])) ||
+      (JSON.stringify(merged.cards) !== JSON.stringify(DB.cards || []));
 
     DB = merged;
-    const healed = healUsages({ silent: true, skipSave: true });
+    healUsages({ silent: true, skipSave: true });
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); } catch (_) {}
 
     const now = new Date();
@@ -7053,10 +7191,32 @@ async function loadExternalJSONIfAvailable(options = { silent: false }) {
     const fileName = localFileHandle ? localFileHandle.name : 'rupay-perks-data.json';
     updateDiskStatusUI(localFileHandle ? 'synced' : 'unlinked', fileName, `Loaded at ${timeStr} (${DB.usages.length} redemptions)`);
 
-    // If local had additions, modified redemptions, or healed usages not yet written to disk, persist immediately
-    if (hasLocalDifferences || healed > 0) {
+    // Conflict resolution & auto-propagation:
+    if (timeComparison === 'newer') {
+      // The file on disk was newer than browser memory/localStorage!
+      // This means the user edited rupay-perks-data.json offline/directly.
+      // Auto-propagate this newer disk file to Vercel Cloud so cloud stays in sync!
+      triggerDebouncedVercelBlobPush();
+      if (!options.silent) {
+        showToast(`Loaded newer data from ${fileName}! (${DB.usages.length} redemptions) 📁⬆`, 'success');
+      }
+    } else if (timeComparison === 'older') {
+      // Browser memory/localStorage was newer than the disk file!
+      // (e.g. redemptions synced from iPhone via cloud or added in web session)
+      // Automatically persist to the local disk file so rupay-perks-data.json stays up to date!
       persistToLocalDisk({ silent: true });
-      triggerDebouncedCloudPush();
+      if (!options.silent) {
+        showToast(`Local disk file updated with newer browser/cloud data! 💾`, 'info');
+      }
+    } else {
+      // In sync or minor differences
+      if (hasLocalDifferences) {
+        persistToLocalDisk({ silent: true });
+        triggerDebouncedVercelBlobPush();
+      }
+      if (!options.silent) {
+        showToast(`Loaded ${DB.usages.length} redemptions from JSON file! 📁✅`, 'success');
+      }
     }
 
     renderAll();
@@ -7211,14 +7371,14 @@ function updateCardIdentifierPreview() {
 
 function getCards()            { return DB.cards; }
 function getCardById(id)       { return DB.cards.find(c => c.id === id); }
-function addCard(data)         { const c = normalizeCardObject({ id: genId(), ...data }); DB.cards.push(c); saveDB(); return c; }
-function updateCard(id, d)     { const i = DB.cards.findIndex(c => c.id === id); if (i !== -1) { DB.cards[i] = normalizeCardObject({ ...DB.cards[i], ...d }); saveDB(); } }
+function addCard(data)         { const now = new Date().toISOString(); const c = normalizeCardObject({ id: genId(), createdAt: now, updatedAt: now, ...data }); DB.cards.push(c); saveDB(); return c; }
+function updateCard(id, d)     { const i = DB.cards.findIndex(c => c.id === id); if (i !== -1) { const now = new Date().toISOString(); DB.cards[i] = normalizeCardObject({ ...DB.cards[i], ...d, updatedAt: now }); saveDB(); } }
 function deleteCard(id)        { DB.cards = DB.cards.filter(c => c.id !== id); DB.usages = DB.usages.filter(u => u.cardId !== id); saveDB(); }
 
 /* --- Usages --- */
 function getUsages()                          { return DB.usages; }
-function addUsage(data, options = {})         { const u = { id: genId(), ...data }; DB.usages.push(u); if (!options.skipSave) saveDB(); if (typeof syncRedemptionToGSheet === 'function') syncRedemptionToGSheet(u); return u; }
-function updateUsage(id, d, options = {})     { const i = DB.usages.findIndex(u => u.id === id); if (i !== -1) { DB.usages[i] = { ...DB.usages[i], ...d }; if (!options.skipSave) saveDB(); if (typeof syncRedemptionToGSheet === 'function') syncRedemptionToGSheet(DB.usages[i]); return DB.usages[i]; } }
+function addUsage(data, options = {})         { const now = new Date().toISOString(); const u = { id: genId(), createdAt: now, updatedAt: now, ...data }; DB.usages.push(u); if (!options.skipSave) saveDB(); if (typeof syncRedemptionToGSheet === 'function') syncRedemptionToGSheet(u); return u; }
+function updateUsage(id, d, options = {})     { const i = DB.usages.findIndex(u => u.id === id); if (i !== -1) { const now = new Date().toISOString(); DB.usages[i] = { ...DB.usages[i], ...d, updatedAt: now }; if (!options.skipSave) saveDB(); if (typeof syncRedemptionToGSheet === 'function') syncRedemptionToGSheet(DB.usages[i]); return DB.usages[i]; } }
 function deleteUsage(id)                      { DB.usages = DB.usages.filter(u => u.id !== id); saveDB(); }
 
 /** Check if a bookingId already exists on another redemption (case-insensitive) */
@@ -12258,7 +12418,7 @@ async function saveCard() {
     const oldVariantId = existingCard ? existingCard.variantId : null;
     const i = DB.cards.findIndex(c => c.id === editId);
     if (i !== -1) {
-      DB.cards[i] = normalizeCardObject({ ...DB.cards[i], variantId, bank, nickname, last4, account, issueDate, active });
+      DB.cards[i] = normalizeCardObject({ ...DB.cards[i], variantId, bank, nickname, last4, account, issueDate, active, updatedAt: new Date().toISOString() });
     }
     if (oldVariantId && oldVariantId !== variantId) {
       healUsages({ silent: true });
@@ -12266,7 +12426,8 @@ async function saveCard() {
     await saveDB();
     showToast('Card updated ✅', 'success');
   } else {
-    const c = normalizeCardObject({ id: genId(), variantId, bank, nickname, last4, account, issueDate, active });
+    const now = new Date().toISOString();
+    const c = normalizeCardObject({ id: genId(), variantId, bank, nickname, last4, account, issueDate, active, createdAt: now, updatedAt: now });
     DB.cards.push(c);
     await saveDB();
     showToast('Card added ✅', 'success');
@@ -13274,7 +13435,8 @@ function closeConfirm() {
 const VERCEL_STORAGE_KEYS = {
   AUTO_SYNC: 'rupay_vercel_auto_sync',
   LAST_SYNC: 'rupay_vercel_last_sync',
-  TOKEN: 'rupay_vercel_blob_token'
+  TOKEN: 'rupay_vercel_blob_token',
+  CLOUD_UPDATED_AT: 'rupay_vercel_cloud_updated_at'
 };
 
 function getVercelBlobToken() {
@@ -13291,6 +13453,8 @@ function updateVercelBlobStatusUI(status, message) {
   const text = document.getElementById('vercel-sync-status-text');
   const lastTime = document.getElementById('vercel-sync-last-time');
   const navDot = document.getElementById('nav-sync-indicator');
+  const updatedAtEl = document.getElementById('vercel-sync-updated-at');
+  const diffPill = document.getElementById('vercel-sync-diff-pill');
 
   if (dot) {
     if (status === 'synced') dot.style.background = '#10b981';
@@ -13303,6 +13467,31 @@ function updateVercelBlobStatusUI(status, message) {
   const storedLast = localStorage.getItem(VERCEL_STORAGE_KEYS.LAST_SYNC);
   if (lastTime && storedLast) lastTime.textContent = storedLast;
   if (navDot && status === 'synced') navDot.style.background = '#10b981';
+
+  // Live cloud timestamp and diff pill
+  const cloudUpdated = localStorage.getItem(VERCEL_STORAGE_KEYS.CLOUD_UPDATED_AT);
+  if (updatedAtEl) {
+    updatedAtEl.textContent = cloudUpdated ? `Cloud: ${formatTimestampDisplay(cloudUpdated)}` : 'Cloud: Not checked yet';
+  }
+
+  if (diffPill) {
+    if (!cloudUpdated || !DB.updatedAt) {
+      diffPill.style.display = 'none';
+    } else {
+      const cmp = compareSyncTimestamps(cloudUpdated, DB.updatedAt);
+      diffPill.style.display = 'inline-block';
+      if (cmp === 'equal') {
+        diffPill.className = 'badge badge-success';
+        diffPill.textContent = 'In Sync';
+      } else if (cmp === 'newer') {
+        diffPill.className = 'badge badge-warning';
+        diffPill.textContent = 'Cloud Newer';
+      } else {
+        diffPill.className = 'badge badge-primary';
+        diffPill.textContent = 'Local Newer';
+      }
+    }
+  }
 }
 
 async function pullFromVercelBlob(options = { silent: false }) {
@@ -13352,12 +13541,21 @@ async function pullFromVercelBlob(options = { silent: false }) {
       throw new Error('Invalid data format received from cloud');
     }
 
-    const merged = mergeDatasets(cloudData, DB);
+    // Determine cloud timestamp
+    const cloudUpdatedAt = json.updatedAt || cloudData.updatedAt || json.blobUploadedAt || new Date().toISOString();
+    localStorage.setItem(VERCEL_STORAGE_KEYS.CLOUD_UPDATED_AT, cloudUpdatedAt);
+
+    const cloudTime = getDatasetTimestamp({ updatedAt: cloudUpdatedAt, usages: cloudData.usages });
+    const localTime = getDatasetTimestamp(DB);
+    const comparison = compareSyncTimestamps(cloudTime, localTime);
+
+    // Merge datasets intelligently with LWW conflict resolution
+    const merged = mergeDatasets(cloudData, DB, { sourceLabel: 'cloud' });
     DB = merged;
     healUsages({ silent: true, skipSave: true });
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); } catch (_) {}
 
-    // If cloud was legacy plain, auto-seal with Master PIN if set on this device
+    // Auto-seal legacy plain if Master PIN is active
     if (json._legacyPlain && isMasterPinSet()) {
       setTimeout(() => {
         pushToVercelBlob({ silent: true });
@@ -13367,12 +13565,32 @@ async function pullFromVercelBlob(options = { silent: false }) {
     const now = new Date();
     const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
     localStorage.setItem(VERCEL_STORAGE_KEYS.LAST_SYNC, timeStr);
-    updateVercelBlobStatusUI('synced', `Synced (${DB.usages.length} redemptions)`);
-    renderAll();
 
-    if (!options.silent) {
-      showToast(`Pulled ${DB.usages.length} redemptions & ${DB.cards.length} cards from Vercel Cloud!`, 'success');
+    if (comparison === 'newer') {
+      // Cloud was newer (e.g. redemptions made on iPhone)!
+      // Propagate automatically to local disk rupay-perks-data.json so laptop file is immediately updated!
+      persistToLocalDisk({ silent: true });
+      updateVercelBlobStatusUI('synced', `Synced from Cloud (${DB.usages.length} redemptions)`);
+      if (!options.silent) {
+        showToast(`Pulled ${DB.usages.length} redemptions from Cloud (Cloud was newer)! ☁️📲`, 'success');
+      }
+    } else if (comparison === 'older') {
+      // Local was newer (e.g. changes made on laptop)!
+      // We protected local data from being wiped; now push newer local data to cloud so mobile gets it!
+      pushToVercelBlob({ silent: true });
+      updateVercelBlobStatusUI('synced', `Local was newer; pushed to Cloud`);
+      if (!options.silent) {
+        showToast(`Local data was newer than Cloud! Safely merged & pushed to Cloud ☁️⬆`, 'success');
+      }
+    } else {
+      // In sync
+      updateVercelBlobStatusUI('synced', `In sync (${DB.usages.length} redemptions)`);
+      if (!options.silent) {
+        showToast(`Cloud and local are in sync! (${DB.usages.length} redemptions)`, 'success');
+      }
     }
+
+    renderAll();
     return true;
   } catch (err) {
     console.warn('Vercel Blob pull error:', err);
@@ -13387,13 +13605,19 @@ async function pullFromVercelBlob(options = { silent: false }) {
 async function pushToVercelBlob(options = { silent: false }) {
   updateVercelBlobStatusUI('syncing', 'Uploading to Vercel Cloud...');
   try {
+    if (!DB.updatedAt) {
+      DB.updatedAt = new Date().toISOString();
+    }
     let payload = DB;
     const passphrase = typeof getSyncPassphrase === 'function' ? getSyncPassphrase() : '';
     if (passphrase) {
       payload = await encryptWithPassphrase(JSON.stringify(DB), passphrase);
     }
 
-    const headers = { 'Content-Type': 'application/json' };
+    const headers = {
+      'Content-Type': 'application/json',
+      'x-updated-at': DB.updatedAt
+    };
     const token = getVercelBlobToken();
     if (token) headers['Authorization'] = 'Bearer ' + token;
 
@@ -13416,13 +13640,18 @@ async function pushToVercelBlob(options = { silent: false }) {
       throw new Error(errJson.error || ('Server error ' + res.status));
     }
 
+    const resJson = await res.json().catch(() => ({}));
+    const effectiveUpdatedAt = resJson.updatedAt || DB.updatedAt;
+
     const now = new Date();
     const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
     localStorage.setItem(VERCEL_STORAGE_KEYS.LAST_SYNC, timeStr);
+    localStorage.setItem(VERCEL_STORAGE_KEYS.CLOUD_UPDATED_AT, effectiveUpdatedAt);
+
     updateVercelBlobStatusUI('synced', `Saved at ${timeStr}`);
 
     if (!options.silent) {
-      showToast(`Pushed ${DB.usages.length} redemptions to Vercel Cloud!`, 'success');
+      showToast(`Pushed ${DB.usages.length} redemptions to Vercel Cloud! ☁️✅`, 'success');
     }
     return true;
   } catch (err) {
@@ -13472,7 +13701,15 @@ function importData(file) {
         'Import Data',
         `Replace all current data with imported file? (${parsed.variants.length} variants, ${parsed.cards.length} cards, ${parsed.usages.length} usages)`,
         () => {
-          DB = { variants: parsed.variants, cards: parsed.cards, usages: parsed.usages };
+          DB = {
+            updatedAt: parsed.updatedAt || new Date().toISOString(),
+            variants: parsed.variants,
+            cards: parsed.cards,
+            usages: parsed.usages,
+            buyers: parsed.buyers || DB.buyers || {},
+            brandPricePresets: parsed.brandPricePresets || DB.brandPricePresets,
+            brandValidityPresets: parsed.brandValidityPresets || DB.brandValidityPresets
+          };
           (DB.cards || []).forEach(normalizeCardObject);
           saveDB(); renderAll();
           showToast('Data imported successfully', 'success');
@@ -16000,6 +16237,8 @@ document.addEventListener('DOMContentLoaded', () => {
   settingsToggle.addEventListener('click', e => {
     e.stopPropagation();
     updateSecuritySettingsUI();
+    updateVercelBlobStatusUI();
+    updateDiskStatusUI();
     settingsPanel.classList.toggle('open');
   });
 

@@ -3,7 +3,7 @@ import { put, get, list } from '@vercel/blob';
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-vault-passphrase, x-pin-hash, x-pin-salt, x-pin-len, x-pin-disable');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-vault-passphrase, x-pin-hash, x-pin-salt, x-pin-len, x-pin-disable, x-updated-at');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -89,18 +89,27 @@ export default async function handler(req, res) {
           });
         }
         // Verified PIN: return actual database
+        const payloadData = parsed.data;
+        const dataUpdatedAt = (payloadData && typeof payloadData === 'object' && payloadData.updatedAt)
+          ? payloadData.updatedAt
+          : (parsed.updatedAt || blobResult.updatedAt);
         return res.status(200).json({
-          data: parsed.data,
-          updatedAt: blobResult.updatedAt,
+          data: payloadData,
+          updatedAt: dataUpdatedAt,
+          blobUploadedAt: blobResult.updatedAt,
           size: blobResult.size,
           isSealed: true
         });
       }
 
       // Plain un-enveloped database (legacy format)
+      const dataUpdatedAt = (parsed && typeof parsed === 'object' && parsed.updatedAt)
+        ? parsed.updatedAt
+        : blobResult.updatedAt;
       return res.status(200).json({
         data: parsed,
-        updatedAt: blobResult.updatedAt,
+        updatedAt: dataUpdatedAt,
+        blobUploadedAt: blobResult.updatedAt,
         size: blobResult.size,
         _legacyPlain: true
       });
@@ -139,6 +148,8 @@ export default async function handler(req, res) {
         }
       } catch (_) {}
 
+      const effectiveUpdatedAt = req.headers['x-updated-at'] || parsedBody.updatedAt || parsedBody.data?.updatedAt || new Date().toISOString();
+
       let contentToSave;
       if (!isPinDisable && pinHash && pinSalt) {
         contentToSave = JSON.stringify({
@@ -147,10 +158,15 @@ export default async function handler(req, res) {
             pinSalt,
             pinLen
           },
+          updatedAt: effectiveUpdatedAt,
           data: parsedBody.data || parsedBody
         }, null, 2);
       } else {
-        contentToSave = JSON.stringify(parsedBody.data || parsedBody, null, 2);
+        const payloadToSave = parsedBody.data || parsedBody;
+        if (payloadToSave && typeof payloadToSave === 'object') {
+          payloadToSave.updatedAt = effectiveUpdatedAt;
+        }
+        contentToSave = JSON.stringify(payloadToSave, null, 2);
       }
 
       let blob = await put(BLOB_FILENAME, contentToSave, {
@@ -164,7 +180,8 @@ export default async function handler(req, res) {
       return res.status(200).json({
         success: true,
         url: blob.url,
-        updatedAt: blob.uploadedAt,
+        updatedAt: effectiveUpdatedAt,
+        blobUploadedAt: blob.uploadedAt,
         size: contentToSave.length
       });
     } catch (err) {
