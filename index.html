@@ -4427,7 +4427,7 @@
         <option value="EXPIRY_ASC">⏰ Expiring Soonest</option>
         <option value="BRAND_ASC">🔤 Brand (A-Z)</option>
       </select>
-      <input type="text" class="filter-select" id="voucher-search" placeholder="🔍 Search card, code, buyer..." style="flex:1;min-width:180px;" />
+      <input type="text" class="filter-select" id="voucher-search" placeholder="🔍 Search code, PIN, buyer, card..." style="flex:1;min-width:180px;" />
     </div>
 
     <!-- Bulk Actions Toolbar (Sticky when vouchers selected) -->
@@ -4468,8 +4468,11 @@
 
     <div class="empty-state hidden" id="vouchers-empty">
       <div class="icon">🎟️</div>
-      <h3>No vouchers match your filter</h3>
-      <p>Try switching the status or brand filter to view other vouchers.</p>
+      <h3 id="vouchers-empty-title">No vouchers match your filter</h3>
+      <p id="vouchers-empty-desc">Try switching the status or brand filter to view other vouchers.</p>
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:center;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="clearVoucherFilters()">Reset Filters & Search</button>
+      </div>
     </div>
   </section>
 
@@ -4656,6 +4659,7 @@
         <option value="EMPTY">— Not Used / Available</option>
       </select>
       <select class="filter-select" id="filter-month"><option value="">All Months</option></select>
+      <input type="text" class="filter-select" id="history-search" placeholder="🔍 Search code, PIN, booking ID, buyer, card..." style="flex:1;min-width:180px;" />
 
       <div class="history-date-filter-group" style="display:inline-flex;align-items:center;gap:5px;background:var(--card-surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px 8px;">
         <span style="font-size:11px;color:var(--text-secondary);font-weight:600;">📅 Date:</span>
@@ -7394,6 +7398,93 @@ function findDuplicateBookingId(bookingId, excludeUsageId = null) {
 }
 
 /**
+ * Normalizes text by removing non-alphanumeric chars (spaces, hyphens, slashes, colons, underscores)
+ */
+function normalizeSearchString(str) {
+  if (!str) return '';
+  return String(str).toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+/**
+ * Checks if a redemption / voucher usage matches a search query.
+ * Robustly matches:
+ * 1. Plain substring in couponCode, bookingId, brand, buyer, notes, card nickname, last4, account.
+ * 2. Normalized alphanumeric match: e.g. "1001 4601 0825 9998" matches "1001460108259998/pin:183165".
+ * 3. Separate code part and pin part:
+ *    - Query "1001460108259998" matches the code part.
+ *    - Query "183165" matches the PIN part.
+ *    - Query "pin:183165" or "pin 183165" matches the PIN.
+ *    - Query "1001460108259998 / 183165" matches code + pin.
+ * 4. Buyer contact name and phone number.
+ * 5. Card last 4 digits even if user typed "last 4: 9998" or "••••9998" or "9998".
+ */
+function usageMatchesSearchQuery(u, query) {
+  if (!u || !query) return true;
+  const rawQ = query.trim().toLowerCase();
+  if (!rawQ) return true;
+  const cleanQ = normalizeSearchString(rawQ);
+
+  const rawCode = (u.couponCode || '').toLowerCase();
+  const cleanCode = normalizeSearchString(rawCode);
+
+  const rawBid = (u.bookingId || '').toLowerCase();
+  const cleanBid = normalizeSearchString(rawBid);
+
+  const rawBrand = (u.brand || '').toLowerCase();
+  const rawBuyer = (u.buyer || '').toLowerCase();
+  const cleanBuyer = normalizeSearchString(rawBuyer);
+  const buyerName = (typeof getBuyerContactName === 'function' ? (getBuyerContactName(u.buyer) || '') : '').toLowerCase();
+  const rawNotes = (u.notes || '').toLowerCase();
+
+  const card = (typeof getCardById === 'function') ? getCardById(u.cardId) : null;
+  const cardNick = card ? (card.nickname || '').toLowerCase() : '';
+  const cardLast4 = card ? (card.last4 || '').toLowerCase() : '';
+  const cardAcc = card ? (card.account || '').toLowerCase() : '';
+
+  // 1. Direct substring checks
+  if (rawCode.includes(rawQ)) return true;
+  if (rawBid.includes(rawQ)) return true;
+  if (rawBrand.includes(rawQ)) return true;
+  if (rawBuyer.includes(rawQ)) return true;
+  if (buyerName && buyerName.includes(rawQ)) return true;
+  if (rawNotes.includes(rawQ)) return true;
+  if (cardNick.includes(rawQ)) return true;
+  if (cardLast4.includes(rawQ)) return true;
+  if (cardAcc.includes(rawQ)) return true;
+
+  // 2. Normalized alphanumeric check (handles spaces, dashes, slashes in query or code)
+  if (cleanQ && cleanCode && cleanCode.includes(cleanQ)) return true;
+  if (cleanQ && cleanBid && cleanBid.includes(cleanQ)) return true;
+  if (cleanQ && cleanBuyer && cleanBuyer.includes(cleanQ)) return true;
+
+  // 3. Split code and PIN handling for voucher codes of form "1001460108259998/pin:183165"
+  if (rawCode.includes('/pin:')) {
+    const parts = rawCode.split(/\/pin:/i);
+    const codePart = parts[0] || '';
+    const pinPart = parts[1] || '';
+    const cleanCodePart = normalizeSearchString(codePart);
+    const cleanPinPart = normalizeSearchString(pinPart);
+
+    if (codePart.includes(rawQ) || (cleanQ && cleanCodePart.includes(cleanQ))) return true;
+    if (pinPart.includes(rawQ) || (cleanQ && cleanPinPart.includes(cleanQ))) return true;
+
+    // Check if query is in the form "code pin" or "code / pin" or "code / pin: pin"
+    if (cleanCodePart && cleanPinPart && cleanQ.includes(cleanCodePart) && cleanQ.includes(cleanPinPart)) {
+      return true;
+    }
+  }
+
+  // Also check if u has separate voucherPin field
+  if (u.voucherPin) {
+    const rawPin = String(u.voucherPin).toLowerCase();
+    const cleanPin = normalizeSearchString(rawPin);
+    if (rawPin.includes(rawQ) || (cleanQ && cleanPin.includes(cleanQ))) return true;
+  }
+
+  return false;
+}
+
+/**
  * Resolves a usage to a concrete benefit in the card's current variant.
  * If the card changed variants (e.g. from Select to Elite), this finds
  * the equivalent benefit in the new variant by:
@@ -9737,8 +9828,13 @@ function getFilteredHistoryUsages() {
   const filterMonth  = document.getElementById('filter-month') ? document.getElementById('filter-month').value : '';
   const filterDateFrom = document.getElementById('filter-date-from') ? document.getElementById('filter-date-from').value : '';
   const filterDateTo   = document.getElementById('filter-date-to') ? document.getElementById('filter-date-to').value : '';
+  const historySearch  = (document.getElementById('history-search')?.value || '').trim();
 
   let usages = [...DB.usages];
+
+  if (historySearch) {
+    usages = usages.filter(u => usageMatchesSearchQuery(u, historySearch));
+  }
 
   if (filterCard) usages = usages.filter(u => u.cardId === filterCard);
   if (filterType) {
@@ -10826,59 +10922,105 @@ function populateVoucherBrandSelect(brands) {
   });
 }
 
+function clearVoucherFilters() {
+  const statusSel = document.getElementById('voucher-filter-status');
+  if (statusSel) statusSel.value = 'ALL';
+  const brandSel = document.getElementById('voucher-filter-brand');
+  if (brandSel) brandSel.value = '';
+  const cycleSel = document.getElementById('voucher-filter-cycle');
+  if (cycleSel) cycleSel.value = '';
+  const searchInp = document.getElementById('voucher-search');
+  if (searchInp) searchInp.value = '';
+  activeVoucherBrandFilter = '';
+  renderVoucherPillsState();
+  renderVouchersTable();
+}
+
 function renderVouchersTable() {
-  const statusFilter = document.getElementById('voucher-filter-status').value;
-  const brandFilter  = document.getElementById('voucher-filter-brand').value || activeVoucherBrandFilter;
-  const cycleFilter  = document.getElementById('voucher-filter-cycle').value;
+  const statusFilterEl = document.getElementById('voucher-filter-status');
+  const statusFilter = statusFilterEl ? statusFilterEl.value : 'AVAILABLE';
+  const brandFilterEl = document.getElementById('voucher-filter-brand');
+  const brandFilter  = (brandFilterEl ? brandFilterEl.value : '') || activeVoucherBrandFilter;
+  const cycleFilter  = document.getElementById('voucher-filter-cycle')?.value || '';
   const sortFilter   = document.getElementById('voucher-sort')?.value || 'DATE_DESC';
-  const searchFilter = (document.getElementById('voucher-search').value || '').trim().toLowerCase();
+  const searchFilter = (document.getElementById('voucher-search')?.value || '').trim();
 
   let vouchers = getVouchersList();
 
-  // Filter by status
-  if (statusFilter === 'AVAILABLE') {
-    vouchers = vouchers.filter(isVoucherAvailable);
-  } else if (statusFilter === 'EXPIRING_SOON') {
-    vouchers = vouchers.filter(u => {
-      if (!isVoucherAvailable(u)) return false;
-      const exp = getVoucherExpiry(u);
-      return exp && exp.isExpiringSoon && !exp.isExpired;
-    });
-  } else if (statusFilter === 'EXPIRED') {
-    vouchers = vouchers.filter(u => {
-      if (!isVoucherAvailable(u)) return false;
-      const exp = getVoucherExpiry(u);
-      return exp && exp.isExpired;
-    });
-  } else if (statusFilter === 'SOLD') {
-    vouchers = vouchers.filter(u => u.couponUsed === 'SOLD');
-  } else if (statusFilter === 'USED') {
-    vouchers = vouchers.filter(u => u.couponUsed === 'USED');
-  }
-
-  // Filter by brand
-  if (brandFilter) {
-    vouchers = vouchers.filter(u => (u.brand || 'Other') === brandFilter);
-  }
-
-  // Filter by cycle
-  if (cycleFilter) {
-    vouchers = vouchers.filter(u => getCycleFromDate(u.date) === cycleFilter);
-  }
-
-  // Filter by search
+  // If a search query is entered:
   if (searchFilter) {
-    vouchers = vouchers.filter(u => {
-      const card = getCardById(u.cardId);
-      const cardText = card ? (card.nickname + ' ' + card.last4).toLowerCase() : '';
-      const codeText = (u.couponCode || '').toLowerCase();
-      const bookText = (u.bookingId || '').toLowerCase();
-      const brandText = (u.brand || '').toLowerCase();
-      const buyerText = (u.buyer || '').toLowerCase();
-      return cardText.includes(searchFilter) || codeText.includes(searchFilter) ||
-             bookText.includes(searchFilter) || brandText.includes(searchFilter) ||
-             buyerText.includes(searchFilter);
-    });
+    // When searching, if the status filter is on the default 'AVAILABLE',
+    // search across ALL vouchers so sold/used codes (and buyers) are immediately found.
+    // If the user explicitly picked SOLD, USED, EXPIRED, etc., respect that filter.
+    if (statusFilter === 'AVAILABLE') {
+      vouchers = vouchers.filter(u => usageMatchesSearchQuery(u, searchFilter));
+    } else if (statusFilter === 'SOLD') {
+      vouchers = vouchers.filter(u => u.couponUsed === 'SOLD' && usageMatchesSearchQuery(u, searchFilter));
+    } else if (statusFilter === 'USED') {
+      vouchers = vouchers.filter(u => u.couponUsed === 'USED' && usageMatchesSearchQuery(u, searchFilter));
+    } else if (statusFilter === 'EXPIRING_SOON') {
+      vouchers = vouchers.filter(u => {
+        if (!isVoucherAvailable(u)) return false;
+        const exp = getVoucherExpiry(u);
+        return exp && exp.isExpiringSoon && !exp.isExpired && usageMatchesSearchQuery(u, searchFilter);
+      });
+    } else if (statusFilter === 'EXPIRED') {
+      vouchers = vouchers.filter(u => {
+        if (!isVoucherAvailable(u)) return false;
+        const exp = getVoucherExpiry(u);
+        return exp && exp.isExpired && usageMatchesSearchQuery(u, searchFilter);
+      });
+    } else {
+      // ALL
+      vouchers = vouchers.filter(u => usageMatchesSearchQuery(u, searchFilter));
+    }
+
+    // Handle brand filter tolerance during search:
+    if (brandFilter) {
+      const withinBrand = vouchers.filter(u => (u.brand || 'Other') === brandFilter);
+      if (withinBrand.length > 0) {
+        vouchers = withinBrand;
+      }
+    }
+
+    // Handle cycle filter tolerance during search:
+    if (cycleFilter) {
+      const withinCycle = vouchers.filter(u => getCycleFromDate(u.date) === cycleFilter);
+      if (withinCycle.length > 0) {
+        vouchers = withinCycle;
+      }
+    }
+  } else {
+    // Standard inventory browsing without search query:
+    if (statusFilter === 'AVAILABLE') {
+      vouchers = vouchers.filter(isVoucherAvailable);
+    } else if (statusFilter === 'EXPIRING_SOON') {
+      vouchers = vouchers.filter(u => {
+        if (!isVoucherAvailable(u)) return false;
+        const exp = getVoucherExpiry(u);
+        return exp && exp.isExpiringSoon && !exp.isExpired;
+      });
+    } else if (statusFilter === 'EXPIRED') {
+      vouchers = vouchers.filter(u => {
+        if (!isVoucherAvailable(u)) return false;
+        const exp = getVoucherExpiry(u);
+        return exp && exp.isExpired;
+      });
+    } else if (statusFilter === 'SOLD') {
+      vouchers = vouchers.filter(u => u.couponUsed === 'SOLD');
+    } else if (statusFilter === 'USED') {
+      vouchers = vouchers.filter(u => u.couponUsed === 'USED');
+    }
+
+    // Filter by brand
+    if (brandFilter) {
+      vouchers = vouchers.filter(u => (u.brand || 'Other') === brandFilter);
+    }
+
+    // Filter by cycle
+    if (cycleFilter) {
+      vouchers = vouchers.filter(u => getCycleFromDate(u.date) === cycleFilter);
+    }
   }
 
   // Sorting
@@ -10904,6 +11046,14 @@ function renderVouchersTable() {
   if (vouchers.length === 0) {
     tableWrap.classList.add('hidden');
     emptyState.classList.remove('hidden');
+    const emptyTitle = document.getElementById('vouchers-empty-title');
+    const emptyDesc  = document.getElementById('vouchers-empty-desc');
+    if (emptyTitle) {
+      emptyTitle.textContent = searchFilter ? `No vouchers found for "${searchFilter}"` : 'No vouchers match your filter';
+    }
+    if (emptyDesc) {
+      emptyDesc.textContent = searchFilter ? 'Check the code or PIN, or click below to reset search & view all vouchers.' : 'Try switching the status or brand filter to view other vouchers.';
+    }
     updateBulkBarState();
     return;
   }
@@ -12592,11 +12742,7 @@ function renderOmnisearch(query) {
 
   // Vouchers / Redemptions
   allUsages.forEach(u => {
-    const code = (u.couponCode || '').toLowerCase();
-    const bid = (u.bookingId || '').toLowerCase();
-    const brand = (u.brand || '').toLowerCase();
-    const notes = (u.notes || '').toLowerCase();
-    if (code.includes(q) || bid.includes(q) || brand.includes(q) || notes.includes(q)) {
+    if (usageMatchesSearchQuery(u, q)) {
       matchedVouchers.push(u);
     }
   });
@@ -12654,10 +12800,21 @@ function renderOmnisearch(query) {
     return;
   }
 
+  let effectiveCat = omnisearchActiveCat;
+  if (effectiveCat !== 'ALL') {
+    const catHasResults = (effectiveCat === 'CARDS' && matchedCards.length > 0) ||
+      (effectiveCat === 'VOUCHERS' && matchedVouchers.length > 0) ||
+      (effectiveCat === 'BUYERS' && matchedBuyers.length > 0) ||
+      (effectiveCat === 'PERKS' && matchedPerks.length > 0);
+    if (!catHasResults) {
+      effectiveCat = 'ALL';
+    }
+  }
+
   let html = '';
 
   // 1. Render Cards
-  if ((omnisearchActiveCat === 'ALL' || omnisearchActiveCat === 'CARDS') && matchedCards.length > 0) {
+  if ((effectiveCat === 'ALL' || effectiveCat === 'CARDS') && matchedCards.length > 0) {
     html += `<div class="omnisearch-group-title">💳 Cards (${matchedCards.length})</div>`;
     matchedCards.slice(0, 6).forEach(c => {
       const bank = getCardBank(c);
@@ -12686,9 +12843,9 @@ function renderOmnisearch(query) {
   }
 
   // 2. Render Vouchers / Redemptions
-  if ((omnisearchActiveCat === 'ALL' || omnisearchActiveCat === 'VOUCHERS') && matchedVouchers.length > 0) {
+  if ((effectiveCat === 'ALL' || effectiveCat === 'VOUCHERS') && matchedVouchers.length > 0) {
     html += `<div class="omnisearch-group-title" style="margin-top:8px;">🎟️ Vouchers & Redemptions (${matchedVouchers.length})</div>`;
-    matchedVouchers.slice(0, 8).forEach(u => {
+    matchedVouchers.slice(0, 15).forEach(u => {
       const card = getCardById(u.cardId);
       const brand = u.brand || 'Perk';
       const brandLower = brand.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -12729,7 +12886,7 @@ function renderOmnisearch(query) {
   }
 
   // 3. Render Buyers
-  if ((omnisearchActiveCat === 'ALL' || omnisearchActiveCat === 'BUYERS') && matchedBuyers.length > 0) {
+  if ((effectiveCat === 'ALL' || effectiveCat === 'BUYERS') && matchedBuyers.length > 0) {
     html += `<div class="omnisearch-group-title" style="margin-top:8px;">👤 Buyers (${matchedBuyers.length})</div>`;
     matchedBuyers.slice(0, 5).forEach(b => {
       const contactName = getBuyerContactName(b.phone);
@@ -12752,7 +12909,7 @@ function renderOmnisearch(query) {
   }
 
   // 4. Render Perks & Variants
-  if ((omnisearchActiveCat === 'ALL' || omnisearchActiveCat === 'PERKS') && matchedPerks.length > 0) {
+  if ((effectiveCat === 'ALL' || effectiveCat === 'PERKS') && matchedPerks.length > 0) {
     html += `<div class="omnisearch-group-title" style="margin-top:8px;">🎁 Card Variants & Perks (${matchedPerks.length})</div>`;
     matchedPerks.slice(0, 4).forEach(v => {
       html += `
@@ -17199,6 +17356,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('filter-cycle').addEventListener('change', renderHistory);
   document.getElementById('filter-coupon-used').addEventListener('change', renderHistory);
   document.getElementById('filter-month').addEventListener('change', renderHistory);
+  const historySearchInp = document.getElementById('history-search');
+  if (historySearchInp) historySearchInp.addEventListener('input', renderHistory);
 
   const filterDateFrom = document.getElementById('filter-date-from');
   const filterDateTo = document.getElementById('filter-date-to');
