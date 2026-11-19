@@ -54,6 +54,7 @@
       background: var(--bg);
       color: var(--text-primary);
       min-height: 100vh;
+      min-height: -webkit-fill-available;
       font-size: 14px;
       line-height: 1.5;
       overflow-x: hidden;
@@ -885,9 +886,14 @@
 
       /* Navbar mobile layout */
       .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 150;
         height: auto;
         min-height: 52px;
-        padding: max(8px, env(safe-area-inset-top)) 12px 8px;
+        padding: max(env(safe-area-inset-top), 10px) 12px 8px;
         justify-content: space-between;
         gap: 8px;
         width: 100%;
@@ -937,7 +943,7 @@
         bottom: 0;
         left: 0;
         right: 0;
-        z-index: 100;
+        z-index: 155;
         background: rgba(14, 14, 22, 0.94);
         -webkit-backdrop-filter: blur(25px) saturate(180%);
         backdrop-filter: blur(25px) saturate(180%);
@@ -992,7 +998,7 @@
 
       /* Main container spacing & containment */
       .main-content {
-        padding: 14px 12px max(85px, calc(72px + env(safe-area-inset-bottom))) !important;
+        padding: calc(max(env(safe-area-inset-top), 10px) + 60px) 12px max(85px, calc(72px + env(safe-area-inset-bottom))) !important;
         overflow-x: hidden;
         width: 100%;
         box-sizing: border-box;
@@ -1123,6 +1129,7 @@
         border-radius: var(--radius-sm);
         width: 100%;
         box-sizing: border-box;
+        overflow: hidden;
       }
       .scheduler-header {
         flex-direction: column;
@@ -1135,9 +1142,16 @@
         width: 100%;
       }
       .scheduler-title {
-        font-size: 14px;
+        font-size: 13px;
         flex-wrap: wrap;
         gap: 6px;
+        align-items: flex-start;
+      }
+      /* Truncate the long scheduler title text on mobile */
+      .scheduler-title > span:first-child {
+        font-size: 13px;
+        line-height: 1.3;
+        word-break: break-word;
       }
       .scheduler-metrics-row {
         width: 100%;
@@ -1347,6 +1361,7 @@
         margin-bottom: 12px;
       }
       .history-filters #filter-card,
+      .history-filters #history-search,
       .history-filters .history-date-filter-group,
       .history-filters #history-filter-count-badge {
         grid-column: 1 / -1;
@@ -1374,6 +1389,7 @@
         border-radius: 0;
         padding: 0;
         max-height: 100dvh;
+        z-index: 160;
       }
       .settings-header {
         padding-top: max(16px, env(safe-area-inset-top));
