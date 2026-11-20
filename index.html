@@ -4,9 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" id="meta-apple-status-bar" />
   <meta name="apple-mobile-web-app-title" content="RuPay Perks" />
-  <meta name="theme-color" content="#0d0d14" />
+  <meta name="theme-color" content="#F7F5EE" id="meta-theme-color" />
   <title>RuPay Perks</title>
   
   <!-- Apple Touch Icon for iPhone / iPad Home Screen PWA -->
@@ -17,6 +17,26 @@
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+
+  <!-- Immediate Theme Loader (Zero Flash of Unstyled Theme) -->
+  <script>
+    (function() {
+      try {
+        var t = localStorage.getItem('rupay_perks_theme') || 'editorial';
+        if (t === 'editorial') {
+          document.documentElement.classList.add('theme-editorial');
+          document.documentElement.setAttribute('data-theme', 'editorial');
+        } else {
+          document.documentElement.classList.remove('theme-editorial');
+          document.documentElement.setAttribute('data-theme', 'dark');
+          var metaC = document.getElementById('meta-theme-color');
+          if (metaC) metaC.setAttribute('content', '#0d0d14');
+          var metaA = document.getElementById('meta-apple-status-bar');
+          if (metaA) metaA.setAttribute('content', 'black-translucent');
+        }
+      } catch(_) {}
+    })();
+  </script>
   <style>
     /* ===== CSS CUSTOM PROPERTIES ===== */
     :root {
@@ -3521,6 +3541,695 @@
       }
     }
 
+    /* ==============================================================
+       THEME SWITCHER CONTROLS & NAV PILL
+       ============================================================== */
+    .nav-theme-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      background: var(--elevated);
+      border: 1px solid var(--border);
+      border-radius: 9999px;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+    .nav-theme-btn:hover {
+      background: var(--card-surface);
+      border-color: var(--primary);
+      color: var(--text-primary);
+      transform: translateY(-1px);
+    }
+    @media (max-width: 768px) {
+      .nav-theme-text { display: none; }
+      .nav-theme-btn { padding: 6px 9px; }
+    }
+
+    /* Settings Theme Picker Cards */
+    .theme-picker-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .theme-picker-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      background: var(--card-surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.18s ease;
+      position: relative;
+    }
+    .theme-picker-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-1px);
+    }
+    .theme-picker-card.active {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 1px var(--primary), 0 4px 14px rgba(0, 0, 0, 0.15);
+    }
+    .theme-card-swatch {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .swatch-editorial {
+      background-color: #F7F5EE;
+      background-image: 
+        linear-gradient(to right, rgba(24, 24, 27, 0.08) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(24, 24, 27, 0.08) 1px, transparent 1px);
+      background-size: 8px 8px;
+    }
+    .swatch-editorial .swatch-cta-btn {
+      width: 20px;
+      height: 9px;
+      background: #C2542D;
+      border-radius: 9999px;
+      box-shadow: 0 1px 3px rgba(194, 84, 45, 0.4);
+    }
+    .swatch-dark {
+      background: #0d0d14;
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+    .swatch-dark .swatch-dark-cta {
+      width: 20px;
+      height: 9px;
+      background: #7c3aed;
+      border-radius: 4px;
+      box-shadow: 0 0 6px rgba(124, 58, 237, 0.6);
+    }
+    .theme-card-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .theme-card-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+    .theme-active-indicator {
+      font-size: 12px;
+      color: var(--primary);
+      font-weight: 800;
+      display: none;
+    }
+    .theme-picker-card.active .theme-active-indicator {
+      display: inline-block;
+    }
+    .theme-card-desc {
+      font-size: 11px;
+      color: var(--text-secondary);
+      line-height: 1.35;
+    }
+
+    /* ==============================================================
+       WARM EDITORIAL (STUDIO CRAFT) DESIGN SYSTEM
+       Aesthetic inspired by Priyadarshi / Modern Studio Architecture:
+       - Warm architectural cream drafting paper with subtle grid lines
+       - Burnt terracotta pill CTA buttons (#C2542D)
+       - Pure white floating artboard card surfaces
+       - Bold grotesque editorial headlines with compact tracking
+       - Highlighter yellow marker accents & keycap badges
+       ============================================================== */
+    html.theme-editorial,
+    body.theme-editorial {
+      --bg: #F7F5EE;
+      --surface: #EFECE3;
+      --card-surface: #FFFFFF;
+      --elevated: #F4F1EA;
+      --primary: #C2542D;
+      --primary-light: #D9663E;
+      --secondary: #2563EB;
+      --success: #15803D;
+      --warning: #D97706;
+      --danger: #DC2626;
+      --text-primary: #18181B;
+      --text-secondary: #716E68;
+      --border: rgba(24, 24, 27, 0.08);
+      --border-solid: #E2DDD2;
+      --radius: 14px;
+      --radius-sm: 8px;
+      --radius-xs: 4px;
+      --shadow: 0 10px 30px -4px rgba(45, 35, 20, 0.07), 0 2px 6px -1px rgba(45, 35, 20, 0.03);
+      --transition: 0.18s ease;
+      background-color: #F7F5EE;
+      background-image: 
+        linear-gradient(to right, rgba(24, 24, 27, 0.045) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(24, 24, 27, 0.045) 1px, transparent 1px);
+      background-size: 32px 32px;
+      color: #18181B;
+    }
+
+    /* Scrollbars in Warm Editorial */
+    body.theme-editorial ::-webkit-scrollbar-track { background: #EFECE3; }
+    body.theme-editorial ::-webkit-scrollbar-thumb { background: #D6D1C7; border-radius: 4px; }
+    body.theme-editorial ::-webkit-scrollbar-thumb:hover { background: #B8B2A6; }
+
+    /* Frosted Studio Navbar */
+    body.theme-editorial .navbar {
+      background: rgba(247, 245, 238, 0.92) !important;
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid rgba(24, 24, 27, 0.08);
+      box-shadow: 0 1px 4px rgba(45, 35, 20, 0.03);
+    }
+    body.theme-editorial .nav-brand {
+      color: #18181B;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    body.theme-editorial .nav-tab {
+      color: #716E68;
+      border-radius: 9999px;
+      font-weight: 600;
+      padding: 6px 14px;
+    }
+    body.theme-editorial .nav-tab:hover {
+      color: #18181B;
+      background: rgba(24, 24, 27, 0.05);
+    }
+    body.theme-editorial .nav-tab.active {
+      color: #FFFFFF !important;
+      background: #18181B !important;
+      border-color: #18181B !important;
+      box-shadow: 0 2px 8px rgba(24, 24, 27, 0.2);
+    }
+    body.theme-editorial .nav-search-btn {
+      background: #FFFFFF !important;
+      border: 1px solid rgba(24, 24, 27, 0.12) !important;
+      border-radius: 9999px !important;
+      color: #716E68 !important;
+      box-shadow: 0 1px 3px rgba(45, 35, 20, 0.04);
+    }
+    body.theme-editorial .nav-search-btn:hover {
+      border-color: #C2542D !important;
+      color: #18181B !important;
+    }
+    body.theme-editorial .nav-search-kbd {
+      background: #F4F1EA !important;
+      border: 1px solid #D6D1C7 !important;
+      color: #716E68 !important;
+      border-radius: 4px;
+    }
+    body.theme-editorial .btn-icon,
+    body.theme-editorial .nav-theme-btn {
+      background: #FFFFFF !important;
+      border: 1px solid rgba(24, 24, 27, 0.1) !important;
+      border-radius: 9999px !important;
+      color: #716E68 !important;
+      box-shadow: 0 1px 2px rgba(45, 35, 20, 0.04);
+    }
+    body.theme-editorial .btn-icon:hover,
+    body.theme-editorial .nav-theme-btn:hover {
+      border-color: #C2542D !important;
+      color: #18181B !important;
+    }
+
+    /* Mobile Bottom Navigation Bar */
+    body.theme-editorial .mobile-bottom-nav {
+      background: rgba(247, 245, 238, 0.94) !important;
+      border-top: 1px solid rgba(24, 24, 27, 0.08) !important;
+      box-shadow: 0 -4px 24px rgba(45, 35, 20, 0.06) !important;
+    }
+    body.theme-editorial .mobile-bottom-nav .nav-tab {
+      color: #716E68 !important;
+    }
+    body.theme-editorial .mobile-bottom-nav .nav-tab.active {
+      color: #C2542D !important;
+      font-weight: 700;
+    }
+    body.theme-editorial .mobile-bottom-nav .nav-tab.active .tab-svg {
+      stroke: #C2542D !important;
+      filter: drop-shadow(0 0 5px rgba(194, 84, 45, 0.35)) !important;
+    }
+
+    /* Headlines & Editorial Grotesque Typography */
+    body.theme-editorial .page-title,
+    body.theme-editorial .scheduler-title,
+    body.theme-editorial .card-widget-title,
+    body.theme-editorial .cooldown-title,
+    body.theme-editorial .smart-finder-title,
+    body.theme-editorial .modal-title,
+    body.theme-editorial .settings-title {
+      font-weight: 800 !important;
+      letter-spacing: -0.025em !important;
+      color: #18181B !important;
+    }
+    body.theme-editorial .page-subtitle,
+    body.theme-editorial .scheduler-subtitle,
+    body.theme-editorial .cooldown-subtitle,
+    body.theme-editorial .card-widget-sub {
+      color: #716E68 !important;
+    }
+
+    /* Yellow Highlighter Marker Accent */
+    body.theme-editorial .marker-highlight {
+      background: linear-gradient(180deg, transparent 55%, #FDE047 55%) !important;
+      padding: 0 4px;
+      font-weight: 800;
+      color: #18181B;
+    }
+
+    /* Buttons: Burnt Terracotta Pill (#C2542D) and Pure White Pill */
+    body.theme-editorial .btn-primary {
+      background: #C2542D !important;
+      color: #FFFFFF !important;
+      border: 1px solid #C2542D !important;
+      border-radius: 9999px !important;
+      font-weight: 600 !important;
+      box-shadow: 0 2px 8px rgba(194, 84, 45, 0.28) !important;
+    }
+    body.theme-editorial .btn-primary:hover {
+      background: #A8411F !important;
+      border-color: #A8411F !important;
+      transform: translateY(-1px);
+    }
+    body.theme-editorial .btn-secondary {
+      background: #FFFFFF !important;
+      color: #18181B !important;
+      border: 1px solid rgba(24, 24, 27, 0.15) !important;
+      border-radius: 9999px !important;
+      font-weight: 600 !important;
+      box-shadow: 0 1px 3px rgba(45, 35, 20, 0.04) !important;
+    }
+    body.theme-editorial .btn-secondary:hover {
+      background: #F4F1EA !important;
+      border-color: rgba(24, 24, 27, 0.25) !important;
+    }
+    body.theme-editorial .btn-danger {
+      background: rgba(220, 38, 38, 0.08) !important;
+      color: #DC2626 !important;
+      border: 1px solid rgba(220, 38, 38, 0.2) !important;
+      border-radius: 9999px !important;
+    }
+    body.theme-editorial .btn-danger:hover {
+      background: rgba(220, 38, 38, 0.16) !important;
+    }
+
+    /* Quick Log from SMS Button (Bold Ink Pill) */
+    body.theme-editorial #btn-dashboard-sms-log {
+      background: #18181B !important;
+      color: #FFFFFF !important;
+      border: 1px solid #18181B !important;
+      border-radius: 9999px !important;
+      box-shadow: 0 4px 14px rgba(24, 24, 27, 0.2) !important;
+      font-weight: 600;
+    }
+    body.theme-editorial #btn-dashboard-sms-log:hover {
+      background: #27272A !important;
+      transform: translateY(-1px);
+    }
+
+    /* Floating Artboard Cards & Containers */
+    body.theme-editorial .stat-card,
+    body.theme-editorial .card-widget,
+    body.theme-editorial .claim-scheduler-section,
+    body.theme-editorial .cycle-expiry-section,
+    body.theme-editorial .smart-finder-section,
+    body.theme-editorial .accounts-cooldown-section,
+    body.theme-editorial .dashboard-bank-filter-section,
+    body.theme-editorial .insight-kpi-card,
+    body.theme-editorial .card,
+    body.theme-editorial .matrix-table-card,
+    body.theme-editorial .table-wrap,
+    body.theme-editorial .modal,
+    body.theme-editorial .settings-panel,
+    body.theme-editorial .confirm-box {
+      background: #FFFFFF !important;
+      border: 1px solid rgba(24, 24, 27, 0.08) !important;
+      box-shadow: 0 8px 30px -4px rgba(45, 35, 20, 0.06), 0 2px 6px -1px rgba(45, 35, 20, 0.03) !important;
+      border-radius: 14px !important;
+    }
+    body.theme-editorial .stat-card:hover {
+      border-color: rgba(194, 84, 45, 0.3) !important;
+      box-shadow: 0 12px 36px -4px rgba(45, 35, 20, 0.09) !important;
+    }
+    body.theme-editorial .stat-card-label {
+      color: #716E68 !important;
+      font-weight: 700 !important;
+    }
+    body.theme-editorial .stat-card-value {
+      color: #18181B !important;
+    }
+    body.theme-editorial .stat-value.primary { color: #C2542D !important; }
+    body.theme-editorial .stat-value.success { color: #15803D !important; }
+    body.theme-editorial .stat-value.warning { color: #D97706 !important; }
+    body.theme-editorial .stat-value.danger { color: #DC2626 !important; }
+    body.theme-editorial .stat-value.secondary { color: #2563EB !important; }
+
+    /* Card Widget Details */
+    body.theme-editorial .card-widget-header {
+      border-bottom: 1px solid #EAE6DD !important;
+    }
+    body.theme-editorial .card-number {
+      color: #C2542D !important;
+      font-weight: 700 !important;
+    }
+    body.theme-editorial .card-account-pill {
+      background: #F7F5EE !important;
+      border: 1px solid #E2DDD2 !important;
+      color: #716E68 !important;
+    }
+    body.theme-editorial .card-account-pill:hover {
+      background: #EFECE3 !important;
+      color: #18181B !important;
+    }
+    body.theme-editorial .card-account-pill.active {
+      background: rgba(194, 84, 45, 0.1) !important;
+      border-color: #C2542D !important;
+      color: #C2542D !important;
+    }
+    body.theme-editorial .benefit-row {
+      border-bottom: 1px solid #F0ECE4 !important;
+    }
+    body.theme-editorial .benefit-name {
+      color: #18181B !important;
+    }
+
+    /* Badges in Studio Palette */
+    body.theme-editorial .badge-primary {
+      background: rgba(194, 84, 45, 0.1) !important;
+      color: #C2542D !important;
+      border: 1px solid rgba(194, 84, 45, 0.25) !important;
+    }
+    body.theme-editorial .badge-secondary {
+      background: rgba(37, 99, 235, 0.1) !important;
+      color: #2563EB !important;
+      border: 1px solid rgba(37, 99, 235, 0.25) !important;
+    }
+    body.theme-editorial .badge-success,
+    body.theme-editorial .badge-sold {
+      background: rgba(21, 128, 61, 0.1) !important;
+      color: #15803D !important;
+      border: 1px solid rgba(21, 128, 61, 0.25) !important;
+    }
+    body.theme-editorial .badge-warning,
+    body.theme-editorial .badge-pending {
+      background: rgba(217, 119, 6, 0.12) !important;
+      color: #B45309 !important;
+      border: 1px solid rgba(217, 119, 6, 0.25) !important;
+    }
+    body.theme-editorial .badge-danger {
+      background: rgba(220, 38, 38, 0.1) !important;
+      color: #DC2626 !important;
+      border: 1px solid rgba(220, 38, 38, 0.25) !important;
+    }
+    body.theme-editorial .badge-gray {
+      background: #F4F1EA !important;
+      color: #716E68 !important;
+      border: 1px solid #E2DDD2 !important;
+    }
+    body.theme-editorial .badge-used {
+      background: rgba(37, 99, 235, 0.1) !important;
+      color: #2563EB !important;
+      border: 1px solid rgba(37, 99, 235, 0.25) !important;
+    }
+
+    /* Form Controls & Inputs */
+    body.theme-editorial .form-control,
+    body.theme-editorial .filter-select,
+    body.theme-editorial .sched-select {
+      background: #FFFFFF !important;
+      border: 1px solid #D6D1C7 !important;
+      color: #18181B !important;
+    }
+    body.theme-editorial .form-control:focus,
+    body.theme-editorial .filter-select:focus,
+    body.theme-editorial .sched-select:focus {
+      border-color: #C2542D !important;
+      box-shadow: 0 0 0 3px rgba(194, 84, 45, 0.12) !important;
+    }
+    body.theme-editorial .form-label {
+      color: #716E68 !important;
+    }
+
+    /* Claim Scheduler Section */
+    body.theme-editorial .claim-scheduler-section::before {
+      background: linear-gradient(90deg, #C2542D, #F59E0B, #10B981) !important;
+    }
+    body.theme-editorial .scheduler-metrics-row {
+      background: #F7F5EE !important;
+      border: 1px solid #E5E1D5 !important;
+    }
+    body.theme-editorial .sched-metric:not(:last-child) {
+      border-right: 1px solid #E5E1D5 !important;
+    }
+    body.theme-editorial .sched-tab-btn {
+      background: #FFFFFF !important;
+      border: 1px solid #D6D1C7 !important;
+      color: #716E68 !important;
+      border-radius: 9999px !important;
+    }
+    body.theme-editorial .sched-tab-btn:hover {
+      background: #F7F5EE !important;
+      color: #18181B !important;
+      border-color: #C2542D !important;
+    }
+    body.theme-editorial .sched-tab-btn.active {
+      background: #18181B !important;
+      color: #FFFFFF !important;
+      border-color: #18181B !important;
+      box-shadow: 0 2px 8px rgba(24, 24, 27, 0.25) !important;
+    }
+    body.theme-editorial .sched-card-item {
+      background: #FAFAFA !important;
+      border: 1px solid #EAE6DF !important;
+    }
+    body.theme-editorial .sched-card-item:hover {
+      border-color: #C2542D !important;
+      box-shadow: 0 4px 14px rgba(45, 35, 20, 0.06);
+    }
+
+    /* Cycle Expiry Section */
+    body.theme-editorial .cycle-expiry-badge {
+      color: #18181B !important;
+    }
+    body.theme-editorial .cycle-countdown-pill {
+      background: #FEF3C7 !important;
+      color: #B45309 !important;
+      border: 1px solid #FCD34D !important;
+    }
+    body.theme-editorial .cycle-var-amount {
+      color: #DC2626 !important;
+    }
+    body.theme-editorial .cycle-progress-bar {
+      background: #EAE6DD !important;
+    }
+    body.theme-editorial .cycle-progress-fill {
+      background: linear-gradient(90deg, #C2542D, #10B981) !important;
+    }
+
+    /* Claim Matrix Styles */
+    body.theme-editorial .matrix-table th {
+      background: #F2EFE7 !important;
+      color: #716E68 !important;
+      border-bottom: 1px solid #E2DDD2 !important;
+    }
+    body.theme-editorial .matrix-table td {
+      border-bottom: 1px solid #EAE6DD !important;
+      border-right: 1px solid #EAE6DD !important;
+      color: #18181B !important;
+    }
+    body.theme-editorial .matrix-table tr:hover td {
+      background-color: #F8F6F0 !important;
+    }
+    body.theme-editorial .matrix-summary-row td {
+      background: #F4F1EA !important;
+      color: #18181B !important;
+      font-weight: 700 !important;
+    }
+
+    /* History & Voucher Tables */
+    body.theme-editorial thead {
+      background: #F4F1EA !important;
+    }
+    body.theme-editorial th {
+      color: #716E68 !important;
+      border-bottom: 1px solid #E2DDD2 !important;
+    }
+    body.theme-editorial td {
+      border-top: 1px solid #EAE6DD !important;
+      color: #18181B !important;
+    }
+    body.theme-editorial tr:hover td {
+      background: #FAF8F2 !important;
+    }
+    body.theme-editorial .code-pill {
+      background: #F4EFEB !important;
+      color: #C2542D !important;
+      border: 1px solid #E5DDD5 !important;
+    }
+    body.theme-editorial .history-date-filter-group {
+      background: #FFFFFF !important;
+      border: 1px solid #D6D1C7 !important;
+    }
+    body.theme-editorial .history-date-filter-group input[type="date"] {
+      background: #F7F5EE !important;
+      border: 1px solid #D6D1C7 !important;
+      color: #18181B !important;
+    }
+
+    /* Brand Filter Pills (Vouchers Tab) */
+    body.theme-editorial .brand-pill {
+      background: #FFFFFF !important;
+      border: 1px solid #D6D1C7 !important;
+      color: #716E68 !important;
+    }
+    body.theme-editorial .brand-pill:hover {
+      border-color: #C2542D !important;
+      color: #18181B !important;
+    }
+    body.theme-editorial .brand-pill.active {
+      background: #18181B !important;
+      border-color: #18181B !important;
+      color: #FFFFFF !important;
+    }
+    body.theme-editorial .brand-pill.active .brand-pill-count {
+      background: #C2542D !important;
+      color: #FFFFFF !important;
+    }
+    body.theme-editorial .brand-pill-count {
+      background: #F4F1EA !important;
+      color: #716E68 !important;
+    }
+
+    /* Omnisearch Modal */
+    body.theme-editorial .omnisearch-modal {
+      background: #FFFFFF !important;
+      border: 1px solid #D6D1C7 !important;
+      box-shadow: 0 24px 70px rgba(45, 35, 20, 0.16) !important;
+    }
+    body.theme-editorial .omnisearch-header {
+      background: #FFFFFF !important;
+      border-bottom: 1px solid #EAE6DD !important;
+    }
+    body.theme-editorial .omnisearch-input {
+      color: #18181B !important;
+    }
+    body.theme-editorial .omnisearch-input::placeholder {
+      color: #9C968B !important;
+    }
+    body.theme-editorial .omnisearch-group-title {
+      color: #716E68 !important;
+    }
+    body.theme-editorial .omnisearch-item {
+      color: #18181B !important;
+      border-bottom: 1px solid #F4F1EA !important;
+    }
+    body.theme-editorial .omnisearch-item:hover,
+    body.theme-editorial .omnisearch-item.selected {
+      background: #F7F5EE !important;
+    }
+    body.theme-editorial .omnisearch-footer {
+      background: #F7F5EE !important;
+      border-top: 1px solid #EAE6DD !important;
+      color: #716E68 !important;
+    }
+
+    /* Modals & Backdrop */
+    body.theme-editorial .modal-backdrop {
+      background: rgba(24, 24, 27, 0.45) !important;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+    body.theme-editorial .modal-header {
+      background: #FFFFFF !important;
+      border-bottom: 1px solid #EAE6DD !important;
+    }
+    body.theme-editorial .modal-footer {
+      background: #FFFFFF !important;
+      border-top: 1px solid #EAE6DD !important;
+    }
+    body.theme-editorial .modal-close {
+      background: #F4F1EA !important;
+      color: #716E68 !important;
+    }
+    body.theme-editorial .modal-close:hover {
+      background: #EAE6DD !important;
+      color: #18181B !important;
+    }
+    body.theme-editorial .benefit-builder-row {
+      background: #F8F6F0 !important;
+      border: 1px solid #E5E1D5 !important;
+    }
+    body.theme-editorial .benefit-remove {
+      background: #FEE2E2 !important;
+      color: #DC2626 !important;
+      border: 1px solid #FECACA !important;
+    }
+
+    /* Settings Panel */
+    body.theme-editorial .settings-panel {
+      background: #FFFFFF !important;
+      border-left: 1px solid #E2DDD2 !important;
+      box-shadow: -8px 0 32px rgba(45, 35, 20, 0.08) !important;
+    }
+    body.theme-editorial .settings-header {
+      background: #FFFFFF !important;
+      border-bottom: 1px solid #EAE6DD !important;
+    }
+    body.theme-editorial .settings-section {
+      border-bottom: 1px solid #EAE6DD !important;
+    }
+    body.theme-editorial .settings-section-title {
+      color: #716E68 !important;
+    }
+
+    /* App Lock Screen in Warm Editorial */
+    body.theme-editorial .app-lock-overlay {
+      background: rgba(247, 245, 238, 0.96) !important;
+    }
+    body.theme-editorial .app-lock-card {
+      background: #FFFFFF !important;
+      border: 1px solid rgba(24, 24, 27, 0.1) !important;
+      box-shadow: 0 24px 60px rgba(45, 35, 20, 0.15) !important;
+    }
+    body.theme-editorial .app-lock-title {
+      color: #18181B !important;
+    }
+    body.theme-editorial .app-lock-subtitle {
+      color: #716E68 !important;
+    }
+    body.theme-editorial .keypad-btn {
+      background: #F7F5EE !important;
+      border: 1px solid #E2DDD2 !important;
+      color: #18181B !important;
+      box-shadow: 0 1px 2px rgba(45, 35, 20, 0.05);
+    }
+    body.theme-editorial .keypad-btn:hover {
+      background: #EFECE3 !important;
+      border-color: #C2542D !important;
+    }
+    body.theme-editorial .keypad-btn:active {
+      background: #C2542D !important;
+      color: #FFFFFF !important;
+    }
+    body.theme-editorial .pin-dot {
+      background: #E2DDD2 !important;
+    }
+    body.theme-editorial .pin-dot.filled {
+      background: #C2542D !important;
+    }
   </style>
 </head>
 <body>
@@ -3683,6 +4392,11 @@
       <span class="nav-search-text">Search...</span>
       <kbd class="nav-search-kbd">⌘K</kbd>
     </button>
+    <!-- Quick Theme Switcher Pill -->
+    <button type="button" class="nav-theme-btn" id="btn-quick-theme-toggle" title="Switch Theme (Warm Editorial / Midnight Cyber)" aria-label="Switch Theme">
+      <span id="nav-theme-icon">📜</span>
+      <span class="nav-theme-text" id="nav-theme-label">Editorial</span>
+    </button>
     <button class="btn-icon" id="btn-disk-sync" title="Local Disk Storage (rupay-perks-data.json)" style="position:relative;" aria-label="Local File Storage">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
@@ -3833,10 +4547,47 @@
       </div>
     </div>
 
-    <!-- Section 3: Display Preferences -->
+    <!-- Section 3: Design & Display Preferences -->
     <div class="settings-section">
-      <div class="settings-section-title">Display Preferences</div>
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:2px 0;">
+      <div class="settings-section-title">Design & Display</div>
+
+      <!-- Theme Switcher Cards -->
+      <div style="margin-bottom: 14px;">
+        <div style="font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px;">Design Aesthetic</div>
+        <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 8px;">Switch between the warm studio craft design and classic dark mode:</div>
+
+        <div class="theme-picker-grid">
+          <!-- Warm Editorial Option -->
+          <div class="theme-picker-card active" id="theme-card-editorial" data-theme="editorial">
+            <div class="theme-card-swatch swatch-editorial">
+              <div class="swatch-cta-btn"></div>
+            </div>
+            <div class="theme-card-info">
+              <div class="theme-card-title">
+                <span>📜 Warm Editorial</span>
+                <span class="theme-active-indicator" id="indicator-editorial">✓</span>
+              </div>
+              <div class="theme-card-desc">Studio craft, drafting paper grid, terracotta CTA & bold typography</div>
+            </div>
+          </div>
+
+          <!-- Midnight Cyber Option -->
+          <div class="theme-picker-card" id="theme-card-dark" data-theme="dark">
+            <div class="theme-card-swatch swatch-dark">
+              <div class="swatch-dark-cta"></div>
+            </div>
+            <div class="theme-card-info">
+              <div class="theme-card-title">
+                <span>🌙 Midnight Cyber</span>
+                <span class="theme-active-indicator" id="indicator-dark">✓</span>
+              </div>
+              <div class="theme-card-desc">Deep dark contrast, neon violet & cyan glowing accents</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0 2px;border-top:1px solid var(--border);">
         <span style="font-size:12px;color:var(--text-primary)">Show SOLD / USED tags on cards</span>
         <label class="toggle-switch">
           <input type="checkbox" id="setting-show-card-status" />
@@ -5475,6 +6226,61 @@
    ============================================================== */
 
 const STORAGE_KEY = 'rupay_perks';
+
+const THEME_STORAGE_KEY = 'rupay_perks_theme';
+
+function getActiveTheme() {
+  return localStorage.getItem(THEME_STORAGE_KEY) || 'editorial';
+}
+
+function applyTheme(theme, notify) {
+  theme = (theme === 'dark') ? 'dark' : 'editorial';
+  const isEditorial = (theme === 'editorial');
+  
+  if (isEditorial) {
+    document.documentElement.classList.add('theme-editorial');
+    document.body.classList.add('theme-editorial');
+    document.documentElement.setAttribute('data-theme', 'editorial');
+  } else {
+    document.documentElement.classList.remove('theme-editorial');
+    document.body.classList.remove('theme-editorial');
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+  // Update meta tags for iOS Safari & Android mobile chrome
+  const metaThemeColor = document.getElementById('meta-theme-color');
+  if (metaThemeColor) {
+    metaThemeColor.setAttribute('content', isEditorial ? '#F7F5EE' : '#0d0d14');
+  }
+  const metaAppleStatus = document.getElementById('meta-apple-status-bar');
+  if (metaAppleStatus) {
+    metaAppleStatus.setAttribute('content', isEditorial ? 'default' : 'black-translucent');
+  }
+
+  // Update navbar quick toggle
+  const navThemeLabel = document.getElementById('nav-theme-label');
+  const navThemeIcon = document.getElementById('nav-theme-icon');
+  if (navThemeLabel) {
+    navThemeLabel.textContent = isEditorial ? 'Editorial' : 'Dark';
+  }
+  if (navThemeIcon) {
+    navThemeIcon.textContent = isEditorial ? '📜' : '🌙';
+  }
+
+  // Update settings theme cards
+  const cardEditorial = document.getElementById('theme-card-editorial');
+  const cardDark = document.getElementById('theme-card-dark');
+  if (cardEditorial && cardDark) {
+    cardEditorial.classList.toggle('active', isEditorial);
+    cardDark.classList.toggle('active', !isEditorial);
+  }
+
+  localStorage.setItem(THEME_STORAGE_KEY, theme);
+
+  if (notify && typeof showToast === 'function') {
+    showToast(isEditorial ? 'Applied Warm Editorial (Studio) design' : 'Applied Midnight Cyber (Dark) design', 'success');
+  }
+}
 
 const SETTING_SHOW_CARD_STATUS_KEY = 'rupay_perks_show_card_status';
 
@@ -16402,6 +17208,36 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  /* ── Design Theme Switcher Wiring ── */
+  applyTheme(getActiveTheme(), false);
+
+  const quickThemeBtn = document.getElementById('btn-quick-theme-toggle');
+  if (quickThemeBtn) {
+    quickThemeBtn.addEventListener('click', () => {
+      const current = getActiveTheme();
+      const next = (current === 'editorial') ? 'dark' : 'editorial';
+      applyTheme(next, true);
+    });
+  }
+
+  const themeCardEditorial = document.getElementById('theme-card-editorial');
+  if (themeCardEditorial) {
+    themeCardEditorial.addEventListener('click', () => {
+      if (getActiveTheme() !== 'editorial') {
+        applyTheme('editorial', true);
+      }
+    });
+  }
+
+  const themeCardDark = document.getElementById('theme-card-dark');
+  if (themeCardDark) {
+    themeCardDark.addEventListener('click', () => {
+      if (getActiveTheme() !== 'dark') {
+        applyTheme('dark', true);
+      }
+    });
+  }
+
   /* ── Settings panel ── */
   const settingsToggle = document.getElementById('settings-toggle');
   const settingsPanel  = document.getElementById('settings-panel');
@@ -16409,6 +17245,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   settingsToggle.addEventListener('click', e => {
     e.stopPropagation();
+    applyTheme(getActiveTheme(), false);
     updateSecuritySettingsUI();
     updateVercelBlobStatusUI();
     updateDiskStatusUI();
