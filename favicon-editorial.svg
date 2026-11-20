@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" fill="none">
+  <defs>
+    <linearGradient id="rpBgEditorial" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D9663E" />
+      <stop offset="100%" stop-color="#C2542D" />
+    </linearGradient>
+  </defs>
+  <rect width="36" height="36" rx="9" fill="url(#rpBgEditorial)" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+  <rect x="5.5" y="9.5" width="25" height="17" rx="3.5" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-opacity="0.95"/>
+  <rect x="8.5" y="14" width="4.5" height="3.5" rx="1" fill="#FDE047" />
+  <path d="M16 22.5L20.5 13.5H23.5L19 22.5H16Z" fill="#FFFFFF" fill-opacity="0.95"/>
+  <path d="M21 22.5L25.5 13.5H27.5L23 22.5H21Z" fill="#FDE047"/>
+  <path d="M28.5 4.5C28.5 6.5 29.8 7.8 31.8 7.8C29.8 7.8 28.5 9.1 28.5 11.1C28.5 9.1 27.2 7.8 25.2 7.8C27.2 7.8 28.5 6.5 28.5 4.5Z" fill="#FDE047"/>
+</svg>
