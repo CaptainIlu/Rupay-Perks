@@ -5546,6 +5546,7 @@
       </select>
       <select class="filter-select" id="voucher-sort" title="Sort Vouchers">
         <option value="DATE_DESC" selected>📅 Newest First</option>
+        <option value="DISPOSITION_DESC">🏷️ Used / Sold Date (Newest)</option>
         <option value="EXPIRY_ASC">⏰ Expiring Soonest</option>
         <option value="BRAND_ASC">🔤 Brand (A-Z)</option>
       </select>
@@ -5579,6 +5580,7 @@
             <th>Booking ID</th>
             <th>Status</th>
             <th>Buyer</th>
+            <th>Used / Sold Date</th>
             <th>Redeem Date</th>
             <th>Validity / Expiry</th>
             <th>Actions</th>
@@ -5809,7 +5811,7 @@
             <th>Coupon Code</th>
             <th>Coupon Used</th>
             <th>Buyer</th>
-            <th>Sell Date</th>
+            <th>Used / Sold Date</th>
             <th></th>
           </tr>
         </thead>
@@ -6000,6 +6002,12 @@
           <option value="USED">USED (Personally used)</option>
           <option value="SOLD">SOLD (Sold to buyer)</option>
         </select>
+      </div>
+      <div id="used-fields" class="form-row hidden">
+        <div class="form-group">
+          <label class="form-label" for="log-used-date">Used Date</label>
+          <input type="date" class="form-control" id="log-used-date" />
+        </div>
       </div>
       <div id="sold-fields" class="form-row hidden">
         <div class="form-group">
@@ -8235,6 +8243,7 @@ function mergeDatasets(fileData, currentDB, options = {}) {
         if (!fu.buyer && lu.buyer) merged.buyer = lu.buyer;
         if ((fu.price === undefined || fu.price === null) && lu.price !== undefined) merged.price = lu.price;
         if (!fu.sellDate && lu.sellDate) merged.sellDate = lu.sellDate;
+        if (!fu.usedDate && lu.usedDate) merged.usedDate = lu.usedDate;
         if (!fu.notes && lu.notes) merged.notes = lu.notes;
         merged.updatedAt = fu.updatedAt;
       } else if (luTime > fuTime + 2000) {
@@ -8245,6 +8254,7 @@ function mergeDatasets(fileData, currentDB, options = {}) {
         if (!lu.buyer && fu.buyer) merged.buyer = fu.buyer;
         if ((lu.price === undefined || lu.price === null) && fu.price !== undefined) merged.price = fu.price;
         if (!lu.sellDate && fu.sellDate) merged.sellDate = fu.sellDate;
+        if (!lu.usedDate && fu.usedDate) merged.usedDate = fu.usedDate;
         if (!lu.notes && fu.notes) merged.notes = fu.notes;
         merged.updatedAt = lu.updatedAt;
       } else {
@@ -8279,6 +8289,7 @@ function mergeDatasets(fileData, currentDB, options = {}) {
         }
         if (lu.buyer || fu.buyer) merged.buyer = lu.buyer || fu.buyer;
         if (lu.sellDate || fu.sellDate) merged.sellDate = lu.sellDate || fu.sellDate;
+        if (lu.usedDate || fu.usedDate) merged.usedDate = lu.usedDate || fu.usedDate;
         if (lu.price !== undefined) merged.price = lu.price;
         else if (fu.price !== undefined) merged.price = fu.price;
         if (lu.redeemedOnBuyerAccount !== undefined) merged.redeemedOnBuyerAccount = lu.redeemedOnBuyerAccount;
@@ -8623,6 +8634,8 @@ function usageMatchesSearchQuery(u, query) {
   const cardNick = card ? (card.nickname || '').toLowerCase() : '';
   const cardLast4 = card ? (card.last4 || '').toLowerCase() : '';
   const cardAcc = card ? (card.account || '').toLowerCase() : '';
+  const rawSellDate = (u.sellDate || '').toLowerCase();
+  const rawUsedDate = (u.usedDate || '').toLowerCase();
 
   // 1. Direct substring checks
   if (rawCode.includes(rawQ)) return true;
@@ -8630,6 +8643,8 @@ function usageMatchesSearchQuery(u, query) {
   if (rawBrand.includes(rawQ)) return true;
   if (rawBuyer.includes(rawQ)) return true;
   if (buyerName && buyerName.includes(rawQ)) return true;
+  if (rawSellDate.includes(rawQ)) return true;
+  if (rawUsedDate.includes(rawQ)) return true;
   if (rawNotes.includes(rawQ)) return true;
   if (cardNick.includes(rawQ)) return true;
   if (cardLast4.includes(rawQ)) return true;
@@ -11062,7 +11077,7 @@ function formatUsageForGSheet(u) {
   const couponCode = u.couponCode || '';
   const couponUsed = u.couponUsed || '';
   const buyer = u.buyer || '';
-  const sellDate = formatGSheetDate(u.sellDate);
+  const sellDate = formatGSheetDate(u.couponUsed === 'USED' ? (u.usedDate || u.sellDate) : u.sellDate);
   const sellStatus = cleanUsageNote(u.notes);
 
   return [
@@ -11227,7 +11242,17 @@ function renderHistory() {
           </div>
         ` : '—'}
       </td>
-      <td>${u.sellDate ? fmtISO(u.sellDate) : '—'}</td>
+      <td>
+        ${(u.couponUsed === 'SOLD' && (u.sellDate || u.usedDate)) ? `
+          <div style="font-weight:600;color:var(--text-primary);font-size:12px;">${fmtISO(u.sellDate || u.usedDate)}</div>
+          <div style="font-size:10px;color:var(--text-secondary);margin-top:1px;">🏷️ Sold</div>
+        ` : (u.couponUsed === 'USED' && (u.usedDate || u.sellDate)) ? `
+          <div style="font-weight:600;color:var(--text-primary);font-size:12px;">${fmtISO(u.usedDate || u.sellDate)}</div>
+          <div style="font-size:10px;color:var(--text-secondary);margin-top:1px;">✅ Used</div>
+        ` : (u.sellDate || u.usedDate) ? `
+          <div style="font-weight:500;color:var(--text-primary);font-size:12px;">${fmtISO(u.sellDate || u.usedDate)}</div>
+        ` : '<span style="color:var(--text-secondary);font-size:11px">—</span>'}
+      </td>
       <td>
         <div style="display:flex;gap:4px;align-items:center;">
           <button type="button" class="btn btn-secondary btn-xs" onclick="copyUsageRowGSheet('${u.id}')" title="Copy Columns F:M (Redeem Status to Sell Status) to paste into Column F of this card in Google Sheet" style="color:#34d399;border-color:rgba(16,185,129,0.3);font-size:10px;font-weight:600;padding:2px 5px;">📋 F:M</button>
@@ -11249,7 +11274,7 @@ function copyUsageRowGSheet(usageId) {
   const couponCode = u.couponCode || '';
   const couponUsed = u.couponUsed || '';
   const buyer = u.buyer || '';
-  const sellDate = formatGSheetDate(u.sellDate);
+  const sellDate = formatGSheetDate(u.couponUsed === 'USED' ? (u.usedDate || u.sellDate) : u.sellDate);
   const sellStatus = cleanUsageNote(u.notes);
 
   // 8 tab-separated values matching Columns F through M (Redeem Status to Sell Status)
@@ -12215,6 +12240,12 @@ function renderVouchersTable() {
       const tB = expB ? expB.expiryDate.getTime() : 9999999999999;
       return tA - tB;
     });
+  } else if (sortFilter === 'DISPOSITION_DESC') {
+    vouchers.sort((a, b) => {
+      const dateA = a.usedDate || a.sellDate || '';
+      const dateB = b.usedDate || b.sellDate || '';
+      return dateB.localeCompare(dateA) || (b.date || '').localeCompare(a.date || '');
+    });
   } else if (sortFilter === 'BRAND_ASC') {
     vouchers.sort((a, b) => (a.brand || '').localeCompare(b.brand || '') || (b.date || '').localeCompare(a.date || ''));
   } else {
@@ -12304,6 +12335,17 @@ function renderVouchersTable() {
       <td style="color:${u.buyer ? 'var(--text-primary)' : 'var(--text-secondary)'};font-size:11px">
         ${u.buyer ? (getBuyerContactName(u.buyer) ? `<div style="font-weight:600;color:var(--text-primary);">${esc(getBuyerContactName(u.buyer))}</div><div style="font-size:10px;color:var(--text-secondary);font-family:var(--font-mono, monospace);">${esc(u.buyer)}</div>` : `<span style="font-family:var(--font-mono, monospace);">${esc(u.buyer)}</span>`) : '—'}
       </td>
+      <td style="font-size:11px">
+        ${(u.couponUsed === 'SOLD' && (u.sellDate || u.usedDate)) ? `
+          <div style="font-weight:600;color:var(--text-primary);font-size:12px;">${fmtISO(u.sellDate || u.usedDate)}</div>
+          <div style="font-size:10px;color:var(--text-secondary);margin-top:1px;">🏷️ Sold</div>
+        ` : (u.couponUsed === 'USED' && (u.usedDate || u.sellDate)) ? `
+          <div style="font-weight:600;color:var(--text-primary);font-size:12px;">${fmtISO(u.usedDate || u.sellDate)}</div>
+          <div style="font-size:10px;color:var(--text-secondary);margin-top:1px;">✅ Used</div>
+        ` : (u.sellDate || u.usedDate) ? `
+          <div style="font-weight:500;color:var(--text-primary);font-size:12px;">${fmtISO(u.sellDate || u.usedDate)}</div>
+        ` : '<span style="color:var(--text-secondary)">—</span>'}
+      </td>
       <td style="font-size:11px">${fmtTimestamp(u.date)}</td>
       <td>${expiryBadge}</td>
       <td>
@@ -12314,6 +12356,7 @@ function renderVouchersTable() {
           ` : `
             <button class="btn btn-secondary btn-xs quick-unused-btn" data-id="${u.id}" title="Revert to Unused">↩️</button>
           `}
+          <button class="btn btn-secondary btn-xs edit-usage-btn" data-id="${u.id}" title="Edit Redemption / Date">✏️</button>
         </div>
       </td>
     `;
@@ -12380,6 +12423,7 @@ function confirmBulkSold() {
       u.couponUsed = 'SOLD';
       u.buyer = buyer;
       u.sellDate = sellDate;
+      u.usedDate = '';
       if (overridePrice !== null && !isNaN(overridePrice)) {
         u.price = overridePrice;
       } else if (u.price === undefined) {
@@ -12402,11 +12446,15 @@ function confirmBulkSold() {
 function bulkMarkUsed() {
   if (selectedVoucherIds.size === 0) return;
   const count = selectedVoucherIds.size;
-  showConfirm('Mark as USED', `Mark all ${count} selected vouchers as personally USED?`, () => {
+  showConfirm('Mark as USED', `Mark all ${count} selected vouchers as personally USED today?`, () => {
+    const today = todayISO();
     DB.usages.forEach(u => {
       if (selectedVoucherIds.has(u.id)) {
         u.couponUsed = 'USED';
-        if (typeof syncVoucherStatusToGSheet === 'function') syncVoucherStatusToGSheet(u.bookingId, u.couponCode, 'USED', u.buyer, u.sellDate);
+        u.usedDate = today;
+        u.sellDate = today;
+        u.buyer = '';
+        if (typeof syncVoucherStatusToGSheet === 'function') syncVoucherStatusToGSheet(u.bookingId, u.couponCode, 'USED', '', today);
       }
     });
     saveDB();
@@ -12414,6 +12462,7 @@ function bulkMarkUsed() {
     showToast(`Marked ${count} vouchers as USED! ✅`, 'success');
     renderVouchers();
     renderDashboard();
+    if (document.getElementById('tab-insights').classList.contains('active')) renderInsights();
   }, '✅');
 }
 
@@ -12426,6 +12475,7 @@ function bulkMarkUnused() {
         u.couponUsed = 'UNUSED';
         u.buyer = '';
         u.sellDate = '';
+        u.usedDate = '';
         if (typeof syncVoucherStatusToGSheet === 'function') syncVoucherStatusToGSheet(u.bookingId, u.couponCode, '', '', '');
       }
     });
@@ -13183,6 +13233,10 @@ function updateBuyerAccountUI(isBuyerAccount, cardAccount) {
     if (soldFields) {
       soldFields.classList.remove('hidden');
     }
+    const usedFields = document.getElementById('used-fields');
+    if (usedFields) {
+      usedFields.classList.add('hidden');
+    }
     if (sellDateInput && !sellDateInput.value) {
       sellDateInput.value = todayISO();
     }
@@ -13291,6 +13345,8 @@ function openEditUsageModal(usageId) {
   document.getElementById('log-coupon-used').value    = u.couponUsed || '';
   document.getElementById('log-buyer').value          = u.buyer || '';
   document.getElementById('log-sell-date').value      = u.sellDate || '';
+  const usedDateInput = document.getElementById('log-used-date');
+  if (usedDateInput) usedDateInput.value = u.usedDate || (u.couponUsed === 'USED' ? u.sellDate : '') || '';
   const priceInput = document.getElementById('log-sell-price');
   if (priceInput) {
     priceInput.value = (u.price !== undefined && u.price !== null) ? u.price : (u.couponUsed === 'SOLD' ? getVoucherPrice(u) : '');
@@ -13319,10 +13375,16 @@ function openEditUsageModal(usageId) {
   }
 
   const soldFields = document.getElementById('sold-fields');
+  const usedFields = document.getElementById('used-fields');
   if (u.couponUsed === 'SOLD' || isBuyerAccount) {
     soldFields.classList.remove('hidden');
+    if (usedFields) usedFields.classList.add('hidden');
+  } else if (u.couponUsed === 'USED') {
+    soldFields.classList.add('hidden');
+    if (usedFields) usedFields.classList.remove('hidden');
   } else {
     soldFields.classList.add('hidden');
+    if (usedFields) usedFields.classList.add('hidden');
   }
 
   document.getElementById('log-quota-warning').classList.add('hidden');
@@ -13460,6 +13522,8 @@ function openLogUsageModal(cardId, benefitId, brandName) {
   document.getElementById('log-coupon-used').value    = '';
   document.getElementById('log-buyer').value          = '';
   document.getElementById('log-sell-date').value      = '';
+  const usedDateInput = document.getElementById('log-used-date');
+  if (usedDateInput) usedDateInput.value = '';
   const priceInput = document.getElementById('log-sell-price');
   if (priceInput) priceInput.value = '';
   document.getElementById('log-notes').value          = '';
@@ -13482,6 +13546,8 @@ function openLogUsageModal(cardId, benefitId, brandName) {
   if (!isCult) {
     document.getElementById('sold-fields').classList.add('hidden');
   }
+  const usedFields = document.getElementById('used-fields');
+  if (usedFields) usedFields.classList.add('hidden');
 
   const used      = getUsedCount(cardId, benefit.id || benefitId, benefit.periodType, undefined, brandName || benefit.brand);
   const remaining = benefit.quota - used;
@@ -15935,7 +16001,7 @@ function parseGoogleSheetCSV(text) {
     if (/^(couponcode|vouchercode|code|voucher|coupon|pin)$/.test(lower)) return 'couponCode';
     if (/^(couponused|used|disposition|soldstatus|usagestatus)$/.test(lower)) return 'couponUsed';
     if (/^(buyer|buyerphone|buyername|customer|soldto|phone|contact|mobile)$/.test(lower)) return 'buyer';
-    if (/^(selldate|solddate|saledate|dispositiondate)$/.test(lower)) return 'sellDate';
+    if (/^(selldate|solddate|saledate|dispositiondate|useddate)$/.test(lower)) return 'sellDate';
     if (/^(price|sellprice|amount|rate|cost|soldprice)$/.test(lower)) return 'price';
     if (/^(notes|note|remarks|comment|comments|sellstatus)$/.test(lower)) return 'notes';
     return lower || h;
@@ -16639,6 +16705,7 @@ function applyCSVImportRow(diffItem) {
     couponUsed: (row.couponUsed || '').trim().toUpperCase(),
     buyer: (row.buyer || '').trim(),
     sellDate: normalizeGSheetDate(row.sellDate, targetYear),
+    usedDate: (row.couponUsed || '').trim().toUpperCase() === 'USED' ? normalizeGSheetDate(row.sellDate, targetYear) : '',
     notes: cleanUsageNote(row.notes)
   };
 
@@ -16672,7 +16739,13 @@ function applyCSVUpdateRow(diffItem) {
     if (d.field === 'couponCode' && row.couponCode) usage.couponCode = row.couponCode;
     if (d.field === 'couponUsed') usage.couponUsed = row.couponUsed === 'NA' ? '' : (row.couponUsed || '').toUpperCase();
     if (d.field === 'buyer') usage.buyer = row.buyer === 'NA' ? '' : (row.buyer || '');
-    if (d.field === 'sellDate') usage.sellDate = normalizeGSheetDate(row.sellDate, targetYear);
+    if (d.field === 'sellDate') {
+      const normDate = normalizeGSheetDate(row.sellDate, targetYear);
+      usage.sellDate = normDate;
+      if (usage.couponUsed === 'USED' || (row.couponUsed || '').toUpperCase() === 'USED') {
+        usage.usedDate = normDate;
+      }
+    }
     if (d.field === 'notes' && row.notes) usage.notes = cleanUsageNote(row.notes);
     if (d.field === 'bookingId' && row.bookingId) usage.bookingId = row.bookingId;
     if (d.field === 'account' && row.account) usage.account = row.account;
@@ -16873,10 +16946,11 @@ function downloadMergedGSheetCSV() {
       if (colBuyer !== -1) row[colBuyer] = matchedUsage.buyer || '';
       if (colSellDate !== -1) {
         const existingSell = String(row[colSellDate] || '').trim();
-        if (existingSell && !isNA(existingSell) && matchedUsage.sellDate && normalizeGSheetDate(existingSell, targetYear) === normalizeGSheetDate(matchedUsage.sellDate, targetYear)) {
+        const dispDate = matchedUsage.couponUsed === 'USED' ? (matchedUsage.usedDate || matchedUsage.sellDate) : matchedUsage.sellDate;
+        if (existingSell && !isNA(existingSell) && dispDate && normalizeGSheetDate(existingSell, targetYear) === normalizeGSheetDate(dispDate, targetYear)) {
           // Keep existing sheet sell date format intact
-        } else if (matchedUsage.sellDate) {
-          row[colSellDate] = formatGSheetDate(matchedUsage.sellDate);
+        } else if (dispDate) {
+          row[colSellDate] = formatGSheetDate(dispDate);
         }
       }
       if (colNotes !== -1) {
@@ -17015,10 +17089,11 @@ async function copyMergedGSheetFM() {
       if (colBuyer !== -1) row[colBuyer] = matchedUsage.buyer || '';
       if (colSellDate !== -1) {
         const existingSell = String(row[colSellDate] || '').trim();
-        if (existingSell && !isNA(existingSell) && matchedUsage.sellDate && normalizeGSheetDate(existingSell, targetYear) === normalizeGSheetDate(matchedUsage.sellDate, targetYear)) {
+        const dispDate = matchedUsage.couponUsed === 'USED' ? (matchedUsage.usedDate || matchedUsage.sellDate) : matchedUsage.sellDate;
+        if (existingSell && !isNA(existingSell) && dispDate && normalizeGSheetDate(existingSell, targetYear) === normalizeGSheetDate(dispDate, targetYear)) {
           // Keep existing sheet sell date format intact
-        } else if (matchedUsage.sellDate) {
-          row[colSellDate] = formatGSheetDate(matchedUsage.sellDate);
+        } else if (dispDate) {
+          row[colSellDate] = formatGSheetDate(dispDate);
         }
       }
       if (colNotes !== -1) {
@@ -17928,11 +18003,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* ── Toggle SOLD fields in log modal ── */
+  /* ── Toggle SOLD / USED fields in log modal ── */
   document.getElementById('log-coupon-used').addEventListener('change', e => {
     const soldFields = document.getElementById('sold-fields');
+    const usedFields = document.getElementById('used-fields');
     if (e.target.value === 'SOLD') {
       soldFields.classList.remove('hidden');
+      if (usedFields) usedFields.classList.add('hidden');
       if (!document.getElementById('log-sell-date').value) {
         document.getElementById('log-sell-date').value = todayISO();
       }
@@ -17942,8 +18019,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (curBrand === '__CUSTOM__' || !curBrand) curBrand = document.getElementById('log-brand').value.trim();
         priceInput.value = getBrandPresetPrice(curBrand);
       }
+    } else if (e.target.value === 'USED') {
+      soldFields.classList.add('hidden');
+      if (usedFields) {
+        usedFields.classList.remove('hidden');
+        if (!document.getElementById('log-used-date').value) {
+          document.getElementById('log-used-date').value = todayISO();
+        }
+      }
     } else {
       soldFields.classList.add('hidden');
+      if (usedFields) usedFields.classList.add('hidden');
     }
   });
 
@@ -17962,8 +18048,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const bookingId    = document.getElementById('log-booking-id').value.trim();
     const couponCode   = document.getElementById('log-coupon-code').value.trim();
     const couponUsed   = document.getElementById('log-coupon-used').value;
-    const buyer        = document.getElementById('log-buyer').value.trim();
-    const sellDate     = document.getElementById('log-sell-date').value;
+    let buyer          = document.getElementById('log-buyer').value.trim();
+    let sellDate       = document.getElementById('log-sell-date').value;
+    let usedDate       = (document.getElementById('log-used-date')?.value || '').trim();
     const sellPriceVal = (document.getElementById('log-sell-price').value || '').trim();
     const price        = sellPriceVal ? parseFloat(sellPriceVal) : (couponUsed === 'SOLD' ? getBrandPresetPrice(brand) : undefined);
     const notes        = document.getElementById('log-notes').value.trim();
@@ -17974,6 +18061,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (redeemedOnBuyerAccount) {
       if (!finalCouponCode || finalCouponCode === '') finalCouponCode = 'NA';
       if (!finalCouponUsed) finalCouponUsed = 'SOLD';
+    }
+
+    if (finalCouponUsed === 'USED') {
+      if (!usedDate && !sellDate) usedDate = todayISO();
+      else if (!usedDate && sellDate) usedDate = sellDate;
+      sellDate = usedDate;
+      buyer = '';
+    } else if (finalCouponUsed === 'SOLD') {
+      if (!sellDate) sellDate = todayISO();
+      usedDate = '';
+    } else {
+      sellDate = '';
+      usedDate = '';
+      buyer = '';
     }
 
     if (!date)  { showToast('Please pick a redeem date', 'error'); return; }
@@ -18030,7 +18131,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (editUsageId) {
       updateUsage(editUsageId, {
         benefitId, date, account, brand, redeemStatus,
-        bookingId, couponCode: finalCouponCode, couponUsed: finalCouponUsed, buyer, sellDate, notes,
+        bookingId, couponCode: finalCouponCode, couponUsed: finalCouponUsed, buyer, sellDate, usedDate, notes,
         price: (price !== undefined && !isNaN(price)) ? price : undefined,
         redeemedOnBuyerAccount,
         validityDays,
@@ -18041,7 +18142,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       addUsage({
         cardId, benefitId, date, account, brand, redeemStatus,
-        bookingId, couponCode: finalCouponCode, couponUsed: finalCouponUsed, buyer, sellDate, notes,
+        bookingId, couponCode: finalCouponCode, couponUsed: finalCouponUsed, buyer, sellDate, usedDate, notes,
         price: (price !== undefined && !isNaN(price)) ? price : undefined,
         redeemedOnBuyerAccount,
         validityDays,
@@ -18459,9 +18560,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (quickUsedBtn) {
       const u = DB.usages.find(x => x.id === quickUsedBtn.dataset.id);
       if (u) {
+        const today = todayISO();
         u.couponUsed = 'USED';
+        u.usedDate = today;
+        u.sellDate = today;
+        u.buyer = '';
         saveDB();
-        if (typeof syncVoucherStatusToGSheet === 'function') syncVoucherStatusToGSheet(u.bookingId, u.couponCode, 'USED', u.buyer, u.sellDate);
+        if (typeof syncVoucherStatusToGSheet === 'function') syncVoucherStatusToGSheet(u.bookingId, u.couponCode, 'USED', '', today);
         showToast('Marked as USED! ✅', 'success');
         renderVouchers();
         renderDashboard();
@@ -18477,6 +18582,7 @@ document.addEventListener('DOMContentLoaded', () => {
         u.couponUsed = 'UNUSED';
         u.buyer = '';
         u.sellDate = '';
+        u.usedDate = '';
         saveDB();
         if (typeof syncVoucherStatusToGSheet === 'function') syncVoucherStatusToGSheet(u.bookingId, u.couponCode, '', '', '');
         showToast('Reverted to Unused! ⚡', 'info');
